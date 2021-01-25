@@ -15,3 +15,8 @@ def main(urd):
 	print("\nThe contents of the pickle file can be loaded directly:")
 	print(job.load('apicklefile'))
 	print(nocol)
+
+	# Note, job.load() with no options will load the file
+	# "result.pickle", if it exists.  This file is holds
+	# the job's returned value.
+	# Any other file can be loaded by specifying a file name.
