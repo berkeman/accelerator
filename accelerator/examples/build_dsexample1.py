@@ -19,6 +19,7 @@ def main(urd):
 	imp = urd.build('dataset_sort', source=imp, sort_columns='adate')
 	imp = urd.build('dataset_hashpart', source=imp, hashlabel='astring')
 
+	job = urd.build('dsexample1', source=imp)
 
 	print("""
 Now you can do
