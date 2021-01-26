@@ -1,4 +1,4 @@
-description = "Advanced, store and load sliced files."
+description = "Advanced, pass sliced files between jobs."
 
 def main(urd):
 	filename='aslicedfile'
