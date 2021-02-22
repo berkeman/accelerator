@@ -1,5 +1,7 @@
 datasets = ('source',)
 
+description = "Stupid aggregate data from a chained dataset."
+
 def analysis(sliceno):
 	v = []
 	for n, s in datasets.source.iterate_chain(sliceno, ('anint', 'astring')):
