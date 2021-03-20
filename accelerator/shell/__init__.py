@@ -251,6 +251,11 @@ def cmd_version(argv):
 		print(ax_version)
 cmd_version.help = '''show installed accelerator version'''
 
+def cmd_script(argv):
+	from accelerator.shell.script import main
+	main(argv, cfg)
+cmd_script.help = '''information about build scripts'''
+
 COMMANDS = dict(
 	ds=cmd_ds,
 	grep=cmd_grep,
@@ -265,6 +270,7 @@ COMMANDS = dict(
 	board=cmd_board,
 	job=cmd_job,
 	version=cmd_version,
+	script=cmd_script
 )
 
 def split_args(argv):
