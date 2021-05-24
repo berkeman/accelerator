@@ -113,7 +113,7 @@ static int gzread_close_(GzRead *self)
 #  define BYTES_NAME      "str"
 #  define UNICODE_NAME    "unicode"
 #  define EITHER_NAME     "str or unicode"
-#  define INITFUNC        initgzutil
+#  define INITFUNC        initdsutil
 #  define Integer_Check(o) (PyInt_Check(o) || PyLong_Check(o))
 #else
 #  define BYTES_NAME      "bytes"
@@ -122,7 +122,7 @@ static int gzread_close_(GzRead *self)
 #  define PyInt_FromLong  PyLong_FromLong
 #  define PyInt_AsLong    PyLong_AsLong
 #  define PyNumber_Int    PyNumber_Long
-#  define INITFUNC        PyInit_gzutil
+#  define INITFUNC        PyInit_dsutil
 #  define Integer_Check(o) PyLong_Check(o)
 #endif
 
@@ -1884,7 +1884,7 @@ static PyMethodDef module_methods[] = {
 #  define INITERR 0
 static struct PyModuleDef moduledef = {
 	PyModuleDef_HEAD_INIT,
-	"gzutil",           /*m_name*/
+	"dsutil",           /*m_name*/
 	0,                  /*m_doc*/
 	-1,                 /*m_size*/
 	module_methods,     /*m_methods*/
@@ -1943,7 +1943,7 @@ __attribute__ ((visibility("default"))) PyMODINIT_FUNC INITFUNC(void)
 #if PY_MAJOR_VERSION >= 3
 	PyObject *m = PyModule_Create(&moduledef);
 #else
-	PyObject *m = Py_InitModule3("gzutil", module_methods, NULL);
+	PyObject *m = Py_InitModule3("dsutil", module_methods, NULL);
 #endif
 	if (!m) return INITERR;
 	INIT(GzBytes);

@@ -1,7 +1,7 @@
 ############################################################################
 #                                                                          #
 # Copyright (c) 2017 eBay Inc.                                             #
-# Modifications copyright (c) 2018-2020 Carl Drougge                       #
+# Modifications copyright (c) 2018-2021 Carl Drougge                       #
 #                                                                          #
 # Licensed under the Apache License, Version 2.0 (the "License");          #
 # you may not use this file except in compliance with the License.         #
@@ -20,35 +20,35 @@
 from __future__ import print_function
 from __future__ import division
 
-from accelerator import gzutil
+from accelerator import dsutil
 from accelerator.compat import PY3
 
 type2iter = {
-	'number'  : gzutil.GzNumber,
-	'complex64': gzutil.GzComplex64,
-	'complex32': gzutil.GzComplex32,
-	'float64' : gzutil.GzFloat64,
-	'float32' : gzutil.GzFloat32,
-	'int64'   : gzutil.GzInt64,
-	'int32'   : gzutil.GzInt32,
-	'bits64'  : gzutil.GzBits64,
-	'bits32'  : gzutil.GzBits32,
-	'bool'    : gzutil.GzBool,
-	'datetime': gzutil.GzDateTime,
-	'date'    : gzutil.GzDate,
-	'time'    : gzutil.GzTime,
-	'bytes'   : gzutil.GzBytes,
-	'ascii'   : gzutil.GzAscii,
-	'unicode' : gzutil.GzUnicode,
+	'number'  : dsutil.GzNumber,
+	'complex64': dsutil.GzComplex64,
+	'complex32': dsutil.GzComplex32,
+	'float64' : dsutil.GzFloat64,
+	'float32' : dsutil.GzFloat32,
+	'int64'   : dsutil.GzInt64,
+	'int32'   : dsutil.GzInt32,
+	'bits64'  : dsutil.GzBits64,
+	'bits32'  : dsutil.GzBits32,
+	'bool'    : dsutil.GzBool,
+	'datetime': dsutil.GzDateTime,
+	'date'    : dsutil.GzDate,
+	'time'    : dsutil.GzTime,
+	'bytes'   : dsutil.GzBytes,
+	'ascii'   : dsutil.GzAscii,
+	'unicode' : dsutil.GzUnicode,
 }
 
 from json import JSONDecoder
 class GzJson(object):
 	def __init__(self, *a, **kw):
 		if PY3:
-			self.fh = gzutil.GzUnicode(*a, **kw)
+			self.fh = dsutil.GzUnicode(*a, **kw)
 		else:
-			self.fh = gzutil.GzBytes(*a, **kw)
+			self.fh = dsutil.GzBytes(*a, **kw)
 		self.decode = JSONDecoder().decode
 	def __next__(self):
 		return self.decode(next(self.fh))
@@ -67,7 +67,7 @@ from pickle import loads
 class GzPickle(object):
 	def __init__(self, *a, **kw):
 		assert PY3, "Pickle columns require python 3, sorry"
-		self.fh = gzutil.GzBytes(*a, **kw)
+		self.fh = dsutil.GzBytes(*a, **kw)
 	def __next__(self):
 		return loads(next(self.fh))
 	next = __next__
