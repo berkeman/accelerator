@@ -24,31 +24,31 @@ from accelerator import dsutil
 from accelerator.compat import PY3
 
 type2iter = {
-	'number'  : dsutil.GzNumber,
-	'complex64': dsutil.GzComplex64,
-	'complex32': dsutil.GzComplex32,
-	'float64' : dsutil.GzFloat64,
-	'float32' : dsutil.GzFloat32,
-	'int64'   : dsutil.GzInt64,
-	'int32'   : dsutil.GzInt32,
-	'bits64'  : dsutil.GzBits64,
-	'bits32'  : dsutil.GzBits32,
-	'bool'    : dsutil.GzBool,
-	'datetime': dsutil.GzDateTime,
-	'date'    : dsutil.GzDate,
-	'time'    : dsutil.GzTime,
-	'bytes'   : dsutil.GzBytes,
-	'ascii'   : dsutil.GzAscii,
-	'unicode' : dsutil.GzUnicode,
+	'number'   : dsutil.ReadNumber,
+	'complex64': dsutil.ReadComplex64,
+	'complex32': dsutil.ReadComplex32,
+	'float64'  : dsutil.ReadFloat64,
+	'float32'  : dsutil.ReadFloat32,
+	'int64'    : dsutil.ReadInt64,
+	'int32'    : dsutil.ReadInt32,
+	'bits64'   : dsutil.ReadBits64,
+	'bits32'   : dsutil.ReadBits32,
+	'bool'     : dsutil.ReadBool,
+	'datetime' : dsutil.ReadDateTime,
+	'date'     : dsutil.ReadDate,
+	'time'     : dsutil.ReadTime,
+	'bytes'    : dsutil.ReadBytes,
+	'ascii'    : dsutil.ReadAscii,
+	'unicode'  : dsutil.ReadUnicode,
 }
 
 from json import JSONDecoder
-class GzJson(object):
+class ReadJson(object):
 	def __init__(self, *a, **kw):
 		if PY3:
-			self.fh = dsutil.GzUnicode(*a, **kw)
+			self.fh = dsutil.ReadUnicode(*a, **kw)
 		else:
-			self.fh = dsutil.GzBytes(*a, **kw)
+			self.fh = dsutil.ReadBytes(*a, **kw)
 		self.decode = JSONDecoder().decode
 	def __next__(self):
 		return self.decode(next(self.fh))
@@ -61,13 +61,13 @@ class GzJson(object):
 		return self
 	def __exit__(self, type, value, traceback):
 		self.close()
-type2iter['json'] = GzJson
+type2iter['json'] = ReadJson
 
 from pickle import loads
-class GzPickle(object):
+class ReadPickle(object):
 	def __init__(self, *a, **kw):
 		assert PY3, "Pickle columns require python 3, sorry"
-		self.fh = dsutil.GzBytes(*a, **kw)
+		self.fh = dsutil.ReadBytes(*a, **kw)
 	def __next__(self):
 		return loads(next(self.fh))
 	next = __next__
@@ -79,7 +79,7 @@ class GzPickle(object):
 		return self
 	def __exit__(self, type, value, traceback):
 		self.close()
-type2iter['pickle'] = GzPickle
+type2iter['pickle'] = ReadPickle
 
 def typed_reader(typename):
 	if typename not in type2iter:

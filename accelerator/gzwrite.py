@@ -24,31 +24,31 @@ from accelerator import dsutil
 from accelerator.compat import str_types, PY3
 
 _convfuncs = {
-	'number'   : dsutil.GzWriteNumber,
-	'complex64': dsutil.GzWriteComplex64,
-	'complex32': dsutil.GzWriteComplex32,
-	'float64'  : dsutil.GzWriteFloat64,
-	'float32'  : dsutil.GzWriteFloat32,
-	'int64'    : dsutil.GzWriteInt64,
-	'int32'    : dsutil.GzWriteInt32,
-	'bits64'   : dsutil.GzWriteBits64,
-	'bits32'   : dsutil.GzWriteBits32,
-	'bool'     : dsutil.GzWriteBool,
-	'datetime' : dsutil.GzWriteDateTime,
-	'date'     : dsutil.GzWriteDate,
-	'time'     : dsutil.GzWriteTime,
-	'bytes'    : dsutil.GzWriteBytes,
-	'ascii'    : dsutil.GzWriteAscii,
-	'unicode'  : dsutil.GzWriteUnicode,
-	'parsed:number'   : dsutil.GzWriteParsedNumber,
-	'parsed:complex64': dsutil.GzWriteParsedComplex64,
-	'parsed:complex32': dsutil.GzWriteParsedComplex32,
-	'parsed:float64'  : dsutil.GzWriteParsedFloat64,
-	'parsed:float32'  : dsutil.GzWriteParsedFloat32,
-	'parsed:int64'    : dsutil.GzWriteParsedInt64,
-	'parsed:int32'    : dsutil.GzWriteParsedInt32,
-	'parsed:bits64'   : dsutil.GzWriteParsedBits64,
-	'parsed:bits32'   : dsutil.GzWriteParsedBits32,
+	'number'   : dsutil.WriteNumber,
+	'complex64': dsutil.WriteComplex64,
+	'complex32': dsutil.WriteComplex32,
+	'float64'  : dsutil.WriteFloat64,
+	'float32'  : dsutil.WriteFloat32,
+	'int64'    : dsutil.WriteInt64,
+	'int32'    : dsutil.WriteInt32,
+	'bits64'   : dsutil.WriteBits64,
+	'bits32'   : dsutil.WriteBits32,
+	'bool'     : dsutil.WriteBool,
+	'datetime' : dsutil.WriteDateTime,
+	'date'     : dsutil.WriteDate,
+	'time'     : dsutil.WriteTime,
+	'bytes'    : dsutil.WriteBytes,
+	'ascii'    : dsutil.WriteAscii,
+	'unicode'  : dsutil.WriteUnicode,
+	'parsed:number'   : dsutil.WriteParsedNumber,
+	'parsed:complex64': dsutil.WriteParsedComplex64,
+	'parsed:complex32': dsutil.WriteParsedComplex32,
+	'parsed:float64'  : dsutil.WriteParsedFloat64,
+	'parsed:float32'  : dsutil.WriteParsedFloat32,
+	'parsed:int64'    : dsutil.WriteParsedInt64,
+	'parsed:int32'    : dsutil.WriteParsedInt32,
+	'parsed:bits64'   : dsutil.WriteParsedBits64,
+	'parsed:bits32'   : dsutil.WriteParsedBits32,
 }
 
 def typed_writer(typename):
@@ -63,15 +63,15 @@ def typed_reader(typename):
 	return type2iter[typename]
 
 from json import JSONEncoder, loads
-class GzWriteJson(object):
+class WriteJson(object):
 	min = max = None
 	def __init__(self, *a, **kw):
 		assert 'default' not in kw, "default not supported for Json, sorry"
 		if PY3:
-			self.fh = dsutil.GzWriteUnicode(*a, **kw)
+			self.fh = dsutil.WriteUnicode(*a, **kw)
 			self.encode = JSONEncoder(ensure_ascii=False, separators=(',', ':')).encode
 		else:
-			self.fh = dsutil.GzWriteBytes(*a, **kw)
+			self.fh = dsutil.WriteBytes(*a, **kw)
 			self.encode = JSONEncoder(ensure_ascii=True, separators=(',', ':')).encode
 	def write(self, o):
 		self.fh.write(self.encode(o))
@@ -84,24 +84,24 @@ class GzWriteJson(object):
 		return self
 	def __exit__(self, type, value, traceback):
 		self.close()
-_convfuncs['json'] = GzWriteJson
+_convfuncs['json'] = WriteJson
 
-class GzWriteParsedJson(GzWriteJson):
+class WriteParsedJson(WriteJson):
 	"""This assumes strings are the object you wanted and parse them as json.
 	If they are unparseable you get an error."""
 	def write(self, o):
 		if isinstance(o, str_types):
 			o = loads(o)
 		self.fh.write(self.encode(o))
-_convfuncs['parsed:json'] = GzWriteParsedJson
+_convfuncs['parsed:json'] = WriteParsedJson
 
 from pickle import dumps
-class GzWritePickle(object):
+class WritePickle(object):
 	min = max = None
 	def __init__(self, *a, **kw):
 		assert PY3, "Pickle columns require python 3, sorry"
 		assert 'default' not in kw, "default not supported for Pickle, sorry"
-		self.fh = dsutil.GzWriteBytes(*a, **kw)
+		self.fh = dsutil.WriteBytes(*a, **kw)
 	def write(self, o):
 		self.fh.write(dumps(o, 4))
 	@property
@@ -113,4 +113,4 @@ class GzWritePickle(object):
 		return self
 	def __exit__(self, type, value, traceback):
 		self.close()
-_convfuncs['pickle'] = GzWritePickle
+_convfuncs['pickle'] = WritePickle
