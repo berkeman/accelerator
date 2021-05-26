@@ -78,6 +78,9 @@ class WriteJson(object):
 	@property
 	def count(self):
 		return self.fh.count
+	@property
+	def compression(self):
+		return self.fh.compression
 	def close(self):
 		self.fh.close()
 	def __enter__(self):
@@ -107,6 +110,9 @@ class WritePickle(object):
 	@property
 	def count(self):
 		return self.fh.count
+	@property
+	def compression(self):
+		return self.fh.compression
 	def close(self):
 		self.fh.close()
 	def __enter__(self):
