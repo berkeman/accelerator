@@ -171,6 +171,83 @@ static const dsu_compressor dsu_gz = {
 };
 
 
+typedef struct dsu_none_ctx {
+	int fd;
+} dsu_none_ctx;
+
+static void *dsu_none_read_open(int fd, Py_ssize_t size_hint)
+{
+	dsu_none_ctx *ctx;
+	ctx = malloc(sizeof(*ctx));
+	err1(!ctx);
+	ctx->fd = fd;
+	return ctx;
+err:
+	if (ctx) free(ctx);
+	return 0;
+}
+
+static int dsu_none_read(void *ctx_, char *buf, int *len)
+{
+	dsu_none_ctx *ctx = ctx_;
+	err1(ctx->fd == -1);
+	ssize_t got = read(ctx->fd, buf, *len);
+	err1(got == -1);
+	*len = got;
+	return 0;
+err:
+	if (ctx->fd != -1) {
+		close(ctx->fd);
+		ctx->fd = -1;
+	}
+	return 1;
+}
+
+static void dsu_none_read_close(void *ctx_)
+{
+	dsu_none_ctx *ctx = ctx_;
+	if (ctx->fd != -1) close(ctx->fd);
+	free(ctx);
+}
+
+static void *dsu_none_write_open(int fd)
+{
+	return dsu_none_read_open(fd, 0);
+}
+
+static int dsu_none_write_close(void *ctx_)
+{
+	dsu_none_ctx *ctx = ctx_;
+	int fd = ctx->fd;
+	free(ctx);
+	return close(fd);
+}
+
+static int dsu_none_write(void *ctx_, const char *buf, int len)
+{
+	dsu_none_ctx *ctx = ctx_;
+	err1(ctx->fd == -1);
+	int wrote = write(ctx->fd, buf, len);
+	err1(wrote != len);
+	return 0;
+err:
+	if (ctx->fd != -1) {
+		close(ctx->fd);
+		ctx->fd = -1;
+	}
+	return 1;
+}
+
+static const dsu_compressor dsu_none = {
+	dsu_none_read,
+	dsu_none_write,
+	dsu_none_read_open,
+	dsu_none_write_open,
+	dsu_none_read_close,
+	dsu_none_write_close,
+};
+
+
 typedef struct read {
 	PyObject_HEAD
 	char *name;
@@ -2154,8 +2231,11 @@ __attribute__ ((visibility("default"))) PyMODINIT_FUNC INITFUNC(void)
 	INIT(WriteParsedBits32);
 	compression_dict = PyDict_New();
 	if (!compression_dict) return INITERR;
+	compression_funcs[0] = &dsu_none;
+	compression_names[0] = PyUnicode_FromString("none");
 	compression_funcs[1] = &dsu_gz;
 	compression_names[1] = PyUnicode_FromString("gzip");
+	if (PyDict_SetItem(compression_dict, compression_names[0], PyInt_FromLong(0))) return INITERR;
 	if (PyDict_SetItem(compression_dict, compression_names[1], PyInt_FromLong(1))) return INITERR;
 #if PY_MAJOR_VERSION >= 3
 	return m;
