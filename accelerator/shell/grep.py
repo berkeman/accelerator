@@ -1,7 +1,7 @@
 ############################################################################
 #                                                                          #
 # Copyright (c) 2017 eBay Inc.                                             #
-# Modifications copyright (c) 2019-2020 Carl Drougge                       #
+# Modifications copyright (c) 2019-2021 Carl Drougge                       #
 # Modifications copyright (c) 2020 Anders Berkeman                         #
 #                                                                          #
 # Licensed under the Apache License, Version 2.0 (the "License");          #
@@ -102,18 +102,18 @@ def main(argv, cfg):
 
 	def grep(ds, sliceno):
 		# Use bytes for everything if anything is bytes, str otherwise. (For speed.)
-		if any(ds.columns[col].backing_type == 'bytes' for col in (grep_columns or columns or ds.columns)):
+		if any(ds.columns[col].type == 'bytes' for col in (grep_columns or columns or ds.columns)):
 			def strbytes(v):
 				return str(v).encode('utf-8', 'replace')
 			def mk_iter(col):
-				if ds.columns[col].backing_type in ('bytes', 'unicode', 'ascii',):
+				if ds.columns[col].type in ('bytes', 'unicode', 'ascii',):
 					return ds._column_iterator(sliceno, col, _type='bytes')
 				else:
 					return imap(strbytes, ds._column_iterator(sliceno, col))
 			chk = pat_b.search
 		else:
 			def mk_iter(col):
-				if ds.columns[col].backing_type in ('unicode', 'ascii',):
+				if ds.columns[col].type in ('unicode', 'ascii',):
 					return ds._column_iterator(sliceno, col, _type='unicode')
 				else:
 					return imap(str, ds._column_iterator(sliceno, col))
