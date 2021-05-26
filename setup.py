@@ -93,28 +93,30 @@ def mk_file(fn, contents):
 			fh.write(contents.encode('utf-8'))
 	return fn
 
+ext_modules = []
+
 def mk_ext(name, *sources):
 	zlib = os.environ.get('ACCELERATOR_BUILD_STATIC_ZLIB')
 	if zlib:
 		kw = dict(extra_objects=[zlib])
 	else:
 		kw = dict(libraries=['z'])
-	return Extension(
+	ext_modules.append(Extension(
 		name,
 		sources=list(sources),
 		extra_compile_args=['-std=c99', '-O3', '-fvisibility=hidden'],
 		**kw
-	)
+	))
 
-dsutilmodule = mk_ext('accelerator.dsutil', 'dsutil/siphash24.c', 'dsutil/dsutilmodule.c')
+mk_ext('accelerator.dsutil', 'dsutil/siphash24.c', 'dsutil/dsutilmodule.c')
 
 def method_mod(name):
 	code = import_module('accelerator.standard_methods.' + name).c_module_code
 	fn = 'accelerator/standard_methods/_generated_' + name + '.c'
 	return mk_ext('accelerator.standard_methods._' + name, mk_file(fn, code))
 
-dataset_typemodule = method_mod('dataset_type')
-csvimportmodule = method_mod('csvimport')
+method_mod('dataset_type')
+method_mod('csvimport')
 
 setup(
 	name="accelerator",
@@ -136,7 +138,7 @@ setup(
 	],
 	python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4",
 
-	ext_modules=[dsutilmodule, dataset_typemodule, csvimportmodule],
+	ext_modules=ext_modules,
 
 	package_data={
 		'': ['*.txt', 'methods.conf', 'board/*.tpl'],
