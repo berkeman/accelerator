@@ -95,12 +95,14 @@ def mk_file(fn, contents):
 
 ext_modules = []
 
-def mk_ext(name, *sources):
+def zlib():
 	zlib = os.environ.get('ACCELERATOR_BUILD_STATIC_ZLIB')
 	if zlib:
-		kw = dict(extra_objects=[zlib])
+		return dict(extra_objects=[zlib])
 	else:
-		kw = dict(libraries=['z'])
+		return dict(libraries=['z'])
+
+def mk_ext(name, *sources, **kw):
 	ext_modules.append(Extension(
 		name,
 		sources=list(sources),
@@ -108,15 +110,30 @@ def mk_ext(name, *sources):
 		**kw
 	))
 
-mk_ext('accelerator.dsutil', 'dsutil/siphash24.c', 'dsutil/dsutilmodule.c')
+mk_ext(
+	'accelerator.dsutil',
+	'dsutil/siphash24.c', 'dsutil/dsutilmodule.c',
+	depends=['dsutil/dsu.h'],
+)
 
 def method_mod(name):
 	code = import_module('accelerator.standard_methods.' + name).c_module_code
 	fn = 'accelerator/standard_methods/_generated_' + name + '.c'
-	return mk_ext('accelerator.standard_methods._' + name, mk_file(fn, code))
+	return mk_ext('accelerator.standard_methods._' + name, mk_file(fn, code), **zlib())
 
 method_mod('dataset_type')
 method_mod('csvimport')
+
+def mk_compressor(name, **kw):
+	mk_ext(
+		'accelerator._compressor_' + name,
+		'dsutil/compressor_' + name + '.c',
+		depends=['dsutil/dsu.h', 'dsutil/dsu_common.h'],
+		**kw
+	)
+
+mk_compressor('none')
+mk_compressor('gzip', **zlib())
 
 setup(
 	name="accelerator",

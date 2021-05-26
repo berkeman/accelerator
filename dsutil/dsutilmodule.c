@@ -21,7 +21,6 @@
 #include <datetime.h>
 #include <structmember.h>
 
-#include <zlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdint.h>
@@ -31,6 +30,7 @@
 #include <sys/stat.h>
 #include <sys/fcntl.h>
 
+#include "dsu.h"
 
 // Choose some python number functions based on the size of long.
 #if LONG_MAX == INT64_MAX
@@ -67,185 +67,6 @@
 #define MAX_COMPRESSIONS 2
 
 #define err1(v) if (v) goto err
-
-typedef struct dsu_compressor {
-	int (*read)(void *ctx, char *buf, int *len);
-	int (*write)(void *ctx, const char *buf, int len);
-	void *(*read_open)(int fd, Py_ssize_t size_hint);
-	void *(*write_open)(int fd);
-	void (*read_close)(void *ctx);
-	int (*write_close)(void *ctx);
-} dsu_compressor;
-
-typedef struct dsu_gz_ctx {
-	gzFile fh;
-} dsu_gz_ctx;
-
-static void *dsu_gz_read_open(int fd, Py_ssize_t size_hint)
-{
-	dsu_gz_ctx *ctx;
-	ctx = malloc(sizeof(*ctx));
-	err1(!ctx);
-	ctx->fh = gzdopen(fd, "rb");
-	if (size_hint >= 0 && size_hint < 400000) {
-		gzbuffer(ctx->fh, 16 * 1024);
-	} else {
-		gzbuffer(ctx->fh, 64 * 1024);
-	}
-	err1(!ctx->fh);
-	return ctx;
-err:
-	if (ctx) free(ctx);
-	return 0;
-}
-
-static int dsu_gz_read(void *ctx_, char *buf, int *len)
-{
-	dsu_gz_ctx *ctx = ctx_;
-	err1(!ctx->fh);
-	int got = gzread(ctx->fh, buf, *len);
-	err1(got == -1);
-	*len = got;
-	return 0;
-err:
-	if (ctx->fh) {
-		gzclose(ctx->fh);
-		ctx->fh = 0;
-	}
-	return 1;
-}
-
-static void dsu_gz_read_close(void *ctx_)
-{
-	dsu_gz_ctx *ctx = ctx_;
-	if (ctx->fh) gzclose(ctx->fh);
-	free(ctx);
-}
-
-static void *dsu_gz_write_open(int fd)
-{
-	dsu_gz_ctx *ctx;
-	ctx = malloc(sizeof(*ctx));
-	err1(!ctx);
-	ctx->fh = gzdopen(fd, "wb");
-	err1(!ctx->fh);
-	return ctx;
-err:
-	if (ctx) free(ctx);
-	return 0;
-}
-
-static int dsu_gz_write_close(void *ctx_)
-{
-	int res = 1;
-	dsu_gz_ctx *ctx = ctx_;
-	err1(!ctx->fh);
-	res = gzclose(ctx->fh);
-err:
-	free(ctx);
-	return res;
-}
-
-static int dsu_gz_write(void *ctx_, const char *buf, int len)
-{
-	dsu_gz_ctx *ctx = ctx_;
-	err1(!ctx->fh);
-	int wrote = gzwrite(ctx->fh, buf, len);
-	err1(wrote != len);
-	return 0;
-err:
-	if (ctx->fh) {
-		gzclose(ctx->fh);
-		ctx->fh = 0;
-	}
-	return 1;
-}
-
-static const dsu_compressor dsu_gz = {
-	dsu_gz_read,
-	dsu_gz_write,
-	dsu_gz_read_open,
-	dsu_gz_write_open,
-	dsu_gz_read_close,
-	dsu_gz_write_close,
-};
-
-
-typedef struct dsu_none_ctx {
-	int fd;
-} dsu_none_ctx;
-
-static void *dsu_none_read_open(int fd, Py_ssize_t size_hint)
-{
-	dsu_none_ctx *ctx;
-	ctx = malloc(sizeof(*ctx));
-	err1(!ctx);
-	ctx->fd = fd;
-	return ctx;
-err:
-	if (ctx) free(ctx);
-	return 0;
-}
-
-static int dsu_none_read(void *ctx_, char *buf, int *len)
-{
-	dsu_none_ctx *ctx = ctx_;
-	err1(ctx->fd == -1);
-	ssize_t got = read(ctx->fd, buf, *len);
-	err1(got == -1);
-	*len = got;
-	return 0;
-err:
-	if (ctx->fd != -1) {
-		close(ctx->fd);
-		ctx->fd = -1;
-	}
-	return 1;
-}
-
-static void dsu_none_read_close(void *ctx_)
-{
-	dsu_none_ctx *ctx = ctx_;
-	if (ctx->fd != -1) close(ctx->fd);
-	free(ctx);
-}
-
-static void *dsu_none_write_open(int fd)
-{
-	return dsu_none_read_open(fd, 0);
-}
-
-static int dsu_none_write_close(void *ctx_)
-{
-	dsu_none_ctx *ctx = ctx_;
-	int fd = ctx->fd;
-	free(ctx);
-	return close(fd);
-}
-
-static int dsu_none_write(void *ctx_, const char *buf, int len)
-{
-	dsu_none_ctx *ctx = ctx_;
-	err1(ctx->fd == -1);
-	int wrote = write(ctx->fd, buf, len);
-	err1(wrote != len);
-	return 0;
-err:
-	if (ctx->fd != -1) {
-		close(ctx->fd);
-		ctx->fd = -1;
-	}
-	return 1;
-}
-
-static const dsu_compressor dsu_none = {
-	dsu_none_read,
-	dsu_none_write,
-	dsu_none_read_open,
-	dsu_none_write_open,
-	dsu_none_read_close,
-	dsu_none_write_close,
-};
 
 
 typedef struct read {
@@ -399,17 +220,27 @@ static int parse_hashfilter(PyObject *hashfilter, PyObject **r_hashfilter, unsig
 }
 
 static PyObject *compression_dict = 0;
-static PyObject *compression_names[MAX_COMPRESSIONS] = {0};
 static const dsu_compressor *compression_funcs[MAX_COMPRESSIONS] = {0};
 
 static int parse_compression(PyObject *compression)
 {
-	if (!compression) return 1; // default to gzip for backwards compatibility
+	PyObject *fallback = 0;
+	if (!compression) {
+		// default to gzip for backwards compatibility
+		fallback = PyUnicode_FromString("gzip");
+		compression = fallback;
+	}
 	PyObject *v = PyDict_GetItem(compression_dict, compression);
 	if (!v) {
-		PyErr_Format(PyExc_ValueError, "Unknown compression %R", compression);
+		if (PyDict_Size(compression_dict)) {
+			PyErr_Format(PyExc_ValueError, "Unknown compression %R", compression);
+		} else {
+			PyErr_SetString(PyExc_RuntimeError, "No compressors are available, how did that happen?");
+		}
+		Py_XDECREF(fallback);
 		return -1;
 	}
+	Py_XDECREF(fallback);
 	return PyInt_AsLong(v);
 }
 
@@ -1100,7 +931,7 @@ static int Write_parse_compression(Write *self, PyObject *compression)
 	int idx = parse_compression(compression);
 	if (idx == -1) return 1;
 	self->compressor = compression_funcs[idx];
-	self->compression = compression_names[idx];
+	self->compression = self->compressor->name;
 	Py_INCREF(self->compression);
 	return 0;
 }
@@ -2114,9 +1945,34 @@ static PyObject *siphash24(PyObject *dummy, PyObject *args)
 	return pyInt_FromU64(res);
 }
 
+static PyObject *add_compressor(PyObject *dummy, PyObject *args)
+{
+	PyObject *capsule = 0;
+	PyObject *name = 0;
+	if (!PyArg_ParseTuple(args, "OO", &capsule, &name)) return 0;
+	const char *c_name;
+#if PY_MAJOR_VERSION < 3
+	c_name = PyBytes_AsString(name);
+#else
+	c_name = PyUnicode_AsUTF8(name);
+#endif
+	if (!c_name) return 0;
+	dsu_compressor *dsu = PyCapsule_GetPointer(capsule, c_name);
+	if (!dsu) return 0;
+	if (dsu->magic != DSU_MAGIC) {
+		PyErr_Format(PyExc_RuntimeError, "%S is a bad compressor capsule", name);
+		return 0;
+	}
+	long pos = PyDict_Size(compression_dict);
+	compression_funcs[pos] = dsu;
+	if (PyDict_SetItem(compression_dict, dsu->name, PyInt_FromLong(pos))) return 0;
+	Py_RETURN_NONE;
+}
+
 static PyMethodDef module_methods[] = {
 	{"hash", generic_hash, METH_O, "hash(v) - The hash a writer for type(v) would have used to slice v"},
 	{"siphash24", siphash24, METH_VARARGS, "siphash24(v, k=...) - SipHash-2-4 of v, defaults to the same k as the slicing hash"},
+	{"_add_compressor", add_compressor, METH_VARARGS, 0},
 	{0}
 };
 
@@ -2231,12 +2087,6 @@ __attribute__ ((visibility("default"))) PyMODINIT_FUNC INITFUNC(void)
 	INIT(WriteParsedBits32);
 	compression_dict = PyDict_New();
 	if (!compression_dict) return INITERR;
-	compression_funcs[0] = &dsu_none;
-	compression_names[0] = PyUnicode_FromString("none");
-	compression_funcs[1] = &dsu_gz;
-	compression_names[1] = PyUnicode_FromString("gzip");
-	if (PyDict_SetItem(compression_dict, compression_names[0], PyInt_FromLong(0))) return INITERR;
-	if (PyDict_SetItem(compression_dict, compression_names[1], PyInt_FromLong(1))) return INITERR;
 #if PY_MAJOR_VERSION >= 3
 	return m;
 #endif

@@ -11,6 +11,6 @@ root = true
 	tab_width = 4
 	trim_trailing_whitespace = true
 
-[*.c]
+[*.{c,h}]
 	tab_width = 8
 	trim_trailing_whitespace = true

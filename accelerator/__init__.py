@@ -20,8 +20,8 @@ try:
 	# setup.py needs to import some things, let's not break that.
 	# When adding types to dsutil switch this to one of those
 	# (to make building with a previous version installed work).
-	from .dsutil import ReadComplex64
-	del ReadComplex64
+	from .dsutil import _add_compressor
+	del _add_compressor
 	before_install = False
 except ImportError:
 	before_install = True
@@ -63,5 +63,17 @@ if not before_install:
 	from .subjobs import build
 	__all__.extend((build,))
 	__all__ = [k for k, v in locals().items() if v in __all__]
+	def add_compressors():
+		from importlib import import_module
+		from .dsutil import _add_compressor
+		for name in ("none", "gzip",):
+			name = 'accelerator._compressor_' + name
+			try:
+				mod = import_module(name)
+			except ImportError:
+				continue
+			_add_compressor(mod.capsule, name + '.capsule')
+	add_compressors()
+	del add_compressors
 
 del before_install
