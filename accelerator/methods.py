@@ -24,6 +24,7 @@ from __future__ import division
 import os
 import sys
 import datetime
+from glob import glob
 from collections import defaultdict
 from importlib import import_module
 
@@ -249,14 +250,24 @@ def options2typing(method, options):
 
 def read_methods_conf(dirname, autodiscover):
 	""" read and parse the methods.conf file """
-	filename = os.path.join(dirname, 'methods.conf')
 	db = {}
+	if autodiscover:
+		methods = glob(os.path.join(dirname, 'a_*.py'))
+		for method in methods:
+			if method not in db:
+				db[os.path.basename(method)[2:-3]] = DotDict(version='DEFAULT')
+	filename = os.path.join(dirname, 'methods.conf')
+	if autodiscover and not os.path.exists(filename):
+		return db
 	with open(filename) as fh:
 		for lineno, line in enumerate(fh, 1):
 			data = line.split('#')[0].split()
 			if not data:
 				continue
 			method = data.pop(0)
+			if autodiscover and (method not in db):
+				# in auto-discover, anything in methods.conf goes
+				continue
 			try:
 				version = data.pop(0)
 			except IndexError:
