@@ -50,7 +50,7 @@ class Methods(object):
 		self.db = {}
 		for package, autodiscover in package_list.items():
 			package_dir = self._check_package(package)
-			db_ = read_method_conf(package_dir)
+			db_ = read_methods_conf(package_dir, autodiscover)
 			for method, meta in db_.items():
 				if method in self.db:
 					raise Exception("Method \"%s\" defined both in \"%s\" and \"%s\"!" % (
@@ -247,7 +247,7 @@ def options2typing(method, options):
 	return sorted(([k[1:], v] for k, v in iteritems(res) if v), key=lambda i: -len(i[0]))
 
 
-def read_method_conf(dirname):
+def read_methods_conf(dirname, autodiscover):
 	""" read and parse the methods.conf file """
 	filename = os.path.join(dirname, 'methods.conf')
 	db = {}
