@@ -48,7 +48,7 @@ class Methods(object):
 		package_list = server_config['method_directories']
 		# read all methods
 		self.db = {}
-		for package in package_list:
+		for package, autodiscover in package_list.items():
 			package_dir = self._check_package(package)
 			db_ = read_method_conf(package_dir)
 			for method, meta in db_.items():

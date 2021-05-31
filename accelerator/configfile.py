@@ -235,6 +235,7 @@ def load_config(filename):
 		else:
 			res.urd_local, res.urd_listen, res.urd = False, None, None
 		res.board_listen, _ = fixup_listen(res.project_directory, res.get('board_listen', ('.socket.dir/board', None)))
+		res.method_directories = dict(res.method_directories)
 	except _E as e:
 		if lineno[0] is None:
 			prefix = 'Error in %s:\n' % (filename,)
