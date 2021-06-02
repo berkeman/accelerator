@@ -62,13 +62,16 @@ def main(argv, cfg):
 		# no args => list everything in short format
 		args.string = sorted(x + '.' for x in allscripts)
 		args.list = True
+	alreadyprinted = set()
 	for arg in args.string:
 		lastpack = None
 		for package, name2desc in sorted(allscripts.items()):
 			for name, desc in sorted(name2desc.items()):
 				key = '.'.join((package, name))
 				if arg in key:
-					if lastpack != package:
-						print(package)
-						lastpack = package
-					printdesc(name, desc, columns)
+					if key not in alreadyprinted:
+						if lastpack != package:
+							print(package)
+							lastpack = package
+						printdesc(name, desc, columns)
+						alreadyprinted.add(key)
