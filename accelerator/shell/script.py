@@ -25,23 +25,22 @@ from glob import glob
 from os.path import join, dirname, basename
 from importlib import import_module
 from collections import defaultdict
+from argparse import RawTextHelpFormatter
 from . import printdesc
-from accelerator.compat import terminal_size
+from accelerator.compat import terminal_size, ArgumentParser
 
 
 def main(argv, cfg):
-	prog = argv.pop(0)
-	if '--help' in argv or '-h' in argv:
-		fh = sys.stdout if argv else sys.stderr
-		print('usage: %s [script|package.script]' % (prog,), file=fh)
-		print('gives description for build script, or list build scripts.', file=fh)
-		print(file=fh)
-		print('examples:', file=fh)
-		print('  "%s dev"       - dev is a package, not a script.  This returns nothing' % (prog,), file=fh)
-		print('  "%s dev."      - print description for "dev.build"' % (prog,), file=fh)
-		print('  "%s foo"       - print description for first "build_foo" in package prio order' % (prog,), file=fh)
-		print('  "%s import.foo - print description for "import.build_foo"' % (prog,), file=fh)
-		return
+	descr = "gives description for build script, or list build scripts."
+	parser = ArgumentParser(
+		prog=argv.pop(0),
+		description=descr,
+		formatter_class=RawTextHelpFormatter,
+	)
+	group = parser.add_mutually_exclusive_group()
+	group.add_argument('-l', '--list', action='store_true', help='short listing')
+	parser.add_argument('string', nargs='*', default=[], help='substring used for matching')
+	args = parser.parse_intermixed_args(argv)
 	columns = terminal_size().columns
 
 	allscripts = defaultdict(dict)
@@ -59,26 +58,17 @@ def main(argv, cfg):
 				continue
 			allscripts[package][name] = getattr(module, 'description', '').strip('\n').rstrip('\n')
 
-	if not argv:
-		argv = sorted(x + '.' for x in allscripts)
-	for arg in argv:
-		if '.' in arg:
-			argpack, argname = arg.rsplit('.', 1)
-			if not argname:
-				print(argpack)
-				for name, desc in sorted(allscripts.get(argpack, {}).items()):
-					printdesc(argpack + '.' + name, desc, columns)
-				continue
-		else:
-			argpack, argname = None, arg
+	if not args.string:
+		# no args => list everything in short format
+		args.string = sorted(x + '.' for x in allscripts)
+		args.list = True
+	for arg in args.string:
 		lastpack = None
 		for package, name2desc in sorted(allscripts.items()):
-			#print(argpack, argname, package, name2desc)
-			if (argpack and (argpack == package)) or (not argpack):
-				for name, desc in sorted(name2desc.items()):
-					if '_' in name and argname in name.split('_', 1)[1]:
-						if lastpack != package:
-							print(package)
-							lastpack = package
-						printdesc(package + '.' + name, desc, columns)
-#				printdesc("%s.%s" % (package, argname), description, columns, indent=0)
+			for name, desc in sorted(name2desc.items()):
+				key = '.'.join((package, name))
+				if arg in key:
+					if lastpack != package:
+						print(package)
+						lastpack = package
+					printdesc(name, desc, columns)
