@@ -5,8 +5,10 @@ def main(urd):
 	print('\n# Run method "example1"')
 	urd.build('example1')
 
-	print('\n# Run method "example1" again, load and print returned value')
+	print('\n# Run method "example1" again')
 	job = urd.build('example1')
+
+	print('\n# Load and print returned value')
 	result = job.load()
 	print(result)
 

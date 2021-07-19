@@ -1,13 +1,17 @@
 description = "Jobs: Build a job, load its returned value."
 
-def main(urd):
 
-	print('\n# Run method "example1"')
+def colorstring(s):
+	return "\033[34m" + s + "\033[0m"
+
+
+def main(urd):
+	print(colorstring('\n# Run method "example1"'))
 	urd.build('example1')
 
-	print('\n# Run method "example1" again, load and print returned value')
+	print(colorstring('\n# Run method "example1" again'))
 	job = urd.build('example1')
 
-	print('\n# Load and print the job\'s return value')
+	print(colorstring('\n# Load and print the job\'s return value'))
 	result = job.load()
 	print(result)

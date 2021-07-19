@@ -1,27 +1,36 @@
 description = "Jobs: sliced files, stdout and stderror, load any file from a job, jobwithfile"
 
-# Splitta denna i fler exempel
+
+def colorstring(s):
+	return "\033[34m" + s + "\033[0m"
+
+
+# @@@@@@@@@@@ Splitta denna i fler exempel
 
 def main(urd):
-	print('\n# This job writes sliced files in "myfile1", and a single file')
-	print('# "myfile2"')
+	print(colorstring('\n# This job writes sliced files in "myfile1", and a single file'))
+	print(colorstring('# "myfile2"'))
 	job1 = urd.build('example4')
 
-	print('\n# This job reads the sliced and the single file and prints its')
-	print('# contents to stdout')
+	print(colorstring('\n# These are the files created by / residing in job %s.' % (job1,)))
+	print(job1.files())
+
+	print(colorstring('\n# This job reads the sliced and the single file and prints its'))
+	print(colorstring('# contents to stdout'))
 	job2 = urd.build('example5',
 					 firstfile=job1.withfile('myfile1', sliced=True),
 					 secondfile=job1.withfile('myfile2'),
 	)
 
-	print('\n# Read and print stored stdout for synthesis')
+	print(colorstring('\n# Read and print stored stdout from %s synthesis') % (job2,))
 	print(job2.output('synthesis'))
-	print('\n# Read and print stored stdout for everything')
+	print(colorstring('# Read and print stored stdout from %s everything') % (job2,))
 	print(job2.output())
-	print('\n# Read and print stored stdout for analysis process 2')
+	print(colorstring('# Read and print stored stdout from %s analysis process 2') % (job2,))
 	print(job2.output(2))
 
-	print('\n# We can also use job.open() to get a file handler.')
+	print(colorstring('# We can also use job.open() to get a file handler and do any'))
+	print(colorstring('kind of file operations.'))
 	with job1.open('myfile2', 'rb') as fh:
 		import pickle
-		print('x', pickle.load(fh), 'x')
+		print(pickle.load(fh))

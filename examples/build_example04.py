@@ -1,11 +1,17 @@
-description = "Jobs: Subjob"
-
 from accelerator import Job
 
+
+description = "Jobs: Subjob"
+
+
+def colorstring(s):
+	return "\033[34m" + s + "\033[0m"
+
+
 def main(urd):
-	print('\n# This job will execute a subjob')
+	print(colorstring('\n# This job will execute a subjob'))
 	job = urd.build('example6')
 
-	print('\n# Print subjob info')
+	print(colorstring('\n# Print subjob info'))
 	for job in job.post.subjobs:
-		print('subjob', job, Job(job).method)
+		print('subjob', dict(job=job, method=Job(job).method))
