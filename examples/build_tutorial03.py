@@ -46,7 +46,7 @@ def main(urd):
 
 	colorprint('\nThis is a small example, so we can print all of it using')
 	print('    ax cat -c %s' % (imp,))
-	
+
 	colorprint('\nThe point of chaining is that it allows datasets to grow in')
 	colorprint('number of rows, with linear time complexity, without changing')
 	colorprint('any existing processing state.  This means that we can add')
