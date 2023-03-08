@@ -35,6 +35,7 @@ from accelerator import workspace
 from accelerator import database
 from accelerator import methods
 from accelerator.colourwrapper import colour
+from accelerator.compat import FileNotFoundError
 from accelerator.setupfile import update_setup
 from accelerator.job import WORKDIRS, Job
 from accelerator.extras import json_save, DotDict
@@ -186,7 +187,10 @@ class Main:
 		if not self.keep_temp_files:
 			for filename, temp in list(files.items()):
 				if temp:
-					unlink(join(prefix, filename))
+					try:
+						unlink(join(prefix, filename))
+					except FileNotFoundError:
+						pass
 					del files[filename]
 		prof.update(new_prof)
 		prof.total = 0
