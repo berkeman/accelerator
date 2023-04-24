@@ -104,6 +104,7 @@ def show(url, job, verbose, show_output):
 	out = job.output('parts')
 	if show_output:
 		if out:
+			print(colour('output:', 'job/header'))
 			show_output_d(out, verbose)
 		else:
 			print(job, 'produced no output')
