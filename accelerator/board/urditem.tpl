@@ -1,6 +1,14 @@
 {{ ! template('head', title=key) }}
 
-	<h1>{{ key }}</h1>
+        <h1>{{ key }}</h1>
+
+        <h2>urd item graph</h2>
+        <iframe
+            src="{{ "/" + pyvisname }}"
+            height="500"
+            width="100%"
+        ></iframe> 
+
 	<table class="urd-table">
 		% for thing in ('timestamp', 'user', 'build', 'caption',):
 			<tr><td>{{ thing }}</td><td>{{ entry.pop(thing) }}</td></tr>
@@ -22,7 +30,7 @@
 				</ol>
 			% end
 		</td></tr>
-		<tr><td>joblist</td><td>
+                <tr><td>joblist</td><td>
 			<ol>
 				% for method, job in entry.joblist:
 					<li>{{ method }} <a href="/job/{{ job }}">{{ job }}</a></li>

@@ -7,7 +7,14 @@
 	% end
 % end
 
-	<h1>{{ ds.job }}/{{ ds.name }}</h1>
+        <h2>dataset graph</h2>
+        <iframe
+            src="{{ "/" + pyvisname }}"
+            height="500"
+            width="100%"
+        ></iframe> 
+
+        <h1>{{ ds.job }}/{{ ds.name }}</h1>
 	<table>
 		% tdif('job', ds.job)
 		% tdif('method', ds.job.method)

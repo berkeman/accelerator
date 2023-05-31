@@ -25,7 +25,15 @@
 	% elif not current:
 		<div class="warning">Job is not current.</div>
 	% end
-	<h2>setup</h2>
+
+        <h2>job graph</h2>
+        <iframe
+            src="{{ "/" + pyvisname }}"
+            height="500"
+            width="100%"
+        ></iframe> 
+
+        <h2>setup</h2>
 	<div class="box">
 		<a href="/method/{{ params.method }}">{{ params.package }}.{{ params.method }}</a><br>
 		<a href="/job/{{ job }}/method.tar.gz/">Source</a>
