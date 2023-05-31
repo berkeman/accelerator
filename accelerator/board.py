@@ -340,7 +340,7 @@ def run(cfg, from_shell=False):
 			current = False
 			files = None
 			subjobs = None
-		fname = graph_job(job)
+		fname, svgdata = graph_job(job)
 		return dict(
 			job=job,
 			aborted=aborted,
@@ -351,6 +351,7 @@ def run(cfg, from_shell=False):
 			subjobs=subjobs,
 			files=files,
 			pyvisname=fname,
+			svgdata=svgdata,
 		)
 
 	@bottle.get('/dataset/<dsid:path>')

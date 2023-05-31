@@ -27,11 +27,7 @@
 	% end
 
         <h2>job graph</h2>
-        <iframe
-            src="{{ "/" + pyvisname }}"
-            height="500"
-            width="100%"
-        ></iframe> 
+	{{! svgdata }}
 
         <h2>setup</h2>
 	<div class="box">

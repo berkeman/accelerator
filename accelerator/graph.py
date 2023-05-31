@@ -3,8 +3,10 @@ from math import sin
 from collections import defaultdict
 from accelerator import JobWithFile, Job
 from pyvis.network import Network
+from accelerator.svg import SVG
 
 MAXDEPTH = 1000
+
 
 
 def alljobdeps(job):
@@ -218,6 +220,7 @@ def ds(ds, recursiondepth=10):
 
 class graph():
 	def __init__(self):
+		self.svg = SVG()
 		self.net = Network(height="500px", width="100%", bgcolor="#ffffff", font_color="black", select_menu=False, directed=True, cdn_resources='remote')
 		self.net.toggle_physics(False)
 
@@ -295,12 +298,15 @@ class graph():
 				y = (ix - len(jobsatlevel) / 2) * 140 + sin(adjlev / 3) * 70
 				self.net.add_node(j, label=label, color=color, x=(xoffset + adjlev + 0.3 * sin(ix)) * 160, y=y, size=size, shape=shape, title=title)
 				# @@@@@@@@@@@ parent as a list is not tested at all!!!!!!!!!!!!!!!!!!!!!!!!
+				self.svg.node(j, text=label, color=color, x=(xoffset + adjlev + 0.3 * sin(ix)) * 160, y=y, size=size)
 
 	def insert_edges(self, edges):
 		for s, d in edges:
 			self.net.add_edge(s, d, width=3)
+			self.svg.arrow(s, d)
 
 	def write(self):
+		s = self.svg.getsvg()
 		filename = "results/pelle.html"
 		self.net.write_html(filename, notebook=False)
 		with open(filename, 'rb') as fh:
@@ -309,4 +315,4 @@ class graph():
 		newname = "results/" + md5(data).hexdigest() + ".html"
 		from os import rename
 		rename(filename, newname)
-		return newname
+		return newname, s
