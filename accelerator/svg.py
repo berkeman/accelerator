@@ -32,6 +32,7 @@ class SVG:
 		viewboxStartPosition.y = viewboxPosition.y;
 		window.addEventListener("mouseup", mouseup);
 		mouseDown = true;
+		e.preventDefault();
 	}
 	function setviewbox()
 	{
@@ -55,10 +56,12 @@ class SVG:
 			viewboxPosition.y = viewboxStartPosition.y + (mouseStartPosition.y - e.pageY) * viewboxScale;
 			setviewbox();
 		}
+		e.preventDefault();
 	}
 	function mouseup(e) {
 		window.removeEventListener("mouseup", mouseup);
 		mouseDown = false;
+		e.preventDefault();
 	}
 	function wheel(e) {
 		var scale = (e.deltaY < 0) ? 0.8 : 1.2;
@@ -72,7 +75,8 @@ class SVG:
 			viewboxScale *= scale;
 			setviewbox();
 		}
-	}
+		e.preventDefault();
+		}
 </script>
 """
 		self.s = ''
