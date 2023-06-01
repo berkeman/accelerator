@@ -3,7 +3,7 @@ from math import atan2, pi, cos, sin
 
 class SVG:
 	def __init__(self):
-		self.header ="""<svg id="pelle" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" width="100%" height="300px">
+		self.header ="""<svg id="pelle" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="%d %d %d %d" width="100%%" height="300px">
 <style>
 	.bar:hover {
 		fill: #ec008c;
@@ -17,8 +17,8 @@ class SVG:
 	var mouseStartPosition = {x: 0, y: 0};
 	var mousePosition = {x: 0, y: 0};
 	var viewboxStartPosition = {x: 0, y: 0};
-	var viewboxPosition = {x: 0, y: 0};
-	var viewboxSize = {x: 480, y: 480};
+	var viewboxPosition = {x: %d, y: %d};
+	var viewboxSize = {x: %d, y: %d};
 	var viewboxScale = 1.0;
 	var mouseDown = false;
 	shape.addEventListener("mousemove", mousemove);
@@ -110,5 +110,5 @@ class SVG:
 		py2 = y2 - arrowlen * sin(a - arrowangle)
 		self.s += '<line x1="{x1}" x2="{x2}" y1="{y1}" y2="{y2}" stroke="{s}" stroke-width="{sw}"/>\n'.format(x1=x2, x2=px2, y1=y2, y2=py2, s='black', sw=linewidth)
 
-	def getsvg(self):
-		return '\n'.join((self.header, self.s, self.footer))
+	def getsvg(self, bbox=(0,0,600,300)):
+		return '\n'.join((self.header % bbox, self.s, self.footer % bbox))
