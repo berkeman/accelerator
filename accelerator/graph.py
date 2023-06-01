@@ -2,7 +2,6 @@ from datetime import datetime
 from math import sin
 from collections import defaultdict
 from accelerator import JobWithFile, Job
-from pyvis.network import Network
 from accelerator.svg import SVG
 
 MAXDEPTH = 1000
@@ -221,8 +220,6 @@ def ds(ds, recursiondepth=10):
 class graph():
 	def __init__(self):
 		self.svg = SVG()
-		self.net = Network(height="500px", width="100%", bgcolor="#ffffff", font_color="black", select_menu=False, directed=True, cdn_resources='remote')
-		self.net.toggle_physics(False)
 		self.bbox = [None, None, None, None]
 	def insert_nodes(self, nodes, labelfun, xoffset, atmaxdepth, validjobset=None, job2urddep=None, jobnotds=True):
 		"""
@@ -297,7 +294,6 @@ class graph():
 					presentstuff(sorted(j.columns.items()), 'Columns')
 				x = (xoffset + adjlev + 0.3 * sin(ix)) * 160
 				y = (ix - len(jobsatlevel) / 2) * 140 + sin(adjlev / 3) * 70
-				self.net.add_node(j, label=label, color=color, x=x, y=y, size=size, shape=shape, title=title)
 				# @@@@@@@@@@@ dataset.parent as a list is not tested at all!!!!!!!!!!!!!!!!!!!!!!!!
 				self.svg.node(j, text=label, color=color, x=x, y=y, size=size)
 				for ix, (fun, var) in enumerate(((min, x), (max, x), (min, y), (max, y))):
@@ -305,22 +301,12 @@ class graph():
 
 	def insert_edges(self, edges):
 		for s, d in edges:
-			self.net.add_edge(s, d, width=3)
 			self.svg.arrow(s, d)
 
 	def write(self):
 		x1, x2, y1, y2 = self.bbox
 		dy = y2 - y1
 		if dy < 300:
-			print('dy', dy)
 			y1 = y1 - (300 - dy) // 2
 		s = self.svg.getsvg((-100 + x1, y1, 200 + x2 - x1, 300))
-		filename = "results/pelle.html"
-		self.net.write_html(filename, notebook=False)
-		with open(filename, 'rb') as fh:
-			data = fh.read()
-		from hashlib import md5
-		newname = "results/" + md5(data).hexdigest() + ".html"
-		from os import rename
-		rename(filename, newname)
-		return newname, s
+		return s

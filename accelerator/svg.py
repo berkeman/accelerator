@@ -44,7 +44,6 @@ class SVG:
 		vs.y = viewboxSize.y * viewboxScale;
 		shape = document.getElementById("pelle");
 		shape.setAttribute("viewBox", vp.x + " " + vp.y + " " + vs.x + " " + vs.y);
-		console.debug(viewboxSize)
 	}
 	function mousemove(e)
 	{

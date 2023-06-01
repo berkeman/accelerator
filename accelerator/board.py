@@ -340,7 +340,7 @@ def run(cfg, from_shell=False):
 			current = False
 			files = None
 			subjobs = None
-		fname, svgdata = graph_job(job)
+		svgdata = graph_job(job)
 		return dict(
 			job=job,
 			aborted=aborted,
@@ -350,7 +350,6 @@ def run(cfg, from_shell=False):
 			params=job.params,
 			subjobs=subjobs,
 			files=files,
-			pyvisname=fname,
 			svgdata=svgdata,
 		)
 
