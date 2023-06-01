@@ -212,7 +212,7 @@ def job(inputjob, recursiondepth=10):
 def ds(ds, recursiondepth=10):
 	g = graph()
 	nodes, edges, atmaxdepth = recurse_ds(ds, recursiondepth)
-	g.insert_nodes(nodes[0], lambda ds: ("%s (%s)\n%dx{:,d}" % (ds, ds.job.method, len(ds.columns))).format(sum(ds.lines)).replace(',', '.'), 0, atmaxdepth, jobnotds=False)
+	g.insert_nodes(nodes[0], lambda ds: ("%s\n%s\n%dx{:,d}" % (ds, ds.job.method, len(ds.columns))).format(sum(ds.lines)).replace(',', '.'), 0, atmaxdepth, jobnotds=False)
 	g.insert_edges(edges)
 	return g.write()
 
@@ -268,6 +268,8 @@ class graph():
 						title += '<br><b><font color="#ff0099">Reached recursion limit - no dependencies drawn!</font></b>'
 					if j.files() or j.datasets or j.post.subjobs:
 						title += '<br>'
+					if j.method == 'csvimport':
+						title += '<br><b>options.filename:</b> <i> %s </i><br>' % (j.params.options.filename,)
 					presentstuff(sorted(j.files()), 'Files')
 					presentstuff(sorted(j.datasets), 'Datasets')
 					presentstuff(sorted(j.post.subjobs), 'Subjobs')
@@ -295,7 +297,7 @@ class graph():
 				x = (xoffset + adjlev + 0.3 * sin(ix)) * 160
 				y = (ix - len(jobsatlevel) / 2) * 140 + sin(adjlev / 3) * 70
 				# @@@@@@@@@@@ dataset.parent as a list is not tested at all!!!!!!!!!!!!!!!!!!!!!!!!
-				self.svg.node(j, text=label, color=color, x=x, y=y, size=size)
+				self.svg.jobnode(j, text=label, color=color, x=x, y=y, size=size)
 				for ix, (fun, var) in enumerate(((min, x), (max, x), (min, y), (max, y))):
 					self.bbox[ix] = fun(self.bbox[ix] if not self.bbox[ix] is None else var, var)
 

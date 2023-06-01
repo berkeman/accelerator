@@ -3,11 +3,7 @@
         <h1>{{ key }}</h1>
 
         <h2>urd item graph</h2>
-        <iframe
-            src="{{ "/" + pyvisname }}"
-            height="500"
-            width="100%"
-        ></iframe> 
+	{{! svgdata }}
 
 	<table class="urd-table">
 		% for thing in ('timestamp', 'user', 'build', 'caption',):

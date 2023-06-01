@@ -371,8 +371,8 @@ def run(cfg, from_shell=False):
 			bottle.response.content_type = 'application/json; charset=UTF-8'
 			return json.dumps(res)
 		else:
-			fname = graph_ds(ds)
-			return dict(ds=ds, pyvisname=fname)
+			svgdata = graph_ds(ds)
+			return dict(ds=ds, svgdata=svgdata)
 
 	def load_workdir(jobs, name):
 		known = call_s('workdir', name)
@@ -445,8 +445,8 @@ def run(cfg, from_shell=False):
 	def urditem(user, build, ts):
 		key = user + '/' + build + '/' + ts
 		d = call_u(key)
-		fname = graph_jlist(d)
-		return dict(key=key, entry=d, pyvisname=fname)
+		svgdata = graph_jlist(d)
+		return dict(key=key, entry=d, svgdata=svgdata)
 
 	@bottle.error(500)
 	def error(e):
@@ -464,6 +464,7 @@ def run(cfg, from_shell=False):
 		kw = {'reloader': True}
 	else:
 		kw = {'quiet': True}
+	bottle.debug(True)
 	kw['server'] = WaitressServer
 	listen = cfg.board_listen
 	if isinstance(listen, tuple):

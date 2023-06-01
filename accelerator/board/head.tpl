@@ -437,6 +437,15 @@
 			position: absolute;
 			margin: 0;
 		}
+	    #jobpopup {
+	    position: absolute;
+	    display: none;
+	    border: 2px solid green;
+	    background: var(--bg0);
+	    }
+	    
+
+
 	</style>
 </head>
 <body{{ ! get('bodyclass', '') and ' class="' + bodyclass + '"' }}>

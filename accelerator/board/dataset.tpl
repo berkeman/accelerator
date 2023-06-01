@@ -7,13 +7,6 @@
 	% end
 % end
 
-        <h2>dataset graph</h2>
-        <iframe
-            src="{{ "/" + pyvisname }}"
-            height="500"
-            width="100%"
-        ></iframe> 
-
         <h1>{{ ds.job }}/{{ ds.name }}</h1>
 	<table>
 		% tdif('job', ds.job)
@@ -23,6 +16,10 @@
 		% tdif('previous', ds.previous)
 		% tdif('hashlabel', ds.hashlabel)
 	</table>
+
+	<h2>dataset graph</h2>
+	{{! svgdata }}
+
 	<h2>columns:</h2>
 	<table id="columns" class="ds-table">
 	<thead>

@@ -27,7 +27,19 @@
 	% end
 
         <h2>job graph</h2>
+	<div id="svgcontainer">
+	  <div id="jobpopup">
+	    <a id="jobid" href="pelle">kalle</a><br>
+	    <br><b>Files:</b><br>
+	    <ul id="files"></ul>
+	    <br><b>Datasets:</b><br>
+	    <ul id="datasets"></ul>
+	    <br><b>Subjobs:</b><br>
+	    <ul id="subjobs"></ul>
+	    <span id="message">hejsan <b>alla</b> glada  barn!</span>
+	  </div>
 	{{! svgdata }}
+	</div>
 
         <h2>setup</h2>
 	<div class="box">
