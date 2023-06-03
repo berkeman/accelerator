@@ -64,7 +64,7 @@
 			% end
 		</svg>
 		<script>
-		function createlist(items, location, tablelocation) {
+		function createlist(items, location, tablelocation, maxitems=5) {
 		  var thelist = document.querySelector(location);
 		  thelist.style = 'display:none';
 		  if (items.length) {
@@ -74,7 +74,6 @@
             thetable.innerHTML = '';
             ix = 0;
             for (const item of items) {
-              console.debug(item)
               var x = document.createElement("a");
               x.setAttribute("href", item);
               x.textContent = item;
@@ -82,8 +81,8 @@
               li.appendChild(x);
               thetable.appendChild(li);
               ix += 1;
-              if (items.length > 5 && ix === 5) {
-                var sublen = items.length - 5;
+              if (items.length > maxitems && ix === maxitems) {
+                var sublen = items.length - maxitems;
                 var x = document.createTextNode("... and ${sublen} more.");
                 var li = document.createElement("li");
                 li.appendChild(x);
@@ -105,12 +104,9 @@
 
 		  files = JSON.parse(files);
 		  createlist(files, '#files', '#filestable');
-		  console.debug('1', datasets);
 		  datasets = JSON.parse(datasets);
-		  console.debug('2', datasets);
 		  createlist(datasets, '#datasets', '#datasetstable');
 		  subjobs = JSON.parse(subjobs);
-		  console.debug('3', subjobs);
 		  createlist(subjobs, '#subjobs', '#subjobstable');
 		}
 		</script>
