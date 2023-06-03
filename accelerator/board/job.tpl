@@ -53,7 +53,7 @@
 		     width="100%%" height="300px">
 			% for item in svgdata['nodes'].values():
 				<circle class="bar" cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}" fill="{{item.color}}"/>
-				<circle class="bar" onclick="jobpopup(event, '{{escape(item.jobid)}}', '{{dumps(tuple(escape(x) for x in item.files))}}', '{{dumps(tuple(escape(x) for x in item.datasets))}}', '{{dumps(tuple(escape(x) for x in item.subjobs))}}')") cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}" fill="transparent" stroke="black" stroke_width="4"/>
+				<circle class="bar" onclick="jobpopup(event, '{{escape(item.jobid)}}', '{{dumps(item.files)}}', '{{dumps(item.datasets)}}', '{{dumps(item.subjobs)}}')") cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}" fill="transparent" stroke="black" stroke_width="4"/>
 				<text x="{{ item.x }}" y="{{ item.y + item.size + 15 }}" font-size="12" text-anchor="middle" fill="black">{{ item.jobid }}</text>
 				<text x="{{ item.x }}" y="{{ item.y + item.size + 30 }}" font-size="12" text-anchor="middle" fill="black">{{ item.method }}</text>
 			% end
