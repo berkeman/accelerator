@@ -1,6 +1,7 @@
 from math import atan2, pi, cos, sin
 from html import escape
 from json import dumps
+from accelerator import DotDict
 class SVG:
 	def __init__(self):
 		self.header ="""<svg id="pelle" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="%d %d %d %d" width="100%%" height="300px">
@@ -134,6 +135,8 @@ class SVG:
 """
 		self.s = ''
 		self.nodecoords = dict()
+		self.nodes = dict()
+		self.edges = set()
 
 	def node(self, id, x, y, text, size=30, color='magenta'):
 		self.nodecoords[id] = (x, y, size)
@@ -185,3 +188,36 @@ class SVG:
 
 	def getsvg(self, bbox=(0,0,600,300)):
 		return '\n'.join((self.header % bbox, self.s, self.footer % bbox))
+
+	def jobnode2(self, id, x, y, size=30, color='magenta'):
+		self.nodes[id] = DotDict(
+			jobid=str(id),
+			method=id.method,
+			files=sorted(id.files()),
+			datasets=id.datasets,
+			subjobs=id.post.subjobs,
+			x=x,
+			y=y,
+			size=size,
+			color='#ffffff', # @@@@@@@@@@@@
+		)
+
+	def arrow2(self, fromid, toid):
+		s = list()
+		arrowangle = pi / 6
+		arrowlen = 10
+		x1, y1, fromradius = self.nodecoords[fromid]
+		x2, y2, toradius = self.nodecoords[toid]
+		a = atan2(y2 - y1, x2 - x1)
+		x1 = x1 + fromradius * cos(a)
+		y1 = y1 + fromradius * sin(a)
+		x2 = x2 - toradius * cos(a)
+		y2 = y2 - toradius * sin(a)
+		s.append((x1, y1, x2, y2))
+		x1 = x2 - arrowlen * cos(a + arrowangle)
+		y1 = y2 - arrowlen * sin(a + arrowangle)
+		s.append((x1, y1, x2, y2))
+		x1 = x2 - arrowlen * cos(a - arrowangle)
+		y1 = y2 - arrowlen * sin(a - arrowangle)
+		s.append((x1, y1, x2, y2))
+		self.edges.add(tuple(s))

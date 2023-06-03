@@ -1,6 +1,9 @@
 {{ ! template('head', title=job) }}
 
 % from datetime import datetime
+% from math import sin, cos, pi, atan2
+% from html import escape
+% from json import dumps
 % def paramspart(name):
 	% thing = params.get(name)
 	% if thing:
@@ -26,22 +29,95 @@
 		<div class="warning">Job is not current.</div>
 	% end
 
-        <h2>job graph</h2>
+
+	<h2>job graph</h2>
 	<div id="svgcontainer">
-	  <div id="jobpopup">
-	    <a id="jobid" href="pelle">kalle</a><br>
-	    <br><b>Files:</b><br>
-	    <ul id="files"></ul>
-	    <br><b>Datasets:</b><br>
-	    <ul id="datasets"></ul>
-	    <br><b>Subjobs:</b><br>
-	    <ul id="subjobs"></ul>
-	    <span id="message">hejsan <b>alla</b> glada  barn!</span>
-	  </div>
-	{{! svgdata }}
+		<div id="jobpopup">
+			<a id="jobid" href="pelle">kalle</a><br>
+			<div id="files" style="display:none">
+				<br><b>Files:</b><br>
+				<ul id="filestable"></ul>
+			</div>
+			<div id="datasets" style="display:none">
+				<br><b>Datasets:</b><br>
+				<ul id="datasetstable"></ul>
+			</div>
+			<div id="subjobs" style="display:none">
+				<br><b>Subjobs:</b><br>
+				<ul id="subjobstable"></ul>
+			</div>
+			<span id="message">hejsan <b>alla</b> glada  barn!</span>
+		</div>
+		<svg id="jobgraph" version="1.1" xmlns="http://www.w3.org/2000/svg"
+		     viewBox="{{ ' '.join(str(x) for x in svgdata['bbox']) }}"
+		     width="100%%" height="300px">
+			% for item in svgdata['nodes'].values():
+				<circle class="bar" cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}" fill="{{item.color}}"/>
+				<circle class="bar" onclick="jobpopup(event, '{{escape(item.jobid)}}', '{{dumps(tuple(escape(x) for x in item.files))}}', '{{dumps(tuple(escape(x) for x in item.datasets))}}', '{{dumps(tuple(escape(x) for x in item.subjobs))}}')") cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}" fill="transparent" stroke="black" stroke_width="4"/>
+				<text x="{{ item.x }}" y="{{ item.y + item.size + 15 }}" font-size="12" text-anchor="middle" fill="black">{{ item.jobid }}</text>
+				<text x="{{ item.x }}" y="{{ item.y + item.size + 30 }}" font-size="12" text-anchor="middle" fill="black">{{ item.method }}</text>
+			% end
+			% for line in svgdata['edges']:
+				% for (x1, y1, x2, y2) in line:
+					<line x1="{{x1}}" x2="{{x2}}" y1="{{y1}}" y2="{{y2}}" stroke="black" stroke-width="2"/>
+				% end
+			% end
+		</svg>
+		<script>
+		function createlist(items, location, tablelocation) {
+		  var thelist = document.querySelector(location);
+		  thelist.style = 'display:none';
+		  if (items.length) {
+            console.debug(thelist, items, location, tablelocation);
+            thelist.style = 'display:block';
+            var thetable = document.querySelector(tablelocation);
+            thetable.innerHTML = '';
+            ix = 0;
+            for (const item of items) {
+              console.debug(item)
+              var x = document.createElement("a");
+              x.setAttribute("href", item);
+              x.textContent = item;
+              var li = document.createElement("li");
+              li.appendChild(x);
+              thetable.appendChild(li);
+              ix += 1;
+              if (items.length > 5 && ix === 5) {
+                var sublen = items.length - 5;
+                var x = document.createTextNode("... and ${sublen} more.");
+                var li = document.createElement("li");
+                li.appendChild(x);
+                thetable.appendChild(li);
+                break;
+              }
+            }
+		  }
+		}
+
+		function jobpopup(e, jobid, files, datasets, subjobs) {
+		  const popup = document.querySelector("#jobpopup");
+		  popup.style.display = 'block';
+		  //popup.style.top = e.clientY + 'px';
+		  popup.style.top = '100px';
+		  popup.style.left = e.clientX + 'px';
+		  popup.children["jobid"].textContent = jobid;
+		  popup.children["jobid"].setAttribute("href", "../job/" + jobid);
+
+		  files = JSON.parse(files);
+		  createlist(files, '#files', '#filestable');
+		  console.debug('1', datasets);
+		  datasets = JSON.parse(datasets);
+		  console.debug('2', datasets);
+		  createlist(datasets, '#datasets', '#datasetstable');
+		  subjobs = JSON.parse(subjobs);
+		  console.debug('3', subjobs);
+		  createlist(subjobs, '#subjobs', '#subjobstable');
+		}
+		</script>
 	</div>
 
-        <h2>setup</h2>
+
+	<h2>setup</h2>
 	<div class="box">
 		<a href="/method/{{ params.method }}">{{ params.package }}.{{ params.method }}</a><br>
 		<a href="/job/{{ job }}/method.tar.gz/">Source</a>

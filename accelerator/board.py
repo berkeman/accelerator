@@ -35,6 +35,7 @@ from accelerator.shell.parser import ArgumentParser
 from accelerator.shell.workdir import job_data, workdir_jids
 from accelerator.compat import setproctitle, url_quote, urlencode
 from accelerator import __version__ as ax_version
+from accelerator import DotDict
 
 from accelerator.graph import jlist as graph_jlist
 from accelerator.graph import job as graph_job
@@ -341,16 +342,17 @@ def run(cfg, from_shell=False):
 			files = None
 			subjobs = None
 		svgdata = graph_job(job)
+
 		return dict(
 			job=job,
 			aborted=aborted,
 			current=current,
 			output=os.path.exists(job.filename('OUTPUT')),
-			datasets=job.datasets,
 			params=job.params,
-			subjobs=subjobs,
 			files=files,
-			svgdata=svgdata,
+			datasets=job.datasets,
+			subjobs=subjobs,
+			svgdata=dict(nodes=svgdata[0], edges=svgdata[1], bbox=svgdata[2]),
 		)
 
 	@bottle.get('/dataset/<dsid:path>')
