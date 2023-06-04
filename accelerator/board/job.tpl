@@ -35,25 +35,59 @@
 	<h2>job graph</h2>
 	<div id="svgcontainer">
 		<style>
-		 nav ul{height:100px; min-height=50px; max-height=100%; width:100%;}
+		 nav ul{
+			 height:100px;
+			 min-height:50px;
+			 max-height:100%;
+			 width:100%;}
 		 nav ul{overflow:hidden; overflow-y:scroll;}
+		 .hovernode:hover {
+			 fill: #008cec;
+			 opacity: 1;
+		 }
+		 #filestable {
+			 list-style-type:none;
+			 padding: 0px 0px 0px 10px;
+		 }
+		 #datasetstable {
+			 list-style-type:none;
+			 margin: 0;
+			 padding: 10px;
+		 }
+		 #subjobstable {
+			 list-style-type:none;
+			 margin: 0;
+			 padding: 10px;
+		 }
+		 #files > h1 {
+			 font-size: 1.05em;
+			 margin-bottom:  0em;
+		 }
+		 #datasets > h1 {
+			 font-size: 1.05em;
+			 margin-bottom:  0em;
+		 }
+		 #subjobs > h1 {
+			 font-size: 1.05em;
+			 margin-bottom:  0em;
+		 }
 		</style>
 		<div id="jobpopup">
 			<a id="jobid" href="pelle">kalle</a>  (<a id="source" href="to_source">method</a>)<br>
 			<div id="files" style="display:none">
-				<br><b>Files:</b><br>
+				<br><h1>Files:</h1>
 				<nav>
 					<ul id="filestable"></ul>
 				</nav>
 			</div>
 			<div id="datasets" style="display:none">
-				<br><b>Datasets:</b><br>
+				<br><h1>Datasets:</h1>
 				<nav>
 					<ul id="datasetstable"></ul>
 				</nav>
 			</div>
 			<div id="subjobs" style="display:none">
-				<br><b>Subjobs:</b><br>
+				<br><h1>Subjobs:</h1>
 				<ul id="subjobstable"></ul>
 			</div>
 			<script>
@@ -88,11 +122,9 @@
 			 //		@@@ this is only for job graphs, urdlists and datasets remain
 			 //		@@@ string and variable concatenation to simplify "..and x more" and input args to populatelist.
 			 //		@@@ source link does not work (+method name shown with quotation marks, why?)
-			 //		@@@ shift and zoom
-			 //		@@@ remove menu on click elsewhere
 			 //		@@@ mark node while menu active  (kanske använda "this" som Carl pratade om)
 			 function jobpopup(e, jobid, files, datasets, subjobs, method) {
-				 console.log('method', method);
+				 console.debug(this);
 				 const popup = document.querySelector("#jobpopup");
 				 popup.style.display = 'block';
 				 //popup.style.top = e.clientY + 'px';
@@ -102,17 +134,14 @@
 				 popup.children["jobid"].setAttribute("href", "../job/" + jobid);
 				 popup.children["source"].textContent = method;
 				 popup.children["source"].setAttribute("href", "source_to_this_gz");
-
 				 files = JSON.parse(files);
 				 populatelist(files, '#files', '#filestable');
 				 datasets = JSON.parse(datasets);
 				 populatelist(datasets, '#datasets', '#datasetstable');
 				 subjobs = JSON.parse(subjobs);
-				 console.log(subjobs);
 				 populatelist(subjobs, '#subjobs', '#subjobstable');
 			 }
 			 function jobpopup_off(e, jobid, files, datasets, subjobs, method) {
-				 console.log('method', method);
 				 const popup = document.querySelector("#jobpopup");
 				 popup.style.display = 'none';
 			 }
@@ -124,7 +153,7 @@
 				 viewBox="{{ ' '.join(str(x) for x in svgdata['bbox']) }}"
 				 width="100%" height="300px">
 			% for item in svgdata['nodes'].values():
-				<circle class="bar" onclick="jobpopup(
+				<circle class="hovernode" onclick="jobpopup(
 				event,
 				'{{escape(item.jobid)}}',
 				'{{dumps(item.files)}}',
@@ -144,7 +173,6 @@
 		</svg>
 		<script>
 		 shape = document.querySelector('#jobgraph');
-		 console.log('shape', shape);
 		 var mouseStartPosition = {x: 0, y: 0};
 		 var mousePosition = {x: 0, y: 0};
 		 var viewboxStartPosition = {x: 0, y: 0};
@@ -173,7 +201,6 @@
 			 vs.x = viewboxSize.x * viewboxScale;
 			 vs.y = viewboxSize.y * viewboxScale;
 			 shape = document.querySelector('#jobgraph');
-			 console.log('setviewbox shape', shape);
 			 shape.setAttribute("viewBox", vp.x + " " + vp.y + " " + vs.x + " " + vs.y);
 		 }
 		 function mousemove(e) {
