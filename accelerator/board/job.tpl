@@ -30,84 +30,94 @@
 	% end
 
 
+
+
 	<h2>job graph</h2>
 	<div id="svgcontainer">
+		<style>
+		 nav ul{height:100px; min-height=50px; max-height=100%; width:100%;}
+		 nav ul{overflow:hidden; overflow-y:scroll;}
+		</style>
 		<div id="jobpopup">
 			<a id="jobid" href="pelle">kalle</a>  (<a id="source" href="to_source">method</a>)<br>
 			<div id="files" style="display:none">
 				<br><b>Files:</b><br>
-				<ul id="filestable"></ul>
+				<nav>
+					<ul id="filestable"></ul>
+				</nav>
 			</div>
 			<div id="datasets" style="display:none">
 				<br><b>Datasets:</b><br>
-				<ul id="datasetstable"></ul>
+				<nav>
+					<ul id="datasetstable"></ul>
+				</nav>
 			</div>
 			<div id="subjobs" style="display:none">
 				<br><b>Subjobs:</b><br>
 				<ul id="subjobstable"></ul>
 			</div>
-		<script>
-          function populatelist(items, location, tablelocation, maxitems=5) {
-            var thelist = document.querySelector(location);
-            thelist.style = 'display:none';
-            if (items.length) {
-              thelist.style = 'display:block';
-              var thetable = document.querySelector(tablelocation);
-              thetable.innerHTML = '';
-              ix = 0;
-              for (const item of items) {
-                var x = document.createElement("a");
-                x.setAttribute("href", item);
-                x.textContent = item;
-                var li = document.createElement("li");
-                li.appendChild(x);
-                thetable.appendChild(li);
-                ix += 1;
-                if (items.length > maxitems && ix === maxitems) {
-                  var sublen = items.length - maxitems;
-                  var x = document.createTextNode("... and ${sublen} more.");
-                  var li = document.createElement("li");
-                  li.appendChild(x);
-                  thetable.appendChild(li);
-                  break;
-                }
-              }
-            }
-          }
-		//		@@@ dataset links does not work
-		//		@@@ this is only for job graphs, urdlists and datasets remain
-		//		@@@ string and variable concatenation to simplify "..and x more" and input args to populatelist.
-		//		@@@ source link does not work (+method name shown with quotation marks, why?)
-		//		@@@ shift and zoom
-		//		@@@ remove menu on click elsewhere
-		//		@@@ mark node while menu active  (kanske använda "this" som Carl pratade om)
-		function jobpopup(e, jobid, files, datasets, subjobs, method) {
-		  console.log('method', method);
-		  const popup = document.querySelector("#jobpopup");
-		  popup.style.display = 'block';
-		  //popup.style.top = e.clientY + 'px';
-		  popup.style.top = '100px';
-		  popup.style.left = e.clientX + 'px';
-		  popup.children["jobid"].textContent = jobid;
-		  popup.children["jobid"].setAttribute("href", "../job/" + jobid);
-		  popup.children["source"].textContent = method;
-		  popup.children["source"].setAttribute("href", "source_to_this_gz");
+			<script>
+			 function populatelist(items, location, tablelocation, maxitems=5) {
+				 var thelist = document.querySelector(location);
+				 thelist.style = 'display:none';
+				 if (items.length) {
+					 thelist.style = 'display:block';
+					 var thetable = document.querySelector(tablelocation);
+					 thetable.innerHTML = '';
+					 ix = 0;
+					 for (const item of items) {
+						 var x = document.createElement("a");
+						 x.setAttribute("href", item);
+						 x.textContent = item;
+						 var li = document.createElement("li");
+						 li.appendChild(x);
+						 thetable.appendChild(li);
+						 ix += 1;
+						 if (items.length > maxitems && ix === maxitems) {
+							 var sublen = items.length - maxitems;
+							 var x = document.createTextNode("... and ${sublen} more.");
+							 var li = document.createElement("li");
+							 li.appendChild(x);
+							 thetable.appendChild(li);
+							 break;
+						 }
+					 }
+				 }
+			 }
+			 //		@@@ dataset links does not work
+			 //		@@@ this is only for job graphs, urdlists and datasets remain
+			 //		@@@ string and variable concatenation to simplify "..and x more" and input args to populatelist.
+			 //		@@@ source link does not work (+method name shown with quotation marks, why?)
+			 //		@@@ shift and zoom
+			 //		@@@ remove menu on click elsewhere
+			 //		@@@ mark node while menu active  (kanske använda "this" som Carl pratade om)
+			 function jobpopup(e, jobid, files, datasets, subjobs, method) {
+				 console.log('method', method);
+				 const popup = document.querySelector("#jobpopup");
+				 popup.style.display = 'block';
+				 //popup.style.top = e.clientY + 'px';
+				 popup.style.top = '100px';
+				 popup.style.left = e.clientX + 'px';
+				 popup.children["jobid"].textContent = jobid;
+				 popup.children["jobid"].setAttribute("href", "../job/" + jobid);
+				 popup.children["source"].textContent = method;
+				 popup.children["source"].setAttribute("href", "source_to_this_gz");
 
-		  files = JSON.parse(files);
-		  populatelist(files, '#files', '#filestable');
-		  datasets = JSON.parse(datasets);
-		  populatelist(datasets, '#datasets', '#datasetstable');
-		  subjobs = JSON.parse(subjobs);
-		  console.log(subjobs);
-		  populatelist(subjobs, '#subjobs', '#subjobstable');
-		}
-        </script>
+				 files = JSON.parse(files);
+				 populatelist(files, '#files', '#filestable');
+				 datasets = JSON.parse(datasets);
+				 populatelist(datasets, '#datasets', '#datasetstable');
+				 subjobs = JSON.parse(subjobs);
+				 console.log(subjobs);
+				 populatelist(subjobs, '#subjobs', '#subjobstable');
+			 }
+			</script>
         </div>
 
 
 		<svg id="jobgraph" version="1.1" xmlns="http://www.w3.org/2000/svg"
-		     viewBox="{{ ' '.join(str(x) for x in svgdata['bbox']) }}"
-		     width="100%" height="300px">
+				 viewBox="{{ ' '.join(str(x) for x in svgdata['bbox']) }}"
+				 width="100%" height="300px">
 			% for item in svgdata['nodes'].values():
 				<circle class="bar" onclick="jobpopup(
 				event,
@@ -128,67 +138,67 @@
 			% end
 		</svg>
 		<script>
-        shape = document.querySelector('#jobgraph');
-		console.log('shape', shape);
-        var mouseStartPosition = {x: 0, y: 0};
-        var mousePosition = {x: 0, y: 0};
-        var viewboxStartPosition = {x: 0, y: 0};
-        var viewboxPosition = {x: {{ svgdata['bbox'][0] }}, y: {{svgdata['bbox'][1] }}};
-        var viewboxSize = {x: {{svgdata['bbox'][2]}}, y: 300};
-        var viewboxScale = 1.0;
-        var mouseDown = false;
-        shape.addEventListener("mousemove", mousemove);
-        shape.addEventListener("mousedown", mousedown);
-        shape.addEventListener("wheel", wheel);
-        function mousedown(e) {
-          mouseStartPosition.x = e.pageX;
-          mouseStartPosition.y = e.pageY;
-          viewboxStartPosition.x = viewboxPosition.x;
-          viewboxStartPosition.y = viewboxPosition.y;
-          window.addEventListener("mouseup", mouseup);
-          mouseDown = true;
-          e.preventDefault();
-        }
-        function setviewbox() {
-          var vp = {x: 0, y: 0};
-          var vs = {x: 0, y: 0};
-          vp.x = viewboxPosition.x;
-          vp.y = viewboxPosition.y;
-          vs.x = viewboxSize.x * viewboxScale;
-          vs.y = viewboxSize.y * viewboxScale;
-		  shape = document.querySelector('#jobgraph');
-  		console.log('setviewbox shape', shape);
-          shape.setAttribute("viewBox", vp.x + " " + vp.y + " " + vs.x + " " + vs.y);
-        }
-        function mousemove(e) {
-          mousePosition.x = e.offsetX;
-          mousePosition.y = e.offsetY;
-          if (mouseDown) {
-            viewboxPosition.x = viewboxStartPosition.x + (mouseStartPosition.x - e.pageX) * viewboxScale;
-            viewboxPosition.y = viewboxStartPosition.y + (mouseStartPosition.y - e.pageY) * viewboxScale;
-            setviewbox();
-          }
-          e.preventDefault();
-        }
-        function mouseup(e) {
-          window.removeEventListener("mouseup", mouseup);
-          mouseDown = false;
-          e.preventDefault();
-        }
-        function wheel(e) {
-          var scale = (e.deltaY < 0) ? 0.8 : 1.2;
-          if ((viewboxScale * scale < 8.) && (viewboxScale * scale > 1./256.))
-          {
-              var mpos = {x: mousePosition.x * viewboxScale, y: mousePosition.y * viewboxScale};
-              var vpos = {x: viewboxPosition.x, y: viewboxPosition.y};
-              var cpos = {x: mpos.x + vpos.x, y: mpos.y + vpos.y}
-              viewboxPosition.x = (viewboxPosition.x - cpos.x) * scale + cpos.x;
-              viewboxPosition.y = (viewboxPosition.y - cpos.y) * scale + cpos.y;
-              viewboxScale *= scale;
-              setviewbox();
-          }
-          e.preventDefault();
-        }
+		 shape = document.querySelector('#jobgraph');
+		 console.log('shape', shape);
+		 var mouseStartPosition = {x: 0, y: 0};
+		 var mousePosition = {x: 0, y: 0};
+		 var viewboxStartPosition = {x: 0, y: 0};
+		 var viewboxPosition = {x: {{ svgdata['bbox'][0] }}, y: {{svgdata['bbox'][1] }}};
+		 var viewboxSize = {x: {{svgdata['bbox'][2]}}, y: 300};
+		 var viewboxScale = 1.0;
+		 var mouseDown = false;
+		 shape.addEventListener("mousemove", mousemove);
+		 shape.addEventListener("mousedown", mousedown);
+		 shape.addEventListener("wheel", wheel);
+		 function mousedown(e) {
+			 mouseStartPosition.x = e.pageX;
+			 mouseStartPosition.y = e.pageY;
+			 viewboxStartPosition.x = viewboxPosition.x;
+			 viewboxStartPosition.y = viewboxPosition.y;
+			 window.addEventListener("mouseup", mouseup);
+			 mouseDown = true;
+			 e.preventDefault();
+		 }
+		 function setviewbox() {
+			 var vp = {x: 0, y: 0};
+			 var vs = {x: 0, y: 0};
+			 vp.x = viewboxPosition.x;
+			 vp.y = viewboxPosition.y;
+			 vs.x = viewboxSize.x * viewboxScale;
+			 vs.y = viewboxSize.y * viewboxScale;
+			 shape = document.querySelector('#jobgraph');
+			 console.log('setviewbox shape', shape);
+			 shape.setAttribute("viewBox", vp.x + " " + vp.y + " " + vs.x + " " + vs.y);
+		 }
+		 function mousemove(e) {
+			 mousePosition.x = e.offsetX;
+			 mousePosition.y = e.offsetY;
+			 if (mouseDown) {
+				 viewboxPosition.x = viewboxStartPosition.x + (mouseStartPosition.x - e.pageX) * viewboxScale;
+				 viewboxPosition.y = viewboxStartPosition.y + (mouseStartPosition.y - e.pageY) * viewboxScale;
+				 setviewbox();
+			 }
+			 e.preventDefault();
+		 }
+		 function mouseup(e) {
+			 window.removeEventListener("mouseup", mouseup);
+			 mouseDown = false;
+			 e.preventDefault();
+		 }
+		 function wheel(e) {
+			 var scale = (e.deltaY < 0) ? 0.8 : 1.2;
+			 if ((viewboxScale * scale < 8.) && (viewboxScale * scale > 1./256.))
+			 {
+				 var mpos = {x: mousePosition.x * viewboxScale, y: mousePosition.y * viewboxScale};
+				 var vpos = {x: viewboxPosition.x, y: viewboxPosition.y};
+				 var cpos = {x: mpos.x + vpos.x, y: mpos.y + vpos.y}
+				 viewboxPosition.x = (viewboxPosition.x - cpos.x) * scale + cpos.x;
+				 viewboxPosition.y = (viewboxPosition.y - cpos.y) * scale + cpos.y;
+				 viewboxScale *= scale;
+				 setviewbox();
+			 }
+			 e.preventDefault();
+		 }
 		</script>
 	</div>
 
