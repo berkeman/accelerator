@@ -297,19 +297,19 @@ class graph():
 				x = (xoffset + adjlev + 0.3 * sin(ix)) * 160
 				y = (ix - len(jobsatlevel) / 2) * 140 + sin(adjlev / 3) * 70
 				# @@@@@@@@@@@ dataset.parent as a list is not tested at all!!!!!!!!!!!!!!!!!!!!!!!!
-				self.svg.jobnode(j, text=label, color=color, x=x, y=y, size=size)
+#				self.svg.jobnode(j, text=label, color=color, x=x, y=y, size=size)
 				self.svg.jobnode2(j, x=x, y=y, size=size, color=color)
 				for ix, (fun, var) in enumerate(((min, x), (max, x), (min, y), (max, y))):
 					self.bbox[ix] = fun(self.bbox[ix] if not self.bbox[ix] is None else var, var)
 
 	def insert_edges(self, edges):
 		for s, d in edges:
-			self.svg.arrow(s, d)
+#			self.svg.arrow(s, d)
 			self.svg.arrow2(s, d)
 	def write(self):
 		x1, x2, y1, y2 = self.bbox
 		dy = y2 - y1
 		if dy < 300:
 			y1 = y1 - (300 - dy) // 2
-		s = self.svg.getsvg((-100 + x1, y1, 200 + x2 - x1, 300))
+#		s = self.svg.getsvg((-100 + x1, y1, 200 + x2 - x1, 300))
 		return self.svg.nodes, self.svg.edges, (-100 + x1, y1, 200 + x2 - x1, 300)
