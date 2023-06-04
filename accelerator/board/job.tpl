@@ -111,6 +111,11 @@
 				 console.log(subjobs);
 				 populatelist(subjobs, '#subjobs', '#subjobstable');
 			 }
+			 function jobpopup_off(e, jobid, files, datasets, subjobs, method) {
+				 console.log('method', method);
+				 const popup = document.querySelector("#jobpopup");
+				 popup.style.display = 'none';
+			 }
 			</script>
         </div>
 
@@ -158,6 +163,7 @@
 			 window.addEventListener("mouseup", mouseup);
 			 mouseDown = true;
 			 e.preventDefault();
+			 jobpopup_off();
 		 }
 		 function setviewbox() {
 			 var vp = {x: 0, y: 0};
