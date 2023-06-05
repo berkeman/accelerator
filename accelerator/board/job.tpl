@@ -91,7 +91,7 @@
 				<ul id="subjobstable"></ul>
 			</div>
 			<script>
-			 function populatelist(items, location, tablelocation, maxitems=5) {
+			 function populatelist(jobid, items, location, tablelocation, maxitems=5) {
 				 var thelist = document.querySelector(location);
 				 thelist.style = 'display:none';
 				 if (items.length) {
@@ -101,7 +101,13 @@
 					 ix = 0;
 					 for (const item of items) {
 						 var x = document.createElement("a");
-						 x.setAttribute("href", item);
+						 if (location === '#files') {
+							 x.setAttribute("href", jobid + '/' + item);
+						 } else if (location === '#datasets') {
+							 x.setAttribute("href", '../dataset/' + item);
+						 } else {
+							 x.setAttribute("href", item);
+						 }
 						 x.textContent = item;
 						 var li = document.createElement("li");
 						 li.appendChild(x);
@@ -135,11 +141,11 @@
 				 popup.children["source"].textContent = method;
 				 popup.children["source"].setAttribute("href", "source_to_this_gz");
 				 files = JSON.parse(files);
-				 populatelist(files, '#files', '#filestable');
+				 populatelist(jobid, files, '#files', '#filestable');
 				 datasets = JSON.parse(datasets);
-				 populatelist(datasets, '#datasets', '#datasetstable');
+				 populatelist(jobid, datasets, '#datasets', '#datasetstable');
 				 subjobs = JSON.parse(subjobs);
-				 populatelist(subjobs, '#subjobs', '#subjobstable');
+				 populatelist(jobid, subjobs, '#subjobs', '#subjobstable');
 			 }
 			 function jobpopup_off(e, jobid, files, datasets, subjobs, method) {
 				 const popup = document.querySelector("#jobpopup");
