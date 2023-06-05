@@ -45,6 +45,9 @@
 			 fill: #008cec;
 			 opacity: 1;
 		 }
+		 #jobpopup {
+			 background: #ffffff;
+		 }
 		 #filestable {
 			 list-style-type:none;
 			 padding: 0px 0px 0px 10px;
@@ -165,9 +168,9 @@
 				'{{dumps(tuple(item.subjobs.keys()))}}',
 				'{{item.method}}'
 				)"
-				cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}" fill="{{item.color}}" stroke="black" stroke_width="4"/>
-				<text x="{{ item.x }}" y="{{ item.y + item.size + 15 }}" font-size="12" text-anchor="middle" fill="black">{{ item.jobid }}</text>
-				<text x="{{ item.x }}" y="{{ item.y + item.size + 30 }}" font-size="12" text-anchor="middle" fill="black">{{ item.method }}</text>
+				cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}" fill="{{item.color}}" stroke="black" stroke-width="2"/>
+				<text x="{{ item.x }}" y="{{ item.y + item.size + 15 }}" font-weight="bold" font-size="12" text-anchor="middle" fill="black"><a href="{{ item.jobid }}">{{ item.jobid }}</a></text>
+				<text x="{{ item.x }}" y="{{ item.y + item.size + 30 }}" font-size="12" text-anchor="middle" fill="black"><a href="{{ item.jobid + '/method.tar.gz' + '/'}}">{{ item.method }}</a></text>
 			% end
 			% for line in svgdata['edges']:
 				% for (x1, y1, x2, y2) in line:
