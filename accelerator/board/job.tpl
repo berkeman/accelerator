@@ -175,6 +175,7 @@
 				 viewBox="{{ ' '.join(str(x) for x in svgdata['bbox']) }}"
 				 width="100%" height="300px">
 			% for item in svgdata['nodes'].values():
+				<text x="{{item.x}}" y="{{item.y + 5}}" fill="blue4" text-anchor="middle">{{ ''.join(('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else ''))}}</text>
 				<circle id="{{item.jobid}}" class="hovernode" onclick="jobpopup(
 				event,
 				'{{item.jobid}}',
@@ -184,14 +185,14 @@
 				'{{item.method}}'
 				)"
 				onmouseover="highlight(this, true)"
-				onmouseout="highlight(this, false)"
+							onmouseout="highlight(this, false)"
+						fill-opacity="50%"
 				neighbours="{{dumps(list(svgdata['neighbours'][item.jobid]))}}"
 				cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}"
 				fill="{{item.color}}" origfill="{{item.color}}"
 				stroke="black" stroke-width="2"/>
 				<text x="{{ item.x }}" y="{{ item.y + item.size + 15 }}" font-weight="bold" font-size="12" text-anchor="middle" fill="black"><a href="{{ item.jobid }}">{{ item.jobid }}</a></text>
 				<text x="{{ item.x }}" y="{{ item.y + item.size + 30 }}" font-size="12" text-anchor="middle" fill="black"><a href="{{ item.jobid + '/method.tar.gz' + '/'}}">{{ item.method }}</a></text>
-				<text x="{{item.x}}" y="{{item.y + 5}}" fill="blue4" text-anchor="middle">{{ ''.join(('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else ''))}}</text>
 			% end
 			% for line in svgdata['edges']:
 				% for (x1, y1, x2, y2) in line:
