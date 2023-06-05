@@ -124,13 +124,11 @@
 					 }
 				 }
 			 }
-			 //		@@@ dataset links does not work
 			 //		@@@ this is only for job graphs, urdlists and datasets remain
 			 //		@@@ string and variable concatenation to simplify "..and x more" and input args to populatelist.
-			 //		@@@ source link does not work (+method name shown with quotation marks, why?)
 			 //		@@@ mark node while menu active  (kanske använda "this" som Carl pratade om)
 			 function jobpopup(e, jobid, files, datasets, subjobs, method) {
-				 console.debug(this);
+				 console.debug(method, jobid);
 				 const popup = document.querySelector("#jobpopup");
 				 popup.style.display = 'block';
 				 //popup.style.top = e.clientY + 'px';
@@ -139,7 +137,7 @@
 				 popup.children["jobid"].textContent = jobid;
 				 popup.children["jobid"].setAttribute("href", "../job/" + jobid);
 				 popup.children["source"].textContent = method;
-				 popup.children["source"].setAttribute("href", "source_to_this_gz");
+				 popup.children["source"].setAttribute("href", jobid + "/method.tar.gz" + '/');
 				 files = JSON.parse(files);
 				 populatelist(jobid, files, '#files', '#filestable');
 				 datasets = JSON.parse(datasets);
@@ -161,11 +159,11 @@
 			% for item in svgdata['nodes'].values():
 				<circle class="hovernode" onclick="jobpopup(
 				event,
-				'{{escape(item.jobid)}}',
+				'{{item.jobid}}',
 				'{{dumps(item.files)}}',
 				'{{dumps(item.datasets)}}',
 				'{{dumps(tuple(item.subjobs.keys()))}}',
-				'{{dumps(item.method)}}'
+				'{{item.method}}'
 				)"
 				cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}" fill="{{item.color}}" stroke="black" stroke_width="4"/>
 				<text x="{{ item.x }}" y="{{ item.y + item.size + 15 }}" font-size="12" text-anchor="middle" fill="black">{{ item.jobid }}</text>
