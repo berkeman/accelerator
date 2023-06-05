@@ -1,3 +1,4 @@
+from collections import defaultdict
 from math import atan2, pi, cos, sin
 from accelerator import DotDict
 
@@ -8,6 +9,7 @@ class SVG:
 		self.nodecoords = dict()
 		self.nodes = dict()
 		self.edges = set()
+		self.neighbours = defaultdict(set)
 
 	def jobnode2(self, id, x, y, size=30, color='magenta'):
 		self.nodecoords[id] = (x, y, size)
@@ -42,7 +44,5 @@ class SVG:
 		y1 = y2 - arrowlen * sin(a - arrowangle)
 		s.append((x1, y1, x2, y2))
 		self.edges.add(tuple(s))
-
-
-
-
+		self.neighbours[fromid].add(toid)
+		self.neighbours[toid].add(fromid)

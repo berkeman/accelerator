@@ -41,10 +41,6 @@
 			 max-height:100%;
 			 width:100%;}
 		 nav ul{overflow:hidden; overflow-y:scroll;}
-		 .hovernode:hover {
-			 fill: #008cec;
-			 opacity: 1;
-		 }
 		 #jobpopup {
 			 background: #ffffff;
 		 }
@@ -152,6 +148,25 @@
 				 const popup = document.querySelector("#jobpopup");
 				 popup.style.display = 'none';
 			 }
+
+			 function highlight(thisnode, onoff) {
+				 if (onoff) {
+					 thisnode.setAttribute('fill', '#eeff88');
+				 } else {
+					 thisnode.setAttribute('fill', thisnode.getAttribute('origfill'));
+				 }
+				 const neighbours = JSON.parse(thisnode.getAttribute('neighbours'));
+				 for (const jobid of neighbours) {
+					 const n = document.querySelector('#' + jobid);
+					 console.log(n);
+					 if (onoff) {
+						 n.setAttribute('fill', '#ccff88');
+					 } else {
+						 n.setAttribute('fill', n.getAttribute('origfill'));
+					 }
+				 }
+			 }
+
 			</script>
         </div>
 
@@ -160,7 +175,7 @@
 				 viewBox="{{ ' '.join(str(x) for x in svgdata['bbox']) }}"
 				 width="100%" height="300px">
 			% for item in svgdata['nodes'].values():
-				<circle class="hovernode" onclick="jobpopup(
+				<circle id="{{item.jobid}}" class="hovernode" onclick="jobpopup(
 				event,
 				'{{item.jobid}}',
 				'{{dumps(item.files)}}',
@@ -168,7 +183,12 @@
 				'{{dumps(tuple(item.subjobs.keys()))}}',
 				'{{item.method}}'
 				)"
-				cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}" fill="{{item.color}}" stroke="black" stroke-width="2"/>
+				onmouseover="highlight(this, true)"
+				onmouseout="highlight(this, false)"
+				neighbours="{{dumps(list(svgdata['neighbours'][item.jobid]))}}"
+				cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}"
+				fill="{{item.color}}" origfill="{{item.color}}"
+				stroke="black" stroke-width="2"/>
 				<text x="{{ item.x }}" y="{{ item.y + item.size + 15 }}" font-weight="bold" font-size="12" text-anchor="middle" fill="black"><a href="{{ item.jobid }}">{{ item.jobid }}</a></text>
 				<text x="{{ item.x }}" y="{{ item.y + item.size + 30 }}" font-size="12" text-anchor="middle" fill="black"><a href="{{ item.jobid + '/method.tar.gz' + '/'}}">{{ item.method }}</a></text>
 				<text x="{{item.x}}" y="{{item.y + 5}}" fill="blue4" text-anchor="middle">{{ ''.join(('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else ''))}}</text>

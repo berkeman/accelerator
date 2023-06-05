@@ -312,4 +312,4 @@ class graph():
 		if dy < 300:
 			y1 = y1 - (300 - dy) // 2
 #		s = self.svg.getsvg((-100 + x1, y1, 200 + x2 - x1, 300))
-		return self.svg.nodes, self.svg.edges, (-100 + x1, y1, 200 + x2 - x1, 300)
+		return self.svg.nodes, self.svg.edges, (-100 + x1, y1, 200 + x2 - x1, 300), self.svg.neighbours
