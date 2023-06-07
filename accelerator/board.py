@@ -352,7 +352,7 @@ def run(cfg, from_shell=False):
 			files=files,
 			datasets=job.datasets,
 			subjobs=subjobs,
-			svgdata=dict(nodes=svgdata[0], edges=svgdata[1], bbox=svgdata[2], neighbours=svgdata[3]),
+			svgdata=dict(nodes=svgdata[0], edges=svgdata[1], bbox=svgdata[2], neighbour_nodes=svgdata[3], neighbour_edges=svgdata[4]),
 		)
 
 	@bottle.get('/dataset/<dsid:path>')

@@ -8,8 +8,9 @@ class SVG:
 		self.s = ''
 		self.nodecoords = dict()
 		self.nodes = dict()
-		self.edges = set()
-		self.neighbours = defaultdict(set)
+		self.edges = dict()
+		self.neighbour_nodes = defaultdict(set)
+		self.neighbour_edges = defaultdict(set)
 
 	def jobnode2(self, id, x, y, size=30, color='magenta'):
 		self.nodecoords[id] = (x, y, size)
@@ -43,6 +44,9 @@ class SVG:
 		x1 = x2 - arrowlen * cos(a - arrowangle)
 		y1 = y2 - arrowlen * sin(a - arrowangle)
 		s.append((x1, y1, x2, y2))
-		self.edges.add(tuple(s))
-		self.neighbours[fromid].add(toid)
-		self.neighbours[toid].add(fromid)
+		edgekey = ''.join((fromid, toid))
+		self.edges[edgekey] = tuple(s)
+		self.neighbour_nodes[fromid].add(toid)
+		self.neighbour_nodes[toid].add(fromid)
+		self.neighbour_edges[fromid].add(edgekey)
+		self.neighbour_edges[toid].add(edgekey)

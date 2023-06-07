@@ -123,11 +123,12 @@
 					 }
 				 }
 			 }
+			 //		@@@ marginaler på sidorna runt svgn
+			 //		@@@ visa filename på csvimport kanske?
 			 //		@@@ this is only for job graphs, urdlists and datasets remain
 			 //		@@@ string and variable concatenation to simplify "..and x more" and input args to populatelist.
 			 //		@@@ mark node while menu active  (kanske använda "this" som Carl pratade om)
 			 function jobpopup(e, jobid, files, datasets, subjobs, method) {
-				 console.debug(method, jobid);
 				 const popup = document.querySelector("#jobpopup");
 				 popup.style.display = 'block';
 				 //popup.style.top = e.clientY + 'px';
@@ -155,14 +156,24 @@
 				 } else {
 					 thisnode.setAttribute('fill', thisnode.getAttribute('origfill'));
 				 }
-				 const neighbours = JSON.parse(thisnode.getAttribute('neighbours'));
-				 for (const jobid of neighbours) {
+				 const neighbour_nodes = JSON.parse(thisnode.getAttribute('neighbour_nodes'));
+				 for (const jobid of neighbour_nodes) {
 					 const n = document.querySelector('#' + jobid);
-					 console.log(n);
 					 if (onoff) {
 						 n.setAttribute('fill', '#ccff88');
 					 } else {
 						 n.setAttribute('fill', n.getAttribute('origfill'));
+					 }
+				 }
+				 const neighbour_edges = JSON.parse(thisnode.getAttribute('neighbour_edges'));
+				 for (const edge of neighbour_edges) {
+					 const nn = document.querySelectorAll('#' + edge);
+					 for (const n of nn) {
+						 if (onoff) {
+							 n.setAttribute('stroke-width', 6);
+						 } else {
+							 n.setAttribute('stroke-width', 2);
+						 }
 					 }
 				 }
 			 }
@@ -187,16 +198,17 @@
 				onmouseover="highlight(this, true)"
 							onmouseout="highlight(this, false)"
 						fill-opacity="50%"
-				neighbours="{{dumps(list(svgdata['neighbours'][item.jobid]))}}"
+				neighbour_nodes="{{dumps(list(svgdata['neighbour_nodes'][item.jobid]))}}"
+				neighbour_edges="{{dumps(list(svgdata['neighbour_edges'][item.jobid]))}}"
 				cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}"
 				fill="{{item.color}}" origfill="{{item.color}}"
 				stroke="black" stroke-width="2"/>
 				<text x="{{ item.x }}" y="{{ item.y + item.size + 15 }}" font-weight="bold" font-size="12" text-anchor="middle" fill="black"><a href="{{ item.jobid }}">{{ item.jobid }}</a></text>
 				<text x="{{ item.x }}" y="{{ item.y + item.size + 30 }}" font-size="12" text-anchor="middle" fill="black"><a href="{{ item.jobid + '/method.tar.gz' + '/'}}">{{ item.method }}</a></text>
 			% end
-			% for line in svgdata['edges']:
+			% for key, line in svgdata['edges'].items():
 				% for (x1, y1, x2, y2) in line:
-					<line x1="{{x1}}" x2="{{x2}}" y1="{{y1}}" y2="{{y2}}" stroke="black" stroke-width="2"/>
+					<line x1="{{x1}}" x2="{{x2}}" y1="{{y1}}" y2="{{y2}}" id={{key}} stroke="black" stroke-width="2"/>
 				% end
 			% end
 		</svg>
