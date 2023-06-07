@@ -23,7 +23,7 @@ class SVG:
 			x=x,
 			y=y,
 			size=size,
-			color='#aabbee',
+			color=color,
 		)
 
 	def arrow2(self, fromid, toid):

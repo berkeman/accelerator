@@ -123,6 +123,7 @@
 					 }
 				 }
 			 }
+			 //		@@@ grafen följer inte musen i skala vid inzoom av stor graph
 			 //		@@@ marginaler på sidorna runt svgn
 			 //		@@@ visa filename på csvimport kanske?
 			 //		@@@ this is only for job graphs, urdlists and datasets remain
@@ -153,8 +154,10 @@
 			 function highlight(thisnode, onoff) {
 				 if (onoff) {
 					 thisnode.setAttribute('fill', '#eeff88');
+					 thisnode.setAttribute('stroke-width', '5');
 				 } else {
 					 thisnode.setAttribute('fill', thisnode.getAttribute('origfill'));
+					 thisnode.setAttribute('stroke-width', '2');
 				 }
 				 const neighbour_nodes = JSON.parse(thisnode.getAttribute('neighbour_nodes'));
 				 for (const jobid of neighbour_nodes) {
