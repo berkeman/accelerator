@@ -440,8 +440,8 @@
 	    #jobpopup {
 	    position: absolute;
 	    display: none;
-	    border: 2px solid green;
-	    background: var(--bg0);
+	    border: 2px solid black;
+	    <!-- background: var(--bg0); -->
 	    }
 	    
 
