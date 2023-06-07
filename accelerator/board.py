@@ -448,7 +448,11 @@ def run(cfg, from_shell=False):
 		key = user + '/' + build + '/' + ts
 		d = call_u(key)
 		svgdata = graph_jlist(d)
-		return dict(key=key, entry=d, svgdata=svgdata)
+		return dict(
+			key=key,
+			entry=d,
+			svgdata=dict(nodes=svgdata[0], edges=svgdata[1], bbox=svgdata[2], neighbour_nodes=svgdata[3], neighbour_edges=svgdata[4]),
+		)
 
 	@bottle.error(500)
 	def error(e):

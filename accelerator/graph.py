@@ -236,6 +236,7 @@ class graph():
 				label = labelfun(j)
 				color = "#4466aa"
 				size = 30
+				notinjoblist = False
 				def presentstuff(v, tit, maxlen=5):
 					if v:
 						nonlocal title
@@ -261,9 +262,11 @@ class graph():
 						if job2urddep and j in job2urddep:
 							color = "#cccccc"
 							title += '<br><font color="#9900FF"><b>Job in dependency urdlist:</b><br>&nbsp&nbsp<a href=../urd/{item} target = "_parent">{item}</a></font>'.format(item=job2urddep[j])
+							notinjoblist = job2urddep[j]
 						else:
-							color = "#cc0000"
+							color = "#33cc88"
 							title += '<br><font color="#ff5555"><b>Job not in this urdlist or any of its dependencies.</b></font>'
+							notinjoblist = True
 					if j.method == 'csvimport':
 						title += '<br><b>options.filename:</b> <i> %s </i><br>' % (j.params.options.filename,)
 					presentstuff(sorted(j.files()), 'Files')
@@ -290,11 +293,16 @@ class graph():
 					title += '<br><b>Rows: </b> %s' % ('{:,d}'.format(sum(j.lines)).replace(',', '.'),)
 					title += '<br>'
 					presentstuff(sorted(j.columns.items()), 'Columns')
+
 				x = (xoffset + adjlev + 0.3 * sin(ix)) * 160
 				y = (ix - len(jobsatlevel) / 2) * 140 + sin(adjlev / 3) * 70
 				# @@@@@@@@@@@ dataset.parent as a list is not tested at all!!!!!!!!!!!!!!!!!!!!!!!!
 #				self.svg.jobnode(j, text=label, color=color, x=x, y=y, size=size)
-				self.svg.jobnode2(j, x=x, y=y, size=size, color=color, atmaxdepth=j in atmaxdepth)
+				self.svg.jobnode2(
+					j, x=x, y=y, size=size, color=color,
+					atmaxdepth=j in atmaxdepth,
+					notinurdlist=notinjoblist,
+				)
 				for ix, (fun, var) in enumerate(((min, x), (max, x), (min, y), (max, y))):
 					self.bbox[ix] = fun(self.bbox[ix] if not self.bbox[ix] is None else var, var)
 

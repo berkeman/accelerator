@@ -3,7 +3,9 @@
         <h1>{{ key }}</h1>
 
         <h2>urd item graph</h2>
-	{{! svgdata }}
+
+		% include('svg.tpl')
+
 
 	<table class="urd-table">
 		% for thing in ('timestamp', 'user', 'build', 'caption',):
