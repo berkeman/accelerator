@@ -1,7 +1,7 @@
+from datetime import datetime
 from collections import defaultdict
 from math import atan2, pi, cos, sin
 from accelerator import DotDict
-
 
 class SVG:
 	def __init__(self):
@@ -12,7 +12,7 @@ class SVG:
 		self.neighbour_nodes = defaultdict(set)
 		self.neighbour_edges = defaultdict(set)
 
-	def jobnode2(self, id, x, y, size=30, color='magenta'):
+	def jobnode2(self, id, x, y, size=30, color='magenta', atmaxdepth=False):
 		self.nodecoords[id] = (x, y, size)
 		self.nodes[id] = DotDict(
 			jobid=str(id),
@@ -24,6 +24,8 @@ class SVG:
 			y=y,
 			size=size,
 			color=color,
+			atmaxdepth=atmaxdepth,
+			timestamp=datetime.fromtimestamp(id.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
 		)
 
 	def arrow2(self, fromid, toid):

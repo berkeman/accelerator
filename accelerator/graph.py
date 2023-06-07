@@ -253,8 +253,9 @@ class graph():
 							title += '&nbsp&nbsp... and %d more.' % (len(v) - maxlen,)
 				if isinstance(j, Job):
 					# This is a Job
-					title = '<a href=../job/{job} target="_parent"><b>{job}</b></a> (<a href=../job/{job}/method.tar.gz/ target="_parent">{method}</a>)'.format(job=j, method=j.method)
-					title += '<br>' + datetime.fromtimestamp(j.params.starttime).strftime("%Y-%m-%d %H:%M:%S")
+					title = ''
+					if j in atmaxdepth:
+						color = '#cc5522'
 					if validjobset and j not in validjobset:  # i.e. job is not in this urdlist
 						size = 20
 						if job2urddep and j in job2urddep:
@@ -263,11 +264,6 @@ class graph():
 						else:
 							color = "#cc0000"
 							title += '<br><font color="#ff5555"><b>Job not in this urdlist or any of its dependencies.</b></font>'
-					if j in atmaxdepth:
-						color = "#cc5522"
-						title += '<br><b><font color="#ff0099">Reached recursion limit - no dependencies drawn!</font></b>'
-					if j.files() or j.datasets or j.post.subjobs:
-						title += '<br>'
 					if j.method == 'csvimport':
 						title += '<br><b>options.filename:</b> <i> %s </i><br>' % (j.params.options.filename,)
 					presentstuff(sorted(j.files()), 'Files')
@@ -298,7 +294,7 @@ class graph():
 				y = (ix - len(jobsatlevel) / 2) * 140 + sin(adjlev / 3) * 70
 				# @@@@@@@@@@@ dataset.parent as a list is not tested at all!!!!!!!!!!!!!!!!!!!!!!!!
 #				self.svg.jobnode(j, text=label, color=color, x=x, y=y, size=size)
-				self.svg.jobnode2(j, x=x, y=y, size=size, color=color)
+				self.svg.jobnode2(j, x=x, y=y, size=size, color=color, atmaxdepth=j in atmaxdepth)
 				for ix, (fun, var) in enumerate(((min, x), (max, x), (min, y), (max, y))):
 					self.bbox[ix] = fun(self.bbox[ix] if not self.bbox[ix] is None else var, var)
 

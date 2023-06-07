@@ -73,6 +73,8 @@
 		</style>
 		<div id="jobpopup">
 			<a id="jobid" href="pelle">kalle</a>  (<a id="source" href="to_source">method</a>)<br>
+			<div id="timestamp"></div>
+			<div id="atmaxdepth" style="display:none"><font color="#cc5522"><b>Reached recursion limit - no dependencies drawn!</b></font></div>
 			<div id="files" style="display:none">
 				<br><h1>Files:</h1>
 				<nav>
@@ -123,13 +125,14 @@
 					 }
 				 }
 			 }
+			 //		@@@ atmaxdepth and color are orthogonal right now, both set in graph.py
 			 //		@@@ grafen följer inte musen i skala vid inzoom av stor graph
 			 //		@@@ marginaler på sidorna runt svgn
 			 //		@@@ visa filename på csvimport kanske?
 			 //		@@@ this is only for job graphs, urdlists and datasets remain
 			 //		@@@ string and variable concatenation to simplify "..and x more" and input args to populatelist.
 			 //		@@@ mark node while menu active  (kanske använda "this" som Carl pratade om)
-			 function jobpopup(e, jobid, files, datasets, subjobs, method) {
+			 function jobpopup(e, jobid, files, datasets, subjobs, method, atmaxdepth, timestamp) {
 				 const popup = document.querySelector("#jobpopup");
 				 popup.style.display = 'block';
 				 //popup.style.top = e.clientY + 'px';
@@ -139,6 +142,13 @@
 				 popup.children["jobid"].setAttribute("href", "../job/" + jobid);
 				 popup.children["source"].textContent = method;
 				 popup.children["source"].setAttribute("href", jobid + "/method.tar.gz" + '/');
+				 console.log(jobid, atmaxdepth)
+				 popup.children["timestamp"].textContent = '[' + JSON.parse(timestamp) + ']';
+				 if (atmaxdepth === 'True') {
+					 popup.children["atmaxdepth"].style.display = 'block';
+				 } else {
+					 popup.children["atmaxdepth"].style.display = 'none';
+				 }
 				 files = JSON.parse(files);
 				 populatelist(jobid, files, '#files', '#filestable');
 				 datasets = JSON.parse(datasets);
@@ -189,14 +199,17 @@
 				 viewBox="{{ ' '.join(str(x) for x in svgdata['bbox']) }}"
 				 width="100%" height="300px">
 			% for item in svgdata['nodes'].values():
-				<text x="{{item.x}}" y="{{item.y + 5}}" fill="blue4" text-anchor="middle">{{ ''.join(('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else ''))}}</text>
+			% print(item)
+				<text x="{{item.x}}" y="{{item.y + 5}}" fill="blue4" text-anchor="middle" font-weight="bold">{{ ''.join(('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else ''))}}</text>
 				<circle id="{{item.jobid}}" class="hovernode" onclick="jobpopup(
 				event,
 				'{{item.jobid}}',
 				'{{dumps(item.files)}}',
 				'{{dumps(item.datasets)}}',
 				'{{dumps(tuple(item.subjobs.keys()))}}',
-				'{{item.method}}'
+				'{{item.method}}',
+				'{{item.atmaxdepth}}',
+				'{{dumps(item.timestamp)}}',
 				)"
 				onmouseover="highlight(this, true)"
 							onmouseout="highlight(this, false)"
