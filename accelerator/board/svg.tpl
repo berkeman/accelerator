@@ -93,8 +93,10 @@
 							 x.href = '/job/' + jobid + '/' + item;
 						 } else if (location === '#datasets') {
 							 x.href = '/dataset/' + item;
-						 } else {
+						 } else if (location === '#subjobs') {
 							 x.href= item;
+						 } else {
+							 x.href = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX';
 						 }
 						 x.textContent = item;
 						 var li = document.createElement("li");
@@ -103,7 +105,7 @@
 						 ix += 1;
 						 if (items.length > maxitems && ix === maxitems) {
 							 var sublen = items.length - maxitems;
-							 var x = document.createTextNode("... and ${sublen} more.");
+							 var x = document.createTextNode("... and " +sublen.toString() + " more.");
 							 var li = document.createElement("li");
 							 li.appendChild(x);
 							 thetable.appendChild(li);
