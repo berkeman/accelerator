@@ -1,5 +1,15 @@
 %from json import dumps
 
+<!--
+	@@@ atmaxdepth and color are orthogonal right now, both set in graph.py
+	@@@ grafen följer inte musen i skala vid inzoom av stor graph
+	@@@ marginaler på sidorna runt svgn
+	@@@ visa filename på csvimport kanske?
+	@@@ this is only for job graphs and urdlists,  DATASETS REMAIN
+	@@@ string and variable concatenation to simplify "..and x more" and input args to populatelist.
+	@@@ mark node while menu active  (kanske använda "this" som Carl pratade om)
+-->
+
 	<div id="svgcontainer">
 		<style>
 		 nav ul{
@@ -48,7 +58,7 @@
 				<b>Job not in this urdlist or any of its dependencies.</b>
 			</font></div>
 			<div id="inthisurdlist" style="display:none"><font color="#55cc22">
-				<b>Job in depurdlist <a href=""></a></b>
+				<b>Job in depurdlist <a href="".></a></b>
 			</font></div>
 			<div id="files" style="display:none">
 				<br><h1>Files:</h1>
@@ -64,7 +74,9 @@
 			</div>
 			<div id="subjobs" style="display:none">
 				<br><h1>Subjobs:</h1>
-				<ul id="subjobstable"></ul>
+				<nav>
+					<ul id="subjobstable"></ul>
+				</nav>
 			</div>
 			<script>
 			 function populatelist(jobid, items, location, tablelocation, maxitems=5) {
@@ -100,13 +112,6 @@
 					 }
 				 }
 			 }
-			 //		@@@ atmaxdepth and color are orthogonal right now, both set in graph.py
-			 //		@@@ grafen följer inte musen i skala vid inzoom av stor graph
-			 //		@@@ marginaler på sidorna runt svgn
-			 //		@@@ visa filename på csvimport kanske?
-			 //		@@@ this is only for job graphs and urdlists,  DATASETS REMAIN
-			 //		@@@ string and variable concatenation to simplify "..and x more" and input args to populatelist.
-			 //		@@@ mark node while menu active  (kanske använda "this" som Carl pratade om)
 			 function jobpopup(e, jobid, files, datasets, subjobs, method, atmaxdepth, timestamp, notinurdlist) {
 				 const popup = document.querySelector("#jobpopup");
 				 popup.style.display = 'block';
@@ -114,11 +119,12 @@
 				 popup.style.top = '100px';
 				 popup.style.left = e.clientX + 'px';
 				 popup.children["jobid"].textContent = jobid;
-				 popup.children["jobid"].setAttribute("href", "/job/" + jobid);
+				 //popup.children["jobid"].setAttribute("href", "/job/" + jobid);
+				 popup.children["jobid"].href =  "/job/" + jobid;
 				 popup.children["source"].textContent = method;
 				 popup.children["source"].setAttribute("href", '/job/' + jobid + "/method.tar.gz" + '/');
 				 console.log(jobid, atmaxdepth)
-				 popup.children["timestamp"].textContent = '[' + JSON.parse(timestamp) + ']';
+				 popup.children["timestamp"].textContent = '[' + timestamp + ']';
 				 if (atmaxdepth === 'True') {
 					 popup.children["atmaxdepth"].style.display = 'block';
 				 } else {
@@ -134,8 +140,7 @@
 				 } else {
 					 popup.children["notinurdlist"].style.display = 'none';
 					 popup.children["inthisurdlist"].style.display = 'block';
-					 % # @@@@@@ eckel
-					 const n = popup.children["inthisurdlist"].getElementsByTagName('a')[0];
+					 const n = popup.querySelector('#inthisurdlist a');
 					 n.setAttribute("href", '/urd/' + notinurdlist);
 					 n.textContent = notinurdlist;
 				 }
@@ -143,12 +148,14 @@
 				 populatelist(jobid, datasets, '#datasets', '#datasetstable');
 				 populatelist(jobid, subjobs, '#subjobs', '#subjobstable');
 			 }
+
 			 function jobpopup_off(e, jobid, files, datasets, subjobs, method) {
 				 const popup = document.querySelector("#jobpopup");
 				 popup.style.display = 'none';
 			 }
 
-			 function highlight(thisnode, onoff) {
+			 % # egna attribut börja med "data-"
+			 function highlight_nodes(thisnode, onoff) {
 				 if (onoff) {
 					 thisnode.setAttribute('fill', '#eeff88');
 					 thisnode.setAttribute('stroke-width', '5');
@@ -160,7 +167,7 @@
 				 for (const jobid of neighbour_nodes) {
 					 const n = document.querySelector('#' + jobid);
 					 if (onoff) {
-						 n.setAttribute('fill', '#ccff88');
+						 n.setAttribute('fill', 'var(--bgerr)');
 					 } else {
 						 n.setAttribute('fill', n.getAttribute('origfill'));
 					 }
@@ -177,30 +184,26 @@
 					 }
 				 }
 			 }
-
 			</script>
         </div>
-
 
 		<svg id="jobgraph" version="1.1" xmlns="http://www.w3.org/2000/svg"
 				 viewBox="{{ ' '.join(str(x) for x in svgdata['bbox']) }}"
 				 width="100%" height="300px">
 			% for item in svgdata['nodes'].values():
-				<text x="{{item.x}}" y="{{item.y + 5}}" fill="blue4" text-anchor="middle"
-					font-weight="bold">{{ ''.join(
-					('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else '')
-					)}}
-				</text>
+			<text x="{{item.x}}" y="{{item.y + 5}}" fill="blue4" text-anchor="middle" font-weight="bold">
+				{{ ''.join(('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else ''))}}
+			</text>
 				<circle id="{{item.jobid}}" class="hovernode" onclick="jobpopup(
 						event,
-						'{{item.jobid}}',
-						JSON.parse('{{dumps(item.files)}}'),
-						JSON.parse('{{dumps(item.datasets)}}'),
-						JSON.parse('{{dumps(tuple(item.subjobs.keys()))}}'),
-						'{{item.method}}',
-						'{{item.atmaxdepth}}',
-						'{{dumps(item.timestamp)}}',
-						JSON.parse('{{dumps(item.notinurdlist)}}'),
+						{{dumps(item.jobid)}},
+						{{dumps(item.files)}},
+						{{dumps(item.datasets)}},
+						{{dumps(tuple(item.subjobs.keys()))}},
+						{{dumps(item.method)}},
+						{{dumps(item.atmaxdepth)}},
+						{{dumps(item.timestamp)}},
+						{{dumps(item.notinurdlist)}},
 					)"
 					onmouseover="highlight_nodes(this, true)"
 					onmouseout="highlight_nodes(this, false)"
@@ -222,10 +225,12 @@
 			% end
 			% for key, line in svgdata['edges'].items():
 				% for (x1, y1, x2, y2) in line:
+				% # @@@  stoppa in svg-kontainer "g" här som har pilens id
 					<line x1="{{x1}}" x2="{{x2}}" y1="{{y1}}" y2="{{y2}}" id={{key}} stroke="black" stroke-width="2"/>
 				% end
 			% end
 		</svg>
+
 		<script>
 		 shape = document.querySelector('#jobgraph');
 		 var mouseStartPosition = {x: 0, y: 0};
