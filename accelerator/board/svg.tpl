@@ -153,25 +153,24 @@
 				 popup.style.display = 'none';
 			 }
 
-			 % # egna attribut börja med "data-"
 			 function highlight_nodes(thisnode, onoff) {
 				 if (onoff) {
 					 thisnode.setAttribute('fill', '#eeff88');
 					 thisnode.setAttribute('stroke-width', '5');
 				 } else {
-					 thisnode.setAttribute('fill', thisnode.getAttribute('origfill'));
+					 thisnode.setAttribute('fill', thisnode.getAttribute('data-origfill'));
 					 thisnode.setAttribute('stroke-width', '2');
 				 }
-				 const neighbour_nodes = JSON.parse(thisnode.getAttribute('neighbour_nodes'));
+				 const neighbour_nodes = JSON.parse(thisnode.getAttribute('data-neighbour_nodes'));
 				 for (const jobid of neighbour_nodes) {
 					 const n = document.querySelector('#' + jobid);
 					 if (onoff) {
 						 n.setAttribute('fill', 'var(--bgerr)');
 					 } else {
-						 n.setAttribute('fill', n.getAttribute('origfill'));
+						 n.setAttribute('fill', n.getAttribute('data-origfill'));
 					 }
 				 }
-				 const neighbour_edges = JSON.parse(thisnode.getAttribute('neighbour_edges'));
+				 const neighbour_edges = JSON.parse(thisnode.getAttribute('data-neighbour_edges'));
 				 for (const edge of neighbour_edges) {
 					 const group = document.querySelector('#' + edge);
 					 for (const n of Array.from(group.children)) {
@@ -207,10 +206,10 @@
 					onmouseover="highlight_nodes(this, true)"
 					onmouseout="highlight_nodes(this, false)"
 					fill-opacity="50%"
-					neighbour_nodes="{{dumps(list(svgdata['neighbour_nodes'][item.jobid]))}}"
-					neighbour_edges="{{dumps(list(svgdata['neighbour_edges'][item.jobid]))}}"
+					data-neighbour_nodes="{{dumps(list(svgdata['neighbour_nodes'][item.jobid]))}}"
+					data-neighbour_edges="{{dumps(list(svgdata['neighbour_edges'][item.jobid]))}}"
 					cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}"
-					fill="{{item.color}}" origfill="{{item.color}}"
+					fill="{{item.color}}" data-origfill="{{item.color}}"
 					stroke="black" stroke-width="2"
 				/>
 				<text x="{{ item.x }}" y="{{ item.y + item.size + 15 }}" font-weight="bold"
