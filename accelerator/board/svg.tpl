@@ -94,7 +94,7 @@
 						 } else if (location === '#datasets') {
 							 x.href = '/dataset/' + item;
 						 } else if (location === '#subjobs') {
-							 x.href= item;
+							 x.href = '/job/' + item;
 						 } else {
 							 x.href = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX';
 						 }
@@ -157,7 +157,7 @@
 
 			 function highlight_nodes(thisnode, onoff) {
 				 if (onoff) {
-					 thisnode.setAttribute('fill', '#eeff88');
+					 thisnode.setAttribute('fill', 'var(--node-highlight)');
 					 thisnode.setAttribute('stroke-width', '5');
 				 } else {
 					 thisnode.setAttribute('fill', thisnode.getAttribute('data-origfill'));
@@ -167,7 +167,7 @@
 				 for (const jobid of neighbour_nodes) {
 					 const n = document.querySelector('#' + jobid);
 					 if (onoff) {
-						 n.setAttribute('fill', 'var(--bgerr)');
+						 n.setAttribute('fill', 'var(--node-highlight2)');
 					 } else {
 						 n.setAttribute('fill', n.getAttribute('data-origfill'));
 					 }
@@ -194,6 +194,16 @@
 			<text x="{{item.x}}" y="{{item.y + 5}}" fill="blue4" text-anchor="middle" font-weight="bold">
 				{{ ''.join(('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else ''))}}
 			</text>
+			% if item.atmaxdepth:
+			%     color='node-atmaxdepth'
+			% elif item.notinurdlist is True:
+			%     color='node-nourdlist'
+			% elif isinstance(item.notinurdlist, str):
+			%     color='node-inanotherurdlist'
+			% else:
+			%     color='node-default'
+			% end
+			% print(color)
 				<circle id="{{item.jobid}}" class="hovernode" onclick="jobpopup(
 						event,
 						{{dumps(item.jobid)}},
@@ -211,7 +221,8 @@
 					data-neighbour_nodes="{{dumps(list(svgdata['neighbour_nodes'][item.jobid]))}}"
 					data-neighbour_edges="{{dumps(list(svgdata['neighbour_edges'][item.jobid]))}}"
 					cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}"
-					fill="{{item.color}}" data-origfill="{{item.color}}"
+					fill="var(--{{color}})"
+					data-origfill="var(--{{color}})"
 					stroke="black" stroke-width="2"
 				/>
 				<text x="{{ item.x }}" y="{{ item.y + item.size + 15 }}" font-weight="bold"
