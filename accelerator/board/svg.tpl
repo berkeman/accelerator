@@ -173,8 +173,8 @@
 				 }
 				 const neighbour_edges = JSON.parse(thisnode.getAttribute('neighbour_edges'));
 				 for (const edge of neighbour_edges) {
-					 const nn = document.querySelectorAll('#' + edge);
-					 for (const n of nn) {
+					 const group = document.querySelector('#' + edge);
+					 for (const n of Array.from(group.children)) {
 						 if (onoff) {
 							 n.setAttribute('stroke-width', 6);
 						 } else {
@@ -223,10 +223,11 @@
 				</text>
 			% end
 			% for key, line in svgdata['edges'].items():
+				<g id={{key}}>
 				% for (x1, y1, x2, y2) in line:
-				% # @@@  stoppa in svg-kontainer "g" här som har pilens id
-					<line x1="{{x1}}" x2="{{x2}}" y1="{{y1}}" y2="{{y2}}" id={{key}} stroke="black" stroke-width="2"/>
+					<line x1="{{x1}}" x2="{{x2}}" y1="{{y1}}" y2="{{y2}}" stroke="black" stroke-width="2"/>
 				% end
+				</g>
 			% end
 		</svg>
 
