@@ -186,28 +186,39 @@
 				 viewBox="{{ ' '.join(str(x) for x in svgdata['bbox']) }}"
 				 width="100%" height="300px">
 			% for item in svgdata['nodes'].values():
-				<text x="{{item.x}}" y="{{item.y + 5}}" fill="blue4" text-anchor="middle" font-weight="bold">{{ ''.join(('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else ''))}}</text>
+				<text x="{{item.x}}" y="{{item.y + 5}}" fill="blue4" text-anchor="middle"
+					font-weight="bold">{{ ''.join(
+					('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else '')
+					)}}
+				</text>
 				<circle id="{{item.jobid}}" class="hovernode" onclick="jobpopup(
-				event,
-				'{{item.jobid}}',
-				JSON.parse('{{dumps(item.files)}}'),
-				JSON.parse('{{dumps(item.datasets)}}'),
-				JSON.parse('{{dumps(tuple(item.subjobs.keys()))}}'),
-				'{{item.method}}',
-				'{{item.atmaxdepth}}',
-				'{{dumps(item.timestamp)}}',
-				JSON.parse('{{dumps(item.notinurdlist)}}'),
-				)"
-				onmouseover="highlight(this, true)"
-							onmouseout="highlight(this, false)"
-						fill-opacity="50%"
-				neighbour_nodes="{{dumps(list(svgdata['neighbour_nodes'][item.jobid]))}}"
-				neighbour_edges="{{dumps(list(svgdata['neighbour_edges'][item.jobid]))}}"
-				cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}"
-				fill="{{item.color}}" origfill="{{item.color}}"
-				stroke="black" stroke-width="2"/>
-				<text x="{{ item.x }}" y="{{ item.y + item.size + 15 }}" font-weight="bold" font-size="12" text-anchor="middle" fill="black"><a href="{{ '/job/' + item.jobid }}">{{ item.jobid }}</a></text>
-				<text x="{{ item.x }}" y="{{ item.y + item.size + 30 }}" font-size="12" text-anchor="middle" fill="black"><a href="{{ '/job/' + item.jobid + '/method.tar.gz' + '/'}}">{{ item.method }}</a></text>
+						event,
+						'{{item.jobid}}',
+						JSON.parse('{{dumps(item.files)}}'),
+						JSON.parse('{{dumps(item.datasets)}}'),
+						JSON.parse('{{dumps(tuple(item.subjobs.keys()))}}'),
+						'{{item.method}}',
+						'{{item.atmaxdepth}}',
+						'{{dumps(item.timestamp)}}',
+						JSON.parse('{{dumps(item.notinurdlist)}}'),
+					)"
+					onmouseover="highlight_nodes(this, true)"
+					onmouseout="highlight_nodes(this, false)"
+					fill-opacity="50%"
+					neighbour_nodes="{{dumps(list(svgdata['neighbour_nodes'][item.jobid]))}}"
+					neighbour_edges="{{dumps(list(svgdata['neighbour_edges'][item.jobid]))}}"
+					cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}"
+					fill="{{item.color}}" origfill="{{item.color}}"
+					stroke="black" stroke-width="2"
+				/>
+				<text x="{{ item.x }}" y="{{ item.y + item.size + 15 }}" font-weight="bold"
+					font-size="12" text-anchor="middle" fill="black">
+					<a href="{{ '/job/' + item.jobid }}">{{ item.jobid }}</a>
+				</text>
+				<text x="{{ item.x }}" y="{{ item.y + item.size + 30 }}"
+					font-size="12" text-anchor="middle" fill="black">
+					<a href="{{ '/job/' + item.jobid + '/method.tar.gz' + '/'}}">{{ item.method }}</a>
+				</text>
 			% end
 			% for key, line in svgdata['edges'].items():
 				% for (x1, y1, x2, y2) in line:
