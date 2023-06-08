@@ -90,11 +90,11 @@
 					 for (const item of items) {
 						 var x = document.createElement("a");
 						 if (location === '#files') {
-							 x.setAttribute("href", jobid + '/' + item);
+							 x.href = '/job/' + jobid + '/' + item;
 						 } else if (location === '#datasets') {
-							 x.setAttribute("href", '../dataset/' + item);
+							 x.href = '/dataset/' + item;
 						 } else {
-							 x.setAttribute("href", item);
+							 x.href= item;
 						 }
 						 x.textContent = item;
 						 var li = document.createElement("li");
@@ -119,10 +119,9 @@
 				 popup.style.top = '100px';
 				 popup.style.left = e.clientX + 'px';
 				 popup.children["jobid"].textContent = jobid;
-				 //popup.children["jobid"].setAttribute("href", "/job/" + jobid);
 				 popup.children["jobid"].href =  "/job/" + jobid;
 				 popup.children["source"].textContent = method;
-				 popup.children["source"].setAttribute("href", '/job/' + jobid + "/method.tar.gz" + '/');
+				 popup.children["source"].href ='/job/' + jobid + "/method.tar.gz" + '/';
 				 console.log(jobid, atmaxdepth)
 				 popup.children["timestamp"].textContent = '[' + timestamp + ']';
 				 if (atmaxdepth === 'True') {
@@ -141,7 +140,7 @@
 					 popup.children["notinurdlist"].style.display = 'none';
 					 popup.children["inthisurdlist"].style.display = 'block';
 					 const n = popup.querySelector('#inthisurdlist a');
-					 n.setAttribute("href", '/urd/' + notinurdlist);
+					 n.href = '/urd/' + notinurdlist;
 					 n.textContent = notinurdlist;
 				 }
 				 populatelist(jobid, files, '#files', '#filestable');
