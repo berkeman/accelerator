@@ -374,6 +374,7 @@ def run(cfg, from_shell=False):
 			return json.dumps(res)
 		else:
 			svgdata = graph_ds(ds)
+			svgdata = dict(nodes=svgdata[0], edges=svgdata[1], bbox=svgdata[2], neighbour_nodes=svgdata[3], neighbour_edges=svgdata[4])
 			return dict(ds=ds, svgdata=svgdata)
 
 	def load_workdir(jobs, name):

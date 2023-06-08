@@ -18,7 +18,8 @@
 	</table>
 
 	<h2>dataset graph</h2>
-	{{! svgdata }}
+	% include('svg_dataset.tpl')
+
 
 	<h2>columns:</h2>
 	<table id="columns" class="ds-table">

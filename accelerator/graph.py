@@ -201,7 +201,7 @@ def job(inputjob, recursiondepth=10):
 def ds(ds, recursiondepth=10):
 	g = graph()
 	nodes, edges, atmaxdepth = recurse_ds(ds, recursiondepth)
-	g.insert_nodes(nodes[0], lambda ds: ("%s\n%s\n%dx{:,d}" % (ds, ds.job.method, len(ds.columns))).format(sum(ds.lines)).replace(',', '.'), 0, atmaxdepth, jobnotds=False)
+	g.insert_nodes(nodes[0], None, 0, atmaxdepth, jobnotds=False)
 	g.insert_edges(edges)
 	return g.write()
 
@@ -222,7 +222,8 @@ class graph():
 		for level, jobsatlevel in sorted(nodes.items()):
 			adjlev = level - min(nodes)
 			for ix, j in enumerate(jobsatlevel):
-				size = 30
+				x = (xoffset + adjlev + 0.3 * sin(ix)) * 160
+				y = (ix - len(jobsatlevel) / 2) * 140 + sin(adjlev / 3) * 70
 				notinjoblist = False
 				def presentstuff(v, tit, maxlen=5):
 					if v:
@@ -243,13 +244,19 @@ class graph():
 					# This is a Job
 					title = ''
 					if validjobset and j not in validjobset:  # i.e. job is not in this urdlist
-						size = 20
 						if job2urddep and j in job2urddep:
 							notinjoblist = job2urddep[j]
 						else:
 							notinjoblist = True
 					if j.method == 'csvimport':
 						title += '<br><b>options.filename:</b> <i> %s </i><br>' % (j.params.options.filename,)
+					self.svg.jobnode2(
+						j, x=x, y=y,
+						atmaxdepth=j in atmaxdepth,
+						notinurdlist=notinjoblist,
+					)
+					for ix, (fun, var) in enumerate(((min, x), (max, x), (min, y), (max, y))):
+						self.bbox[ix] = fun(self.bbox[ix] if not self.bbox[ix] is None else var, var)
 				else:
 					# This is a Dataset
 					title = '<b>Dataset </b><a href=../dataset/{job} target="_parent">{job}</a>'.format(job=j)
@@ -270,17 +277,15 @@ class graph():
 					title += '<br><b>Rows: </b> %s' % ('{:,d}'.format(sum(j.lines)).replace(',', '.'),)
 					title += '<br>'
 					presentstuff(sorted(j.columns.items()), 'Columns')
+					self.svg.jobnode_ds(
+						j, x=x, y=y,
+						atmaxdepth=j in atmaxdepth,
+						notinurdlist=notinjoblist,
+					)
+					for ix, (fun, var) in enumerate(((min, x), (max, x), (min, y), (max, y))):
+						self.bbox[ix] = fun(self.bbox[ix] if not self.bbox[ix] is None else var, var)
 
-				x = (xoffset + adjlev + 0.3 * sin(ix)) * 160
-				y = (ix - len(jobsatlevel) / 2) * 140 + sin(adjlev / 3) * 70
 				# @@@@@@@@@@@ dataset.parent as a list is not tested at all!!!!!!!!!!!!!!!!!!!!!!!!
-				self.svg.jobnode2(
-					j, x=x, y=y,
-					atmaxdepth=j in atmaxdepth,
-					notinurdlist=notinjoblist,
-				)
-				for ix, (fun, var) in enumerate(((min, x), (max, x), (min, y), (max, y))):
-					self.bbox[ix] = fun(self.bbox[ix] if not self.bbox[ix] is None else var, var)
 
 	def insert_edges(self, edges):
 		self.svg.edges = edges

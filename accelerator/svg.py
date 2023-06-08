@@ -12,6 +12,19 @@ class SVG:
 		self.neighbour_nodes = defaultdict(set)
 		self.neighbour_edges = defaultdict(set)
 
+	def jobnode_ds(self, id, x, y, atmaxdepth=False, notinurdlist=True):
+		self.nodedata[id] = (x, y)
+		job = id.job
+		self.nodes[id] = DotDict(
+			jobid=str(job),
+			method=job.method,
+			x=x,
+			y=y,
+			columns=tuple((key, val.type) for key, val in id.columns.items()),
+			atmaxdepth=atmaxdepth,
+			timestamp=datetime.fromtimestamp(job.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
+		)
+
 	def jobnode2(self, id, x, y, atmaxdepth=False, notinurdlist=True):
 		self.nodedata[id] = (x, y)
 		self.nodes[id] = DotDict(

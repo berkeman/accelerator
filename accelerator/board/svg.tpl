@@ -11,6 +11,7 @@
 	@@@ this is only for job graphs and urdlists,  DATASETS REMAIN
 	@@@ string and variable concatenation to simplify "..and x more" and input args to populatelist.
 	@@@ mark node while menu active  (kanske använda "this" som Carl pratade om)
+	@@@ man vill veta vilken metod ett subjob i subjoblistan är (men den infon skickas inte över)
 -->
 
 	<div id="svgcontainer">
