@@ -6,14 +6,14 @@ from accelerator import DotDict
 class SVG:
 	def __init__(self):
 		self.s = ''
-		self.nodecoords = dict()
+		self.nodedata = dict()
 		self.nodes = dict()
 		self.edges = dict()
 		self.neighbour_nodes = defaultdict(set)
 		self.neighbour_edges = defaultdict(set)
 
 	def jobnode2(self, id, x, y, size=30, color='magenta', atmaxdepth=False, notinurdlist=True):
-		self.nodecoords[id] = (x, y, size)
+		self.nodedata[id] = (x, y, size)
 		self.nodes[id] = DotDict(
 			jobid=str(id),
 			method=id.method,
@@ -33,8 +33,8 @@ class SVG:
 		s = list()
 		arrowangle = pi / 6
 		arrowlen = 10
-		x1, y1, fromradius = self.nodecoords[fromid]
-		x2, y2, toradius = self.nodecoords[toid]
+		x1, y1, fromradius = self.nodedata[fromid]
+		x2, y2, toradius = self.nodedata[toid]
 		a = atan2(y2 - y1, x2 - x1)
 		x1 = x1 + fromradius * cos(a)
 		y1 = y1 + fromradius * sin(a)
