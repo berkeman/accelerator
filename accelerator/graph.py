@@ -9,6 +9,7 @@ MAXDEPTH = 1000
 
 
 def alljobdeps(job):
+	""" Return a list of all the job's dependencies """
 	res = defaultdict(list)
 	# jobs
 	for key, value in job.params.jobs.items():
@@ -38,7 +39,6 @@ def alljobdeps(job):
 def recurse_ds(inputitem, maxdepth=MAXDEPTH):
 	edges = set()
 	atmaxdepth = set()
-	mergeoffsets = dict()
 	dones = set()
 	levels = dict()
 	stack = [(inputitem, 0), ]
@@ -54,7 +54,7 @@ def recurse_ds(inputitem, maxdepth=MAXDEPTH):
 				if isinstance(current.parent, list):
 					parent = current.parent
 				else:
-					parent = [current.parent,]
+					parent = [current.parent, ]
 				for child in parent:
 					stack.append((child, level + 1))
 					edges.add((current, child))
@@ -180,18 +180,11 @@ def jlist(urdentry, recursiondepth=1000):
 	job2urddep = {Job(x[1]): str(k) + '/' + str(item.timestamp) for k, item in urdentry.deps.items() for x in item.joblist}
 	jlist = urdentry.joblist
 	jobsinurdlist = tuple(Job(item[1]) for item in reversed(jlist))
-	job2name = {job: name for name, job in jlist}
 	nodes, edges, atmaxdepth = recurse_joblist(jobsinurdlist, recursiondepth)
 	assert min(nodes) == 0, ('minimum level must be zero!', nodes.keys())
-	def labelfun(j):
-		label = '\n'.join((j, j.method))
-		if job2name.get(j) and j.method != job2name[j]:
-			label = "[%s]" % (job2name[j],) + '\n' + label
-		label += '\n' + ('D' if j.datasets else '') + ('F' if j.files() else '') + ('S' if j.post.subjobs else '')
-		return label
 	xoffset = 0
 	for graphnumber in nodes:
-		g.insert_nodes(nodes[graphnumber], labelfun, xoffset, atmaxdepth, jobsinurdlist, job2urddep)
+		g.insert_nodes(nodes[graphnumber], None, xoffset, atmaxdepth, jobsinurdlist, job2urddep)
 		xoffset += max(nodes[graphnumber]) - min(nodes[graphnumber]) + 1
 	g.insert_edges(edges)
 	return g.write()
@@ -200,11 +193,7 @@ def jlist(urdentry, recursiondepth=1000):
 def job(inputjob, recursiondepth=10):
 	g = graph()
 	nodes, edges, atmaxdepth = recurse_jobs(inputjob, recursiondepth)
-	def labelfun(j):
-		label = '\n'.join((j, j.method))
-		label += '\n' + ('D' if j.datasets else '') + ('F' if j.files() else '') + ('S' if j.post.subjobs else '')
-		return label
-	g.insert_nodes(nodes[0], labelfun, 0, atmaxdepth)
+	g.insert_nodes(nodes[0], None, 0, atmaxdepth)
 	g.insert_edges(edges)
 	return g.write()
 
@@ -229,11 +218,10 @@ class graph():
 		atmaxdepth is set of nodes that have reached recursion depth
 		validjobset is the main set of jobs to plot, those outside are plotted differently
 		"""
-		shape = 'dot' if jobnotds else 'square'
+		assert labelfun is None
 		for level, jobsatlevel in sorted(nodes.items()):
 			adjlev = level - min(nodes)
 			for ix, j in enumerate(jobsatlevel):
-				label = labelfun(j)
 				color = "#4466aa"
 				size = 30
 				notinjoblist = False
@@ -261,17 +249,12 @@ class graph():
 						size = 20
 						if job2urddep and j in job2urddep:
 							color = "#cccccc"
-							title += '<br><font color="#9900FF"><b>Job in dependency urdlist:</b><br>&nbsp&nbsp<a href=../urd/{item} target = "_parent">{item}</a></font>'.format(item=job2urddep[j])
 							notinjoblist = job2urddep[j]
 						else:
 							color = "#33cc88"
-							title += '<br><font color="#ff5555"><b>Job not in this urdlist or any of its dependencies.</b></font>'
 							notinjoblist = True
 					if j.method == 'csvimport':
 						title += '<br><b>options.filename:</b> <i> %s </i><br>' % (j.params.options.filename,)
-					presentstuff(sorted(j.files()), 'Files')
-					presentstuff(sorted(j.datasets), 'Datasets')
-					presentstuff(sorted(j.post.subjobs), 'Subjobs')
 				else:
 					# This is a Dataset
 					title = '<b>Dataset </b><a href=../dataset/{job} target="_parent">{job}</a>'.format(job=j)
@@ -285,7 +268,7 @@ class graph():
 					if isinstance(j.parent, list):
 						pv = j.parent
 					else:
-						pv = [j.parent,]
+						pv = [j.parent, ]
 					for p in pv:
 						title += '<b>Parent: </b> <a href=../dataset/{ds} target="_parent">{ds}</a><br>'.format(ds=p)
 					if j.previous:
@@ -297,7 +280,6 @@ class graph():
 				x = (xoffset + adjlev + 0.3 * sin(ix)) * 160
 				y = (ix - len(jobsatlevel) / 2) * 140 + sin(adjlev / 3) * 70
 				# @@@@@@@@@@@ dataset.parent as a list is not tested at all!!!!!!!!!!!!!!!!!!!!!!!!
-#				self.svg.jobnode(j, text=label, color=color, x=x, y=y, size=size)
 				self.svg.jobnode2(
 					j, x=x, y=y, size=size, color=color,
 					atmaxdepth=j in atmaxdepth,
@@ -308,12 +290,10 @@ class graph():
 
 	def insert_edges(self, edges):
 		for s, d in edges:
-#			self.svg.arrow(s, d)
 			self.svg.arrow2(s, d)
 	def write(self):
 		x1, x2, y1, y2 = self.bbox
 		dy = y2 - y1
 		if dy < 300:
 			y1 = y1 - (300 - dy) // 2
-#		s = self.svg.getsvg((-100 + x1, y1, 200 + x2 - x1, 300))
 		return self.svg.nodes, self.svg.edges, (-100 + x1, y1, 200 + x2 - x1, 300), self.svg.neighbour_nodes, self.svg.neighbour_edges
