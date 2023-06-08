@@ -79,12 +79,12 @@
 				</nav>
 			</div>
 			<script>
-			 function populatelist(jobid, items, location, tablelocation, maxitems=5) {
+			 function populatelist(jobid, items, location, maxitems=5) {
 				 var thelist = document.querySelector(location);
 				 thelist.style = 'display:none';
 				 if (items.length) {
 					 thelist.style = 'display:block';
-					 var thetable = document.querySelector(tablelocation);
+					 var thetable = document.querySelector(location + 'table');
 					 thetable.innerHTML = '';
 					 ix = 0;
 					 for (const item of items) {
@@ -143,9 +143,9 @@
 					 n.href = '/urd/' + notinurdlist;
 					 n.textContent = notinurdlist;
 				 }
-				 populatelist(jobid, files, '#files', '#filestable');
-				 populatelist(jobid, datasets, '#datasets', '#datasetstable');
-				 populatelist(jobid, subjobs, '#subjobs', '#subjobstable');
+				 populatelist(jobid, files, '#files');
+				 populatelist(jobid, datasets, '#datasets');
+				 populatelist(jobid, subjobs, '#subjobs');
 			 }
 
 			 function jobpopup_off(e, jobid, files, datasets, subjobs, method) {
