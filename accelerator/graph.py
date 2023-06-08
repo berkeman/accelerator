@@ -222,7 +222,6 @@ class graph():
 		for level, jobsatlevel in sorted(nodes.items()):
 			adjlev = level - min(nodes)
 			for ix, j in enumerate(jobsatlevel):
-				color = "#4466aa"
 				size = 30
 				notinjoblist = False
 				def presentstuff(v, tit, maxlen=5):
@@ -243,15 +242,11 @@ class graph():
 				if isinstance(j, Job):
 					# This is a Job
 					title = ''
-					if j in atmaxdepth:
-						color = '#cc5522'
 					if validjobset and j not in validjobset:  # i.e. job is not in this urdlist
 						size = 20
 						if job2urddep and j in job2urddep:
-							color = "#cccccc"
 							notinjoblist = job2urddep[j]
 						else:
-							color = "#33cc88"
 							notinjoblist = True
 					if j.method == 'csvimport':
 						title += '<br><b>options.filename:</b> <i> %s </i><br>' % (j.params.options.filename,)
@@ -260,7 +255,6 @@ class graph():
 					title = '<b>Dataset </b><a href=../dataset/{job} target="_parent">{job}</a>'.format(job=j)
 					title += '<br>' + datetime.fromtimestamp(j.job.params.starttime).strftime("%Y-%m-%d %H:%M:%S")
 					if j in atmaxdepth:
-						color = "#cc5522"
 						title += '<br><b><font color="#ff0099">Reached recursion limit - no dependencies drawn!</font></b>'
 					title += '<br><br>'
 					title += '<b>Job: </b><a href=../job/{job} target="_parent">{job}</a>'.format(job=j.job)
@@ -281,7 +275,7 @@ class graph():
 				y = (ix - len(jobsatlevel) / 2) * 140 + sin(adjlev / 3) * 70
 				# @@@@@@@@@@@ dataset.parent as a list is not tested at all!!!!!!!!!!!!!!!!!!!!!!!!
 				self.svg.jobnode2(
-					j, x=x, y=y, size=size, color=color,
+					j, x=x, y=y,
 					atmaxdepth=j in atmaxdepth,
 					notinurdlist=notinjoblist,
 				)
@@ -289,6 +283,7 @@ class graph():
 					self.bbox[ix] = fun(self.bbox[ix] if not self.bbox[ix] is None else var, var)
 
 	def insert_edges(self, edges):
+		self.svg.edges = edges
 		for s, d in edges:
 			self.svg.arrow2(s, d)
 	def write(self):

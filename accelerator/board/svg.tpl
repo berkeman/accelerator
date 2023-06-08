@@ -1,4 +1,7 @@
 %from json import dumps
+%from math import atan2, sin, cos, pi
+% arrowlen = 10
+% arrowangle = pi/6
 
 <!--
 	@@@ atmaxdepth and color are orthogonal right now, both set in graph.py
@@ -203,7 +206,7 @@
 			% else:
 			%     color='node-default'
 			% end
-			% print(color)
+			% item.size = 20 if item.notinurdlist else 30
 				<circle id="{{item.jobid}}" class="hovernode" onclick="jobpopup(
 						event,
 						{{dumps(item.jobid)}},
@@ -234,11 +237,26 @@
 					<a href="{{ '/job/' + item.jobid + '/method.tar.gz' + '/'}}">{{ item.method }}</a>
 				</text>
 			% end
-			% for key, line in svgdata['edges'].items():
+			% # Draw edges
+			% for fromid, toid in svgdata['edges']:
+				% key = ''.join((fromid, toid))
 				<g id={{key}}>
-				% for (x1, y1, x2, y2) in line:
+					% fromnode = svgdata['nodes'][fromid]
+					% tonode = svgdata['nodes'][toid]
+					% x1, y1 = fromnode.x, fromnode.y
+					% x2, y2 = tonode.x, tonode.y
+					% a = atan2(y2 - y1, x2 - x1)
+					% x1 = x1 + fromnode.size * cos(a)
+					% y1 = y1 + fromnode.size * sin(a)
+					% x2 = x2 - tonode.size * cos(a)
+					% y2 = y2 - tonode.size * sin(a)
 					<line x1="{{x1}}" x2="{{x2}}" y1="{{y1}}" y2="{{y2}}" stroke="black" stroke-width="2"/>
-				% end
+					% x1 = x2 - arrowlen * cos(a + arrowangle)
+					% y1 = y2 - arrowlen * sin(a + arrowangle)
+					<line x1="{{x1}}" x2="{{x2}}" y1="{{y1}}" y2="{{y2}}" stroke="black" stroke-width="2"/>
+					% x1 = x2 - arrowlen * cos(a - arrowangle)
+					% y1 = y2 - arrowlen * sin(a - arrowangle)
+					<line x1="{{x1}}" x2="{{x2}}" y1="{{y1}}" y2="{{y2}}" stroke="black" stroke-width="2"/>
 				</g>
 			% end
 		</svg>
