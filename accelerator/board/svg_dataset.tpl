@@ -210,7 +210,11 @@
 					% my = y1 + (L-70)/L*(y2-y1)
 					% vx =  my / sqrt(mx*mx+my*my) * 8
 					% vy = -mx / sqrt(mx*mx+my*my) * 8
-					<text x={{mx+vx}} y={{my+vy}} transform="rotate({{a*180/pi}},{{mx+vx}},{{my+vy}})" text-anchor="middle">{{relation}}</text>
+					<text x={{mx+vx}} y={{my+vy}}
+						transform="rotate({{a*180/pi}},{{mx+vx}},{{my+vy}})"
+						text-anchor="middle" font-size="12">
+						{{relation}}
+					</text>
 					% x1 = x1 + fromnode.size * cos(a)
 					% y1 = y1 + fromnode.size * sin(a)
 					% x2 = x2 - tonode.size * cos(a)
