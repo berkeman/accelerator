@@ -46,3 +46,10 @@ class SVG:
 		self.neighbour_nodes[toid].add(fromid)
 		self.neighbour_edges[fromid].add(edgekey)
 		self.neighbour_edges[toid].add(edgekey)
+
+	def arrow_ds(self, fromid, toid, relation):
+		edgekey = ''.join((fromid, toid))
+		self.neighbour_nodes[fromid].add(toid)
+		self.neighbour_nodes[toid].add(fromid)
+		self.neighbour_edges[fromid].add(edgekey)
+		self.neighbour_edges[toid].add(edgekey)

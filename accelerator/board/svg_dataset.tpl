@@ -185,7 +185,7 @@
 				/>
 				<text x="{{ item.x }}" y="{{ item.y + item.size + 15 }}" font-weight="bold"
 					font-size="12" text-anchor="middle" fill="black">
-					<a href="{{ '/job/' + item.jobid }}">{{ item.jobid }}</a>
+					<a href="{{ '/job/' + item.jobid }}">{{ ds }}</a>
 				</text>
 				<text x="{{ item.x }}" y="{{ item.y + item.size + 30 }}"
 					font-size="12" text-anchor="middle" fill="black">

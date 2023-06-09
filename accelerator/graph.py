@@ -36,6 +36,19 @@ def alljobdeps(job):
 	return res['ds'] + res['job'] + res['jwf']  # + res['sub']
 
 
+def dsdeps(ds):
+	ret = dict()
+	if ds.parent:
+		if isinstance(ds.parent, list):
+			for item in ds.parent:
+				ret[item] = 'parent'
+		else:
+			ret[ds.parent] = 'parent'
+	if ds.previous:
+		ret[ds.previous] = 'previous'
+	return ret
+
+
 def recurse_ds(inputitem, maxdepth=MAXDEPTH):
 	edges = set()
 	atmaxdepth = set()
@@ -50,17 +63,9 @@ def recurse_ds(inputitem, maxdepth=MAXDEPTH):
 		if level >= maxdepth:
 			atmaxdepth.add(current)
 		else:
-			if current.parent:
-				if isinstance(current.parent, list):
-					parent = current.parent
-				else:
-					parent = [current.parent, ]
-				for child in parent:
-					stack.append((child, level + 1))
-					edges.add((current, child))
-			if current.previous:
-				stack.append((current.previous, level + 1))
-				edges.add((current, current.previous))
+			for child, relation in dsdeps(current).items():
+				stack.append((child, level + 1))
+				edges.add((current, child, relation))
 		dones.add(current)
 	nodes = defaultdict(list)
 	for k, v in levels.items():
@@ -209,7 +214,7 @@ def ds(ds, recursiondepth=100):
 	g = graph()
 	nodes, edges, atmaxdepth = recurse_ds(ds, recursiondepth)
 	g.insert_nodes(nodes[0], None, 0, atmaxdepth, jobnotds=False)
-	g.insert_edges(edges)
+	g.insert_edges_ds(edges)
 	return g.write()
 
 
@@ -294,10 +299,16 @@ class graph():
 
 				# @@@@@@@@@@@ dataset.parent as a list is not tested at all!!!!!!!!!!!!!!!!!!!!!!!!
 
+	def insert_edges_ds(self, edges):
+		self.svg.edges = edges
+		for s, d, relation in edges:
+			self.svg.arrow_ds(s, d, relation)
+			
 	def insert_edges(self, edges):
 		self.svg.edges = edges
 		for s, d in edges:
 			self.svg.arrow2(s, d)
+			
 	def write(self):
 		x1, x2, y1, y2 = self.bbox
 		dy = y2 - y1
