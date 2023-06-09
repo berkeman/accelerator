@@ -2,7 +2,9 @@
 %from math import atan2, sin, cos, pi, sqrt
 % arrowlen = 10
 % arrowangle = pi/6
-
+% def fixit(x):
+%     return x.replace('/', 'slash').replace('.', 'dot')
+% end
 <!--
 	@@@ atmaxdepth and color are orthogonal right now, both set in graph.py
 	@@@ grafen följer inte musen i skala vid inzoom av stor graph
@@ -162,9 +164,9 @@
 			% for ds, item in svgdata['nodes'].items():
 			% color='node-ds-default'
 			% item.size = 30
-				<circle id="{{item.jobid}}" class="hovernode" onclick="jobpopup(
+				<circle id="{{fixit(ds)}}" class="hovernode" onclick="jobpopup(
 						event,
-						{{dumps(item.jobid)}},
+						{{dumps(fixit(item.jobid))}},
 						{{dumps(item.method)}},
 						{{dumps(ds)}},
 						{{dumps(item.columns)}},
@@ -174,8 +176,8 @@
 			 		onmouseover="highlight_nodes(this, true)"
 					onmouseout="highlight_nodes(this, false)"
 					fill-opacity="50%"
-					data-neighbour_nodes="{{dumps(list(svgdata['neighbour_nodes'][item.jobid]))}}"
-					data-neighbour_edges="{{dumps(list(svgdata['neighbour_edges'][item.jobid]))}}"
+					data-neighbour_nodes="{{dumps(list(fixit(x) for x in svgdata['neighbour_nodes'][ds]))}}"
+					data-neighbour_edges="{{dumps(list(fixit(x) for x in svgdata['neighbour_edges'][ds]))}}"
 					cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}"
 					fill="var(--{{color}})"
 					data-origfill="var(--{{color}})"
@@ -195,8 +197,8 @@
 				</text>
 			% end
 			% # Draw edges
-			% for fromid, toid in svgdata['edges']:
-				% key = ''.join((fromid, toid))
+			% for fromid, toid, relation in svgdata['edges']:
+				% key = fixit(''.join((fromid, toid)))
 				<g id={{key}}>
 					% fromnode = svgdata['nodes'][fromid]
 					% tonode = svgdata['nodes'][toid]
