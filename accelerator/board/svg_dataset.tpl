@@ -1,5 +1,5 @@
 %from json import dumps
-%from math import atan2, sin, cos, pi
+%from math import atan2, sin, cos, pi, sqrt
 % arrowlen = 10
 % arrowangle = pi/6
 
@@ -203,6 +203,12 @@
 					% x1, y1 = fromnode.x, fromnode.y
 					% x2, y2 = tonode.x, tonode.y
 					% a = atan2(y2 - y1, x2 - x1)
+					% L = sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1))
+					% mx = x1 + (L-70)/L*(x2-x1)
+					% my = y1 + (L-70)/L*(y2-y1)
+					% vx =  my / sqrt(mx*mx+my*my) * 8
+					% vy = -mx / sqrt(mx*mx+my*my) * 8
+					<text x={{mx+vx}} y={{my+vy}} transform="rotate({{a*180/pi}},{{mx+vx}},{{my+vy}})" text-anchor="middle">{{relation}}</text>
 					% x1 = x1 + fromnode.size * cos(a)
 					% y1 = y1 + fromnode.size * sin(a)
 					% x2 = x2 - tonode.size * cos(a)
