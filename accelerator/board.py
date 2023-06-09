@@ -341,7 +341,10 @@ def run(cfg, from_shell=False):
 			current = False
 			files = None
 			subjobs = None
+		import time
+		t0 = time.time()
 		svgdata = graph_job(job)
+		print('thejobtime', time.time() - t0)
 
 		return dict(
 			job=job,
@@ -448,7 +451,10 @@ def run(cfg, from_shell=False):
 	def urditem(user, build, ts):
 		key = user + '/' + build + '/' + ts
 		d = call_u(key)
+		import time
+		t0 = time.time()
 		svgdata = graph_jlist(d)
+		print('thetime', time.time() - t0)
 		return dict(
 			key=key,
 			entry=d,

@@ -55,32 +55,32 @@
 		<div id="jobpopup">
 			<a id="jobid" href="pelle">kalle</a>  (<a id="source" href="to_source">method</a>)<br>
 			<div id="timestamp"></div>
-			<div id="atmaxdepth" style="display:none"><font color="#cc5522">
+			<div id="atmaxdepth" style="display:none"><font color="var(--popup-atmaxdepth)">
 				<b>Reached recursion limit - no dependencies drawn!</b>
 			</font></div>
-			<div id="notinurdlist" style="display:none"><font color="#55cc22">
-				<b>Job not in this urdlist or any of its dependencies.</b>
+			<div id="notinurdlist" style="display:none"><font color="var(--popup-nourdlist)">
+				Job not in this urdlist or any of its dependencies.
 			</font></div>
-			<div id="inthisurdlist" style="display:none"><font color="#55cc22">
-				<b>Job in depurdlist <a href="".></a></b>
+			<div id="inthisurdlist" style="display:none"><font color="var(--popup-jobinanotherurdlist)">
+				Job in depurdlist <a href="".></a>
 			</font></div>
 			<div id="files" style="display:none">
 				<br><h1>Files:</h1>
-				<nav>
+
 					<ul id="filestable"></ul>
-				</nav>
+
 			</div>
 			<div id="datasets" style="display:none">
 				<br><h1>Datasets:</h1>
-				<nav>
+
 					<ul id="datasetstable"></ul>
-				</nav>
+
 			</div>
 			<div id="subjobs" style="display:none">
 				<br><h1>Subjobs:</h1>
-				<nav>
+
 					<ul id="subjobstable"></ul>
-				</nav>
+
 			</div>
 			<script>
 			 function populatelist(jobid, items, location, maxitems=5) {
@@ -128,14 +128,12 @@
 				 popup.children["jobid"].href =  "/job/" + jobid;
 				 popup.children["source"].textContent = method;
 				 popup.children["source"].href ='/job/' + jobid + "/method.tar.gz" + '/';
-				 console.log(jobid, atmaxdepth)
 				 popup.children["timestamp"].textContent = '[' + timestamp + ']';
 				 if (atmaxdepth === 'True') {
 					 popup.children["atmaxdepth"].style.display = 'block';
 				 } else {
 					 popup.children["atmaxdepth"].style.display = 'none';
 				 }
-				 console.debug('atmax and notinurdlist', atmaxdepth, notinurdlist);
 				 if (notinurdlist === false ) {
 					 popup.children["notinurdlist"].style.display = 'none';
 					 popup.children["inthisurdlist"].style.display = 'none';
@@ -193,7 +191,7 @@
 
 		<svg id="jobgraph" version="1.1" xmlns="http://www.w3.org/2000/svg"
 				 viewBox="{{ ' '.join(str(x) for x in svgdata['bbox']) }}"
-				 width="100%" height="300px">
+				 width="100%" height="400px">
 			% for item in svgdata['nodes'].values():
 			<text x="{{item.x}}" y="{{item.y + 5}}" fill="blue4" text-anchor="middle" font-weight="bold">
 				{{ ''.join(('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else ''))}}
@@ -268,7 +266,7 @@
 		 var mousePosition = {x: 0, y: 0};
 		 var viewboxStartPosition = {x: 0, y: 0};
 		 var viewboxPosition = {x: {{ svgdata['bbox'][0] }}, y: {{svgdata['bbox'][1] }}};
-		 var viewboxSize = {x: {{svgdata['bbox'][2]}}, y: 300};
+		 var viewboxSize = {x: {{svgdata['bbox'][2]}}, y: 400};
 		 var viewboxScale = 1.0;
 		 var mouseDown = false;
 		 shape.addEventListener("mousemove", mousemove);

@@ -175,7 +175,7 @@ def recurse_jobs(inputitem, maxdepth=MAXDEPTH):
 	return nodes, edges, atmaxdepth
 
 
-def jlist(urdentry, recursiondepth=1000):
+def jlist(urdentry, recursiondepth=100):
 	g = graph()
 	job2urddep = {Job(x[1]): str(k) + '/' + str(item.timestamp) for k, item in urdentry.deps.items() for x in item.joblist}
 	jlist = urdentry.joblist
@@ -190,15 +190,22 @@ def jlist(urdentry, recursiondepth=1000):
 	return g.write()
 
 
-def job(inputjob, recursiondepth=10):
+def job(inputjob, recursiondepth=100):
 	g = graph()
+	import time
+	t0 = time.time()
 	nodes, edges, atmaxdepth = recurse_jobs(inputjob, recursiondepth)
+	print('therecursiontime', time.time() - t0)
+	t0 = time.time()
 	g.insert_nodes(nodes[0], None, 0, atmaxdepth)
+	print('theinsertnodestime', time.time() - t0)
+	t0 = time.time()
 	g.insert_edges(edges)
+	print('theinsertedgestime', time.time() - t0)
 	return g.write()
 
 
-def ds(ds, recursiondepth=10):
+def ds(ds, recursiondepth=100):
 	g = graph()
 	nodes, edges, atmaxdepth = recurse_ds(ds, recursiondepth)
 	g.insert_nodes(nodes[0], None, 0, atmaxdepth, jobnotds=False)
@@ -294,6 +301,6 @@ class graph():
 	def write(self):
 		x1, x2, y1, y2 = self.bbox
 		dy = y2 - y1
-		if dy < 300:
-			y1 = y1 - (300 - dy) // 2
-		return self.svg.nodes, self.svg.edges, (-100 + x1, y1, 200 + x2 - x1, 300), self.svg.neighbour_nodes, self.svg.neighbour_edges
+		if dy < 400:
+			y1 = y1 - (400 - dy) // 2
+		return self.svg.nodes, self.svg.edges, (-100 + x1, y1, 200 + x2 - x1, 400), self.svg.neighbour_nodes, self.svg.neighbour_edges

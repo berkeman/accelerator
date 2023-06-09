@@ -22,13 +22,17 @@
 			--border0: #e4e1d0;
 			--border1: #e7e5d6;
 			--border2: #aad;
-			--max-height: 300px;
+
 			--node-atmaxdepth: #c52;
 			--node-nourdlist: #3c8;
 			--node-inanotherurdlist: #ccc;
 			--node-default: #46a;
 			--node-highlight: #ef8;
 			--node-highlight2: #cf8;
+			--node-ds-default: #c8c;
+			--popup-jobinanotherurdlist: #ccc;
+			--popup-nourdlist: #3c8;
+			--popup-atmaxdepth: #c52;
 		}
 
 		@media (prefers-color-scheme: dark) {
@@ -447,9 +451,7 @@
 	    position: absolute;
 	    display: none;
 	    border: 2px solid black;
-	    <!-- background: var(--bg0); -->
 	    }
-	    
 
 
 	</style>
