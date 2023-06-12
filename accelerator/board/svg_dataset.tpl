@@ -1,22 +1,25 @@
+%from bottle import html_escape
 %from json import dumps
 %from math import atan2, sin, cos, pi, sqrt
 % arrowlen = 10
 % arrowangle = pi/6
 % def fixit(x):
+%     # Need something that produces valid selectors
 %     return x.replace('/', 'slash').replace('.', 'dot')
 % end
 <!--
-	@@@ atmaxdepth and color are orthogonal right now, both set in graph.py
+	@@@ helhetsgrepp på escaping!
 	@@@ grafen följer inte musen i skala vid inzoom av stor graph
-	@@@ marginaler på sidorna runt svgn
 	@@@ visa filename på csvimport kanske?
-	@@@ this is only for job graphs and urdlists,  DATASETS REMAIN
-	@@@ string and variable concatenation to simplify "..and x more" and input args to populatelist.
 	@@@ mark node while menu active  (kanske använda "this" som Carl pratade om)
 	@@@ man vill veta vilken metod ett subjob i subjoblistan är (men den infon skickas inte över)
+	@@@ X string and variable concatenation to simplify "..and x more" and input args to populatelist.
+	@@@ X this is only for job graphs and urdlists,  DATASETS REMAIN
+	@@@ X marginaler på sidorna runt svgn
+	@@@ X använd ax_repr mm samt template ur board.py!
+	@@@ X atmaxdepth and color are orthogonal right now, both set in graph.py
 -->
-
-	<div id="svgcontainer">
+	<div id="svgcontainer" class="box">
 		<style>
 		 nav ul{
 			 height:100px;
@@ -104,6 +107,9 @@
 			 function jobpopup(e, jobid, method, ds, columns, atmaxdepth, timestamp) {
 				 const popup = document.querySelector("#jobpopup");
 				 popup.style.display = 'block';
+				 jobid = encodeURIComponent(jobid);
+				 method= encodeURIComponent(method);
+				 ds = encodeURIComponent(ds);
 				 popup.style.top = '100px';
 				 popup.style.left = e.clientX + 'px';
 				 popup.children["dataset"].textContent = jobid;
@@ -159,21 +165,22 @@
         </div>
 
 		<svg id="jobgraph" version="1.1" xmlns="http://www.w3.org/2000/svg"
-				 viewBox="{{ ' '.join(str(x) for x in svgdata['bbox']) }}"
+			 % # viewBox="{{ ' '.join(str(x) for x in svgdata['bbox']) }}"
+				 viewBox="{{ ' '.join(map(str, (svgdata['bbox'][0],svgdata['bbox'][1],svgdata['bbox'][2]-svgdata['bbox'][0],svgdata['bbox'][3]-svgdata['bbox'][1])))}}"
 				 width="100%" height="400px">
 			% for ds, item in svgdata['nodes'].items():
 			% color='node-ds-default'
 			% item.size = 30
 				<circle id="{{fixit(ds)}}" class="hovernode" onclick="jobpopup(
 						event,
-						{{dumps(fixit(item.jobid))}},
+						{{dumps(item.jobid)}},
 						{{dumps(item.method)}},
 						{{dumps(ds)}},
 						{{dumps(item.columns)}},
 						{{dumps(item.atmaxdepth)}},
 						{{dumps(item.timestamp)}},
 					)"
-			 		onmouseover="highlight_nodes(this, true)"
+					onmouseover="highlight_nodes(this, true)"
 					onmouseout="highlight_nodes(this, false)"
 					fill-opacity="50%"
 					data-neighbour_nodes="{{dumps(list(fixit(x) for x in svgdata['neighbour_nodes'][ds]))}}"
@@ -185,7 +192,7 @@
 				/>
 				<text x="{{ item.x }}" y="{{ item.y + item.size + 15 }}" font-weight="bold"
 					font-size="12" text-anchor="middle" fill="black">
-					<a href="{{ '/job/' + item.jobid }}">{{ ds }}</a>
+					<a href="{{ '/dataset/' + ds }}">{{ ds }}</a>
 				</text>
 				<text x="{{ item.x }}" y="{{ item.y + item.size + 30 }}"
 					font-size="12" text-anchor="middle" fill="black">
@@ -231,17 +238,31 @@
 		</svg>
 
 		<script>
+		 function getWidth(element) {
+			 var styles = window.getComputedStyle(element);
+			 var padding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
+			 return element.clientWidth - padding;
+		 }
+
+		 
 		 shape = document.querySelector('#jobgraph');
+		 console.log('init', shape.getAttribute("viewBox"));
+		 const init = shape.viewBox.baseVal;
+		 console.log('init', init);
 		 var mouseStartPosition = {x: 0, y: 0};
 		 var mousePosition = {x: 0, y: 0};
 		 var viewboxStartPosition = {x: 0, y: 0};
-		 var viewboxPosition = {x: {{ svgdata['bbox'][0] }}, y: {{svgdata['bbox'][1] }}};
-		 var viewboxSize = {x: {{svgdata['bbox'][2]}}, y: 400};
-		 var viewboxScale = 1.0;
+		 var viewboxPosition = {x: init.x, y: init.y};
+		 var viewboxSize = {x: init.width, y: init.height};
+		 var viewboxScale = 1;
+		 var actualscale = Math.max(init.width /getWidth(shape), init.height / shape.clientHeight);
+		 console.log('actual', actualscale);
 		 var mouseDown = false;
 		 shape.addEventListener("mousemove", mousemove);
 		 shape.addEventListener("mousedown", mousedown);
 		 shape.addEventListener("wheel", wheel);
+		 console.log('init scale', viewboxScale)
+
 		 function mousedown(e) {
 			 mouseStartPosition.x = e.pageX;
 			 mouseStartPosition.y = e.pageY;
@@ -252,6 +273,43 @@
 			 e.preventDefault();
 			 jobpopup_off();
 		 }
+
+		 function mouseup(e) {
+			 window.removeEventListener("mouseup", mouseup);
+			 mouseDown = false;
+			 e.preventDefault();
+		 }
+
+		 function mousemove(e) {
+			 mousePosition.x = e.offsetX;
+			 mousePosition.y = e.offsetY;
+			 console.log('move', mousePosition);
+			 if (mouseDown) {
+				 viewboxPosition.x = viewboxStartPosition.x + (mouseStartPosition.x - e.pageX) * actualscale;
+				 viewboxPosition.y = viewboxStartPosition.y + (mouseStartPosition.y - e.pageY) * actualscale;
+				 setviewbox();
+			 }
+			 e.preventDefault();
+		 }
+
+		 function wheel(e) {
+			 var scale = (e.deltaY < 0) ? 0.99 : 1/0.99;
+			 console.log('wheel:viewboxscale before:', viewboxScale);
+			 console.log('mouse', mousePosition);
+			 if ((viewboxScale * scale < 8.) && (viewboxScale * scale > 1./256.))
+			 {
+				 var mpos = {x: mousePosition.x * actualscale, y: mousePosition.y * actualscale};
+				 console.log('actu', actualscale);
+				 console.log('mpos', mpos);
+				 viewboxPosition.x = viewboxPosition.x + (mpos.x * (1-scale));
+				 viewboxPosition.y = viewboxPosition.y + (mpos.y * (1-scale));
+				 viewboxScale *= scale;
+				 actualscale *= scale;
+				 setviewbox();
+			 }
+			 e.preventDefault();
+		 }
+
 		 function setviewbox() {
 			 var vp = {x: 0, y: 0};
 			 var vs = {x: 0, y: 0};
@@ -261,35 +319,7 @@
 			 vs.y = viewboxSize.y * viewboxScale;
 			 shape = document.querySelector('#jobgraph');
 			 shape.setAttribute("viewBox", vp.x + " " + vp.y + " " + vs.x + " " + vs.y);
-		 }
-		 function mousemove(e) {
-			 mousePosition.x = e.offsetX;
-			 mousePosition.y = e.offsetY;
-			 if (mouseDown) {
-				 viewboxPosition.x = viewboxStartPosition.x + (mouseStartPosition.x - e.pageX) * viewboxScale;
-				 viewboxPosition.y = viewboxStartPosition.y + (mouseStartPosition.y - e.pageY) * viewboxScale;
-				 setviewbox();
-			 }
-			 e.preventDefault();
-		 }
-		 function mouseup(e) {
-			 window.removeEventListener("mouseup", mouseup);
-			 mouseDown = false;
-			 e.preventDefault();
-		 }
-		 function wheel(e) {
-			 var scale = (e.deltaY < 0) ? 0.8 : 1.2;
-			 if ((viewboxScale * scale < 8.) && (viewboxScale * scale > 1./256.))
-			 {
-				 var mpos = {x: mousePosition.x * viewboxScale, y: mousePosition.y * viewboxScale};
-				 var vpos = {x: viewboxPosition.x, y: viewboxPosition.y};
-				 var cpos = {x: mpos.x + vpos.x, y: mpos.y + vpos.y}
-				 viewboxPosition.x = (viewboxPosition.x - cpos.x) * scale + cpos.x;
-				 viewboxPosition.y = (viewboxPosition.y - cpos.y) * scale + cpos.y;
-				 viewboxScale *= scale;
-				 setviewbox();
-			 }
-			 e.preventDefault();
+			 console.log('set', shape.getAttribute("viewBox"), viewboxScale);
 		 }
 		</script>
 	</div>

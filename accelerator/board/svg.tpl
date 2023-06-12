@@ -4,17 +4,19 @@
 % arrowangle = pi/6
 
 <!--
-	@@@ atmaxdepth and color are orthogonal right now, both set in graph.py
+	@@@ javascript alla let, var, const
+	@@@ traversera urdlistor baklänges också!
+	@@@ css-a grafens fontstorlekar osv [Paolo]
 	@@@ grafen följer inte musen i skala vid inzoom av stor graph
-	@@@ marginaler på sidorna runt svgn
 	@@@ visa filename på csvimport kanske?
-	@@@ this is only for job graphs and urdlists,  DATASETS REMAIN
 	@@@ string and variable concatenation to simplify "..and x more" and input args to populatelist.
 	@@@ mark node while menu active  (kanske använda "this" som Carl pratade om)
 	@@@ man vill veta vilken metod ett subjob i subjoblistan är (men den infon skickas inte över)
+	@@@ X this is only for job graphs and urdlists,  DATASETS REMAIN
+	@@@ X atmaxdepth and color are orthogonal right now, both set in graph.py
+	@@@ X marginaler på sidorna runt svgn
 -->
-
-	<div id="svgcontainer">
+	<div id="svgcontainer" class="box">
 		<style>
 		 nav ul{
 			 height:100px;
@@ -51,6 +53,10 @@
 			 font-size: 1.05em;
 			 margin-bottom:  0em;
 		 }
+		 #notinurdlist  {
+			 color: #c64;
+		 }
+
 		</style>
 		<div id="jobpopup">
 			<a id="jobid" href="pelle">kalle</a>  (<a id="source" href="to_source">method</a>)<br>
@@ -58,29 +64,23 @@
 			<div id="atmaxdepth" style="display:none"><font color="var(--popup-atmaxdepth)">
 				<b>Reached recursion limit - no dependencies drawn!</b>
 			</font></div>
-			<div id="notinurdlist" style="display:none"><font color="var(--popup-nourdlist)">
-				Job not in this urdlist or any of its dependencies.
-			</font></div>
-			<div id="inthisurdlist" style="display:none"><font color="var(--popup-jobinanotherurdlist)">
-				Job in depurdlist <a href="".></a>
-			</font></div>
+			<div id="notinurdlist" style="display:none">
+				<br>Job not in this urdlist or any of its dependencies.
+			</div>
+			<div id="inthisurdlist" style="display:none">
+				<br>Job in depurdlist <a href="".></a>
+			</div>
 			<div id="files" style="display:none">
 				<br><h1>Files:</h1>
-
 					<ul id="filestable"></ul>
-
 			</div>
 			<div id="datasets" style="display:none">
 				<br><h1>Datasets:</h1>
-
 					<ul id="datasetstable"></ul>
-
 			</div>
 			<div id="subjobs" style="display:none">
 				<br><h1>Subjobs:</h1>
-
 					<ul id="subjobstable"></ul>
-
 			</div>
 			<script>
 			 function populatelist(jobid, items, location, maxitems=5) {

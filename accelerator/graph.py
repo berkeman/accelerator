@@ -294,7 +294,7 @@ class graph():
 						atmaxdepth=j in atmaxdepth,
 						notinurdlist=notinjoblist,
 					)
-					for ix, (fun, var) in enumerate(((min, x), (max, x), (min, y), (max, y))):
+					for ix, (fun, var) in enumerate(((min, x), (min, y), (max, x), (max, y))):
 						self.bbox[ix] = fun(self.bbox[ix] if not self.bbox[ix] is None else var, var)
 
 				# @@@@@@@@@@@ dataset.parent as a list is not tested at all!!!!!!!!!!!!!!!!!!!!!!!!
@@ -303,14 +303,14 @@ class graph():
 		self.svg.edges = edges
 		for s, d, relation in edges:
 			self.svg.arrow_ds(s, d, relation)
-			
+
 	def insert_edges(self, edges):
 		self.svg.edges = edges
 		for s, d in edges:
 			self.svg.arrow2(s, d)
-			
+
 	def write(self):
-		x1, x2, y1, y2 = self.bbox
+		x1, y1, x2, y2 = self.bbox
 		dy = y2 - y1
 		if dy < 400:
 			y1 = y1 - (400 - dy) // 2

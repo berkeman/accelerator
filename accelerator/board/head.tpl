@@ -33,6 +33,8 @@
 			--popup-jobinanotherurdlist: #ccc;
 			--popup-nourdlist: #3c8;
 			--popup-atmaxdepth: #c52;
+
+			--graph-branch-font-size-HELP: 22;
 		}
 
 		@media (prefers-color-scheme: dark) {
