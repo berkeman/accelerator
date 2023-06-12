@@ -51,7 +51,7 @@
 			ds = encodeURIComponent(ds);
 			popup.style.top = '100px';
 			popup.style.left = e.clientX + 'px';
-			popup.children["dataset"].textContent = jobid;
+			popup.children["dataset"].textContent = decodeURIComponent(ds);
 			popup.children["dataset"].href = "/dataset/" + ds;
 			popup.children["jobid"].textContent = jobid;
 			popup.children["jobid"].href =  "/job/" + jobid;

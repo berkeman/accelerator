@@ -9,6 +9,9 @@
 		 width="100%" height="400px">
 	% for ds, item in svgdata['nodes'].items():
 	% color='node-ds-default'
+	% if item.atmaxdepth:
+	%     color='node-atmaxdepth'
+	% end
 	% item.size = 30
 		<circle id="{{fixit(ds)}}" class="hovernode" onclick="jobpopup(
 				event,
