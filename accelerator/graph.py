@@ -267,7 +267,7 @@ class graph():
 						atmaxdepth=j in atmaxdepth,
 						notinurdlist=notinjoblist,
 					)
-					for ix, (fun, var) in enumerate(((min, x), (max, x), (min, y), (max, y))):
+					for ix, (fun, var) in enumerate(((min, x), (min, y), (max, x), (max, y))):
 						self.bbox[ix] = fun(self.bbox[ix] if not self.bbox[ix] is None else var, var)
 				else:
 					# This is a Dataset
@@ -314,4 +314,5 @@ class graph():
 		dy = y2 - y1
 		if dy < 400:
 			y1 = y1 - (400 - dy) // 2
-		return self.svg.nodes, self.svg.edges, (-100 + x1, y1, 200 + x2 - x1, 400), self.svg.neighbour_nodes, self.svg.neighbour_edges
+		print('bbox', self.bbox)
+		return self.svg.nodes, self.svg.edges, (-100 + x1, -50 + y1, 200 + x2 - x1, 400), self.svg.neighbour_nodes, self.svg.neighbour_edges
