@@ -35,7 +35,7 @@
 	<h2>job graph</h2>
 
 
-	% include('svg.tpl')
+	% include('svg.tpl', graphtype='job')
 
 
 	<h2>setup</h2>

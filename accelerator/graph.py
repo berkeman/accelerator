@@ -1,3 +1,4 @@
+from time import time
 from datetime import datetime
 from math import sin
 from collections import defaultdict
@@ -237,65 +238,27 @@ class graph():
 				x = (xoffset + adjlev + 0.3 * sin(ix)) * 160
 				y = (ix - len(jobsatlevel) / 2) * 140 + sin(adjlev / 3) * 70
 				notinjoblist = False
-				def presentstuff(v, tit, maxlen=5):
-					if v:
-						nonlocal title
-						title += '<br><b>%s:</b><br>' % (tit,)
-						for item in v[:maxlen]:
-							if tit == 'Datasets':
-								title += '&nbsp&nbsp<a href=../dataset/{fn} target="_parent">{fn}</a><br>'.format(fn=item)
-							elif tit == 'Subjobs':
-								title += '&nbsp&nbsp<a href=../job/{fn} target="_parent">{fn}</a> (<a href=../job/{fn}/method.tar.gz/ target="_parent">{job}</a>)<br>'.format(fn=item, job=Job(item).method)
-							elif tit == 'Columns':
-								title += '&nbsp&nbsp%s  (%s)<br>' % (item[0], item[1].type)
-							else:  # assume Job
-								title += '&nbsp&nbsp<a href=../job/{job}/{fn} target="_parent">{fn}</a><br>'.format(job=j, fn=item)
-						if len(v) > maxlen:
-							title += '&nbsp&nbsp... and %d more.' % (len(v) - maxlen,)
 				if isinstance(j, Job):
 					# This is a Job
-					title = ''
 					if validjobset and j not in validjobset:  # i.e. job is not in this urdlist
 						if job2urddep and j in job2urddep:
 							notinjoblist = job2urddep[j]
 						else:
 							notinjoblist = True
-					if j.method == 'csvimport':
-						title += '<br><b>options.filename:</b> <i> %s </i><br>' % (j.params.options.filename,)
 					self.svg.jobnode2(
 						j, x=x, y=y,
 						atmaxdepth=j in atmaxdepth,
 						notinurdlist=notinjoblist,
 					)
-					for ix, (fun, var) in enumerate(((min, x), (min, y), (max, x), (max, y))):
-						self.bbox[ix] = fun(self.bbox[ix] if not self.bbox[ix] is None else var, var)
 				else:
 					# This is a Dataset
-					title = '<b>Dataset </b><a href=../dataset/{job} target="_parent">{job}</a>'.format(job=j)
-					title += '<br>' + datetime.fromtimestamp(j.job.params.starttime).strftime("%Y-%m-%d %H:%M:%S")
-					if j in atmaxdepth:
-						title += '<br><b><font color="#ff0099">Reached recursion limit - no dependencies drawn!</font></b>'
-					title += '<br><br>'
-					title += '<b>Job: </b><a href=../job/{job} target="_parent">{job}</a>'.format(job=j.job)
-					title += '<br><br>'
-					if isinstance(j.parent, list):
-						pv = j.parent
-					else:
-						pv = [j.parent, ]
-					for p in pv:
-						title += '<b>Parent: </b> <a href=../dataset/{ds} target="_parent">{ds}</a><br>'.format(ds=p)
-					if j.previous:
-						title += '<b>Previous: </b> <a href=../dataset/{ds} target="_parent">{ds}</a><br>'.format(ds=j.previous)
-					title += '<br><b>Rows: </b> %s' % ('{:,d}'.format(sum(j.lines)).replace(',', '.'),)
-					title += '<br>'
-					presentstuff(sorted(j.columns.items()), 'Columns')
 					self.svg.jobnode_ds(
 						j, x=x, y=y,
 						atmaxdepth=j in atmaxdepth,
-						notinurdlist=notinjoblist,
+						notinurdlist=None,
 					)
-					for ix, (fun, var) in enumerate(((min, x), (min, y), (max, x), (max, y))):
-						self.bbox[ix] = fun(self.bbox[ix] if not self.bbox[ix] is None else var, var)
+				for ix, (fun, var) in enumerate(((min, x), (min, y), (max, x), (max, y))):
+					self.bbox[ix] = fun(self.bbox[ix] if not self.bbox[ix] is None else var, var)
 
 				# @@@@@@@@@@@ dataset.parent as a list is not tested at all!!!!!!!!!!!!!!!!!!!!!!!!
 

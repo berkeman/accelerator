@@ -165,7 +165,6 @@
         </div>
 
 		<svg id="jobgraph" version="1.1" xmlns="http://www.w3.org/2000/svg"
-			 % # viewBox="{{ ' '.join(str(x) for x in svgdata['bbox']) }}"
 				 viewBox="{{ ' '.join(map(str, (svgdata['bbox'][0],svgdata['bbox'][1],svgdata['bbox'][2]-svgdata['bbox'][0],svgdata['bbox'][3]-svgdata['bbox'][1])))}}"
 				 width="100%" height="400px">
 			% for ds, item in svgdata['nodes'].items():
@@ -237,89 +236,6 @@
 			% end
 		</svg>
 
-		<script>
-		 function getWidth(element) {
-			 var styles = window.getComputedStyle(element);
-			 var padding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
-			 return element.clientWidth - padding;
-		 }
+		{{ ! template("panzoom") }}
 
-		 
-		 shape = document.querySelector('#jobgraph');
-		 console.log('init', shape.getAttribute("viewBox"));
-		 const init = shape.viewBox.baseVal;
-		 console.log('init', init);
-		 var mouseStartPosition = {x: 0, y: 0};
-		 var mousePosition = {x: 0, y: 0};
-		 var viewboxStartPosition = {x: 0, y: 0};
-		 var viewboxPosition = {x: init.x, y: init.y};
-		 var viewboxSize = {x: init.width, y: init.height};
-		 var viewboxScale = 1;
-		 var actualscale = Math.max(init.width /getWidth(shape), init.height / shape.clientHeight);
-		 console.log('actual', actualscale);
-		 var mouseDown = false;
-		 shape.addEventListener("mousemove", mousemove);
-		 shape.addEventListener("mousedown", mousedown);
-		 shape.addEventListener("wheel", wheel);
-		 console.log('init scale', viewboxScale)
-
-		 function mousedown(e) {
-			 mouseStartPosition.x = e.pageX;
-			 mouseStartPosition.y = e.pageY;
-			 viewboxStartPosition.x = viewboxPosition.x;
-			 viewboxStartPosition.y = viewboxPosition.y;
-			 window.addEventListener("mouseup", mouseup);
-			 mouseDown = true;
-			 e.preventDefault();
-			 jobpopup_off();
-		 }
-
-		 function mouseup(e) {
-			 window.removeEventListener("mouseup", mouseup);
-			 mouseDown = false;
-			 e.preventDefault();
-		 }
-
-		 function mousemove(e) {
-			 mousePosition.x = e.offsetX;
-			 mousePosition.y = e.offsetY;
-			 console.log('move', mousePosition);
-			 if (mouseDown) {
-				 viewboxPosition.x = viewboxStartPosition.x + (mouseStartPosition.x - e.pageX) * actualscale;
-				 viewboxPosition.y = viewboxStartPosition.y + (mouseStartPosition.y - e.pageY) * actualscale;
-				 setviewbox();
-			 }
-			 e.preventDefault();
-		 }
-
-		 function wheel(e) {
-			 var scale = (e.deltaY < 0) ? 0.99 : 1/0.99;
-			 console.log('wheel:viewboxscale before:', viewboxScale);
-			 console.log('mouse', mousePosition);
-			 if ((viewboxScale * scale < 8.) && (viewboxScale * scale > 1./256.))
-			 {
-				 var mpos = {x: mousePosition.x * actualscale, y: mousePosition.y * actualscale};
-				 console.log('actu', actualscale);
-				 console.log('mpos', mpos);
-				 viewboxPosition.x = viewboxPosition.x + (mpos.x * (1-scale));
-				 viewboxPosition.y = viewboxPosition.y + (mpos.y * (1-scale));
-				 viewboxScale *= scale;
-				 actualscale *= scale;
-				 setviewbox();
-			 }
-			 e.preventDefault();
-		 }
-
-		 function setviewbox() {
-			 var vp = {x: 0, y: 0};
-			 var vs = {x: 0, y: 0};
-			 vp.x = viewboxPosition.x;
-			 vp.y = viewboxPosition.y;
-			 vs.x = viewboxSize.x * viewboxScale;
-			 vs.y = viewboxSize.y * viewboxScale;
-			 shape = document.querySelector('#jobgraph');
-			 shape.setAttribute("viewBox", vp.x + " " + vp.y + " " + vs.x + " " + vs.y);
-			 console.log('set', shape.getAttribute("viewBox"), viewboxScale);
-		 }
-		</script>
 	</div>

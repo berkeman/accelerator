@@ -1,7 +1,7 @@
-%from json import dumps
-%from math import atan2, sin, cos, pi
-% arrowlen = 10
-% arrowangle = pi/6
+% def fixit(x):
+%     # Need something that produces valid selectors
+%     return x.replace('/', 'slash').replace('.', 'dot')
+% end
 
 <!--
 	@@@ javascript alla let, var, const
@@ -59,8 +59,11 @@
 		 color: #c64;
 	 }
 	</style>
-
-		{{ ! template('jobpopup') }}
+		% if graphtype in ('job', 'urditem'):
+		%    include jobpopup
+		% else:
+		%    include datasetpopup
+		% end
 
 		<script>
 			 function highlight_nodes(thisnode, onoff) {
@@ -94,7 +97,11 @@
 			 }
 		</script>
 
-	{{ ! template('jobgraph', svgdata=svgdata) }}
+		% if graphtype in ('job', 'urditem'):
+		%    include jobgraph
+		% else:
+		%    include datasetgraph
+		% end
 
 	<script>
 		 function getWidth(element) {

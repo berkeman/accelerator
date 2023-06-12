@@ -4,8 +4,7 @@
 
         <h2>urd item graph</h2>
 
-		% include('svg.tpl')
-
+		% include('svg.tpl', graphtype='urditem')
 
 	<table class="urd-table">
 		% for thing in ('timestamp', 'user', 'build', 'caption',):
