@@ -7,18 +7,6 @@
 %     # Need something that produces valid selectors
 %     return x.replace('/', 'slash').replace('.', 'dot')
 % end
-<!--
-	@@@ helhetsgrepp på escaping!
-	@@@ grafen följer inte musen i skala vid inzoom av stor graph
-	@@@ visa filename på csvimport kanske?
-	@@@ mark node while menu active  (kanske använda "this" som Carl pratade om)
-	@@@ man vill veta vilken metod ett subjob i subjoblistan är (men den infon skickas inte över)
-	@@@ X string and variable concatenation to simplify "..and x more" and input args to populatelist.
-	@@@ X this is only for job graphs and urdlists,  DATASETS REMAIN
-	@@@ X marginaler på sidorna runt svgn
-	@@@ X använd ax_repr mm samt template ur board.py!
-	@@@ X atmaxdepth and color are orthogonal right now, both set in graph.py
--->
 	<div id="svgcontainer" class="box">
 		<style>
 		 nav ul{

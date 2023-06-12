@@ -4,14 +4,17 @@
 % end
 
 <!--
+	@@@ helhetsgrepp på escaping!
 	@@@ javascript alla let, var, const
 	@@@ traversera urdlistor baklänges också!
 	@@@ css-a grafens fontstorlekar osv [Paolo]
-	@@@ grafen följer inte musen i skala vid inzoom av stor graph
 	@@@ visa filename på csvimport kanske?
-	@@@ string and variable concatenation to simplify "..and x more" and input args to populatelist.
 	@@@ mark node while menu active  (kanske använda "this" som Carl pratade om)
 	@@@ man vill veta vilken metod ett subjob i subjoblistan är (men den infon skickas inte över)
+
+	@@@ X använd ax_repr mm samt template ur board.py!
+	@@@ X grafen följer inte musen i skala vid inzoom av stor graph
+	@@@ X string and variable concatenation to simplify "..and x more" and input args to populatelist.
 	@@@ X this is only for job graphs and urdlists,  DATASETS REMAIN
 	@@@ X atmaxdepth and color are orthogonal right now, both set in graph.py
 	@@@ X marginaler på sidorna runt svgn
@@ -120,7 +123,7 @@
 		 var viewboxPosition = {x: init.x, y: init.y};
 		 var viewboxSize = {x: init.width, y: init.height};
 		 var viewboxScale = 1;
-		 var actualscale = Math.max(init.width /getWidth(shape), init.height / shape.clientHeight);
+		 var actualscale = Math.max(init.width / getWidth(shape), init.height / shape.clientHeight);
 		 console.log('actual', actualscale);
 		 var mouseDown = false;
 		 shape.addEventListener("mousemove", mousemove);
