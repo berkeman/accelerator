@@ -22,89 +22,50 @@
 
 
 <div id="svgcontainer" class="box">
-	<style>
-	 nav ul{
-		 height:100px;
-		 min-height:50px;
-		 max-height:100%;
-		 width:100%;}
-	 nav ul{overflow:hidden; overflow-y:scroll;}
-	 #jobpopup {
-		 background: #ffffff;
-	 }
-	 #filestable {
-		 list-style-type:none;
-		 padding: 0px 0px 0px 10px;
-	 }
-	 #datasetstable {
-		 list-style-type:none;
-		 margin: 0;
-		 padding: 10px;
-	 }
-	 #subjobstable {
-		 list-style-type:none;
-		 margin: 0;
-		 padding: 10px;
-	 }
-	 #files > h1 {
-		 font-size: 1.05em;
-		 margin-bottom:  0em;
-	 }
-	 #datasets > h1 {
-		 font-size: 1.05em;
-		 margin-bottom:  0em;
-	 }
-	 #subjobs > h1 {
-		 font-size: 1.05em;
-		 margin-bottom:  0em;
-	 }
-	 #notinurdlist  {
-		 color: #c64;
-	 }
-	</style>
-		% if graphtype in ('job', 'urditem'):
-		%    include jobpopup
-		% else:
-		%    include datasetpopup
-		% end
 
-		<script>
-			 function highlight_nodes(thisnode, onoff) {
+	% if graphtype in ('job', 'urditem'):
+	%    include jobpopup
+	% else:
+	%    include datasetpopup
+	% end
+
+	<script>
+		 function highlight_nodes(thisnode, onoff) {
+			 if (onoff) {
+				 thisnode.setAttribute('fill', 'var(--node-highlight)');
+				 thisnode.setAttribute('stroke-width', '5');
+			 } else {
+				 thisnode.setAttribute('fill', thisnode.getAttribute('data-origfill'));
+				 thisnode.setAttribute('stroke-width', '2');
+			 }
+			 const neighbour_nodes = JSON.parse(thisnode.getAttribute('data-neighbour_nodes'));
+			 for (const jobid of neighbour_nodes) {
+				 const n = document.querySelector('#' + jobid);
 				 if (onoff) {
-					 thisnode.setAttribute('fill', 'var(--node-highlight)');
-					 thisnode.setAttribute('stroke-width', '5');
+					 n.setAttribute('fill', 'var(--node-highlight2)');
 				 } else {
-					 thisnode.setAttribute('fill', thisnode.getAttribute('data-origfill'));
-					 thisnode.setAttribute('stroke-width', '2');
+					 n.setAttribute('fill', n.getAttribute('data-origfill'));
 				 }
-				 const neighbour_nodes = JSON.parse(thisnode.getAttribute('data-neighbour_nodes'));
-				 for (const jobid of neighbour_nodes) {
-					 const n = document.querySelector('#' + jobid);
+			 }
+			 const neighbour_edges = JSON.parse(thisnode.getAttribute('data-neighbour_edges'));
+			 for (const edge of neighbour_edges) {
+				 const group = document.querySelector('#' + edge);
+				 for (const n of Array.from(group.children)) {
 					 if (onoff) {
-						 n.setAttribute('fill', 'var(--node-highlight2)');
+						 n.setAttribute('stroke-width', 6);
 					 } else {
-						 n.setAttribute('fill', n.getAttribute('data-origfill'));
-					 }
-				 }
-				 const neighbour_edges = JSON.parse(thisnode.getAttribute('data-neighbour_edges'));
-				 for (const edge of neighbour_edges) {
-					 const group = document.querySelector('#' + edge);
-					 for (const n of Array.from(group.children)) {
-						 if (onoff) {
-							 n.setAttribute('stroke-width', 6);
-						 } else {
-							 n.setAttribute('stroke-width', 2);
-						 }
+						 n.setAttribute('stroke-width', 2);
 					 }
 				 }
 			 }
-		</script>
+		 }
+	</script>
 
-		% if graphtype in ('job', 'urditem'):
-		%    include jobgraph
-		% else:
-		%    include datasetgraph
-		% end
+	% if graphtype in ('job', 'urditem'):
+	%    include jobgraph
+	% else:
+	%    include datasetgraph
+	% end
 
 	<script>
 		 function getWidth(element) {

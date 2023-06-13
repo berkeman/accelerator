@@ -63,6 +63,23 @@
 			color: var(--fg0);
 			margin: 8px;
 		}
+
+		#jobpopup {
+			background: #ffffff;
+		}
+		#jobpopup ul {
+			list-style-type:none;
+			margin: 0;
+			padding: 10px;
+		}
+		#jobpopup h1 {
+			font-size: 1.05em;
+			margin-bottom:  0em;
+		}
+		#jobpopup #notinurdlist  {
+			color: #c64;
+		}
+
 		a:link { color: var(--fg-a); }
 		a:visited { color: var(--fg-a-v); }
 		a:active { color: var(--fg-a-a); }
