@@ -8,19 +8,19 @@
 		 width="100%" height="400px">
 	% print(' '.join(map(str, (svgdata['bbox'][0],svgdata['bbox'][1],svgdata['bbox'][2]-svgdata['bbox'][0],svgdata['bbox'][3]-svgdata['bbox'][1]))))
 	% for item in svgdata['nodes'].values():
-	<text x="{{item.x}}" y="{{item.y + 5}}" fill="blue4" text-anchor="middle" font-weight="bold">
-		{{ ''.join(('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else ''))}}
-	</text>
-	% if item.atmaxdepth:
-	%     color='node-atmaxdepth'
-	% elif item.notinurdlist is True:
-	%     color='node-nourdlist'
-	% elif isinstance(item.notinurdlist, str):
-	%     color='node-inanotherurdlist'
-	% else:
-	%     color='node-default'
-	% end
-	% item.size = 20 if item.notinurdlist else 30
+		<text x="{{item.x}}" y="{{item.y + 5}}" fill="blue4" text-anchor="middle" font-weight="bold">
+			{{ ''.join(('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else ''))}}
+		</text>
+		% if item.atmaxdepth:
+		%     color='node-atmaxdepth'
+		% elif item.notinurdlist is True:
+		%     color='node-nourdlist'
+		% elif isinstance(item.notinurdlist, str):
+		%     color='node-inanotherurdlist'
+		% else:
+		%     color='node-default'
+		% end
+		% item.size = 20 if item.notinurdlist else 30
 		<circle id="{{item.jobid}}" class="hovernode" onclick="jobpopup(
 				event,
 				{{dumps(item.jobid)}},
