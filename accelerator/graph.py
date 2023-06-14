@@ -260,7 +260,5 @@ class graph():
 	def write(self):
 		x1, y1, x2, y2 = self.bbox
 		dy = y2 - y1
-		if dy < 400:
-			y1 = y1 - (400 - dy) // 2
-		print('bbox', self.bbox)
-		return self.svg.nodes, self.svg.edges, (-100 + x1, -50 + y1, 200 + x2 - x1, 400), self.svg.neighbour_nodes, self.svg.neighbour_edges
+		dy = min(400, max(100, dy))
+		return self.svg.nodes, self.svg.edges, (-50 + x1, y1 - 50, 100 + x2 - x1, dy + 150), self.svg.neighbour_nodes, self.svg.neighbour_edges
