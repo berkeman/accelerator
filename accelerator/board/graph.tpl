@@ -6,12 +6,12 @@
 <!--
 	@@@ helhetsgrepp på escaping!
 	@@@ javascript alla let, var, const
-	@@@ traversera urdlistor baklänges också!
 	@@@ css-a grafens fontstorlekar osv [Paolo]
 	@@@ visa filename på csvimport kanske?
 	@@@ mark node while menu active  (kanske använda "this" som Carl pratade om)
 	@@@ man vill veta vilken metod ett subjob i subjoblistan är (men den infon skickas inte över)
 
+	@@@ X traversera urdlistor baklänges också!
 	@@@ X använd ax_repr mm samt template ur board.py!
 	@@@ X grafen följer inte musen i skala vid inzoom av stor graph
 	@@@ X string and variable concatenation to simplify "..and x more" and input args to populatelist.

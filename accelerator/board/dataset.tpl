@@ -18,7 +18,7 @@
 	</table>
 
 	<h2>dataset graph</h2>
-	{{ ! template('svg.tpl', svgdata=svgdata, graphtype='dataset') }}
+	{{ ! template('graph.tpl', svgdata=svgdata, graphtype='dataset') }}
 
 	<h2>columns:</h2>
 	<table id="columns" class="ds-table">
