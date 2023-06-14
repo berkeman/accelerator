@@ -25,7 +25,7 @@ class SVG:
 			timestamp=datetime.fromtimestamp(job.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
 		)
 
-	def jobnode2(self, id, x, y, atmaxdepth=False, notinurdlist=True):
+	def jobnode2(self, id, x, y, name=None, atmaxdepth=False, notinurdlist=True):
 		self.nodedata[id] = (x, y)
 		self.nodes[id] = DotDict(
 			jobid=str(id),
@@ -33,6 +33,7 @@ class SVG:
 			files=sorted(id.files()),
 			datasets=id.datasets,
 			subjobs=id.post.subjobs,
+			name=name,
 			x=x,
 			y=y,
 			atmaxdepth=atmaxdepth,

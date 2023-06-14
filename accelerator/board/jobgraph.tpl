@@ -21,6 +21,7 @@
 		%     color='node-default'
 		% end
 		% item.size = 20 if item.notinurdlist else 30
+		% name = item.method if item.method == item.name else '%s (%s)' % (item.method, item.name)
 		<circle id="{{item.jobid}}" class="hovernode" onclick="jobpopup(
 				event,
 				{{dumps(item.jobid)}},
@@ -48,7 +49,7 @@
 		</text>
 		<text x="{{ item.x }}" y="{{ item.y + item.size + 30 }}"
 			font-size="12" text-anchor="middle" fill="black">
-			<a href="{{ '/job/' + item.jobid + '/method.tar.gz' + '/'}}">{{ item.method }}</a>
+			<a href="{{ '/job/' + item.jobid + '/method.tar.gz' + '/'}}">{{ name}}</a>
 		</text>
 	% end
 	% # Draw edges

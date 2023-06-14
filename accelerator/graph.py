@@ -189,8 +189,11 @@ def jlist(urdentry, recursiondepth=100):
 	nodes, edges, atmaxdepth = recurse_joblist(jobsinurdlist, recursiondepth)
 	assert min(nodes) == 0, ('minimum level must be zero!', nodes.keys())
 	xoffset = 0
+	names = {}
+	for name, jobid in jlist:
+		names[jobid] = name
 	for graphnumber in nodes:
-		g.insert_nodes(nodes[graphnumber], None, xoffset, atmaxdepth, jobsinurdlist, job2urddep)
+		g.insert_nodes(nodes[graphnumber], names, xoffset, atmaxdepth, jobsinurdlist, job2urddep)
 		xoffset += max(nodes[graphnumber]) - min(nodes[graphnumber]) + 1
 	g.insert_edges(edges)
 	return g.write()
@@ -223,7 +226,7 @@ class graph():
 	def __init__(self):
 		self.svg = SVG()
 		self.bbox = [None, None, None, None]
-	def insert_nodes(self, nodes, labelfun, xoffset, atmaxdepth, validjobset=None, job2urddep=None, jobnotds=True):
+	def insert_nodes(self, nodes, jobnames, xoffset, atmaxdepth, validjobset=None, job2urddep=None, jobnotds=True):
 		"""
 		nodes = {level: [nodes]}
 		labelfun(x) generates a label string from object x
@@ -231,7 +234,6 @@ class graph():
 		atmaxdepth is set of nodes that have reached recursion depth
 		validjobset is the main set of jobs to plot, those outside are plotted differently
 		"""
-		assert labelfun is None
 		for level, jobsatlevel in sorted(nodes.items()):
 			adjlev = level - min(nodes)
 			for ix, j in enumerate(jobsatlevel):
@@ -247,6 +249,7 @@ class graph():
 							notinjoblist = True
 					self.svg.jobnode2(
 						j, x=x, y=y,
+						name=jobnames.get(j) if jobnames else None,
 						atmaxdepth=j in atmaxdepth,
 						notinurdlist=notinjoblist,
 					)
