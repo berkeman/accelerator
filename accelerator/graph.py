@@ -82,47 +82,35 @@ def recurse_joblist(inputv, maxdepth=MAXDEPTH):
 	edges = set()
 	atmaxdepth = set()
 	children = defaultdict(set)
+	parents = defaultdict(set)
 	for item in inputv:
-		# We only investigate children of jobs in joblist.
-		# That way, we traverse jobs outside current joblist too, but only the first level.
-		children[item] = sorted(alljobdeps(item))
-	mergeoffsets = dict()
-	graphnumber = 0  # There may be more than one graph to plot
+		deps = sorted(alljobdeps(item))
+		children[item] = deps
+		for d in deps:
+			parents[d].add(item)
+	joins = {key: val for key, val in parents.items() if len(val) > 1}
+	starts = set(inputv) - set(parents)
 	dones = set()
-	for inputitem in inputv:
-		if inputitem in dones:
-			# This node belongs to an already computed graph, so skip it.
-			continue
-		stack = [(inputitem, 0), ]
-		levels = dict()
-		while stack:
-			current, level = stack.pop()
-			levels[current] = level
-			if current in dones:
-				if level > levels[current]:
-					mergeoffsets[current] = max(mergeoffsets.get(current, 0), level - levels[current])
+	stack = list( (x, 0) for x in starts)
+	print('stack', stack)
+	levels = dict()
+	while stack:
+		current, level = stack.pop()
+		print('iter', current, level, current in joins, current in dones)
+		if current in joins:
+			level = max(level, levels[current]) if current in levels else level
+			if set(parents[current]) - set(dones):
+				levels[current] = level
 				continue
-			if level >= maxdepth:
-				atmaxdepth.add(current)
-			else:
-				for child in children[current]:
-					stack.append((child, level + 1))
-					edges.add((current, child))
-			dones.add(current)
-		stack = [(inputitem, 0), ]
-		levels = dict()
-		while stack:
-			current, level = stack.pop()
-			level = max(level, levels.get(current, 0))
-			level += mergeoffsets.pop(current, 0)
-			levels[current] = level
-			if current in atmaxdepth:
-				continue
-			for child in children[current]:
-				stack.append((child, level + 1))
-		for k, v in levels.items():
-			nodes[graphnumber][v].append(k)
-		graphnumber += 1
+		for child in children[current]:
+			edges.add((current, child))
+			if child not in dones:
+				print('insert', child, level + 1)
+				stack.insert(0, (child, level + 1))
+		levels[current] = level
+		dones.add(current)
+	for k, v in levels.items():
+		nodes[0][v].append(k)
 	return nodes, edges, atmaxdepth
 
 
