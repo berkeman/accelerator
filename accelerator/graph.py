@@ -71,14 +71,13 @@ def recurse_ds(inputitem, maxdepth=MAXDEPTH):
 	nodes = defaultdict(list)
 	for k, v in levels.items():
 		nodes[v].append(k)
-	nodes = {0: nodes}
 	return nodes, edges, atmaxdepth
 
 
 def recurse_joblist(inputv, maxdepth=MAXDEPTH):
 	# Same as recurse_jobs (see comments there), but with arbitrary
 	# number of graphs, since jobs in a joblist may not be connected.
-	nodes = defaultdict(lambda: defaultdict(list))
+	nodes = defaultdict(list)
 	edges = set()
 	atmaxdepth = set()
 	children = defaultdict(set)
@@ -88,7 +87,7 @@ def recurse_joblist(inputv, maxdepth=MAXDEPTH):
 		children[item] = deps
 		for d in deps:
 			parents[d].add(item)
-	joins = {key: val for key, val in parents.items() if len(val) > 1}
+	joins = {key: sorted(val) for key, val in parents.items() if len(val) > 1}
 	starts = set(inputv) - set(parents)
 	dones = set()
 	stack = list( (x, 0) for x in starts)
@@ -110,7 +109,7 @@ def recurse_joblist(inputv, maxdepth=MAXDEPTH):
 		levels[current] = level
 		dones.add(current)
 	for k, v in levels.items():
-		nodes[0][v].append(k)
+		nodes[v].append(k)
 	return nodes, edges, atmaxdepth
 
 
@@ -165,7 +164,6 @@ def recurse_jobs(inputitem, maxdepth=MAXDEPTH):
 	nodes = defaultdict(list)
 	for k, v in levels.items():
 		nodes[v].append(k)
-	nodes = {0: nodes}
 	return nodes, edges, atmaxdepth
 
 
@@ -175,14 +173,10 @@ def jlist(urdentry, recursiondepth=100):
 	jlist = urdentry.joblist
 	jobsinurdlist = tuple(Job(item[1]) for item in reversed(jlist))
 	nodes, edges, atmaxdepth = recurse_joblist(jobsinurdlist, recursiondepth)
-	assert min(nodes) == 0, ('minimum level must be zero!', nodes.keys())
-	xoffset = 0
 	names = {}
 	for name, jobid in jlist:
 		names[jobid] = name
-	for graphnumber in nodes:
-		g.insert_nodes(nodes[graphnumber], names, xoffset, atmaxdepth, jobsinurdlist, job2urddep)
-		xoffset += max(nodes[graphnumber]) - min(nodes[graphnumber]) + 1
+		g.insert_nodes(nodes, names, 0, atmaxdepth, jobsinurdlist, job2urddep)
 	g.insert_edges(edges)
 	return g.write()
 
@@ -194,7 +188,7 @@ def job(inputjob, recursiondepth=100):
 	nodes, edges, atmaxdepth = recurse_jobs(inputjob, recursiondepth)
 	print('therecursiontime', time.time() - t0)
 	t0 = time.time()
-	g.insert_nodes(nodes[0], None, 0, atmaxdepth)
+	g.insert_nodes(nodes, None, 0, atmaxdepth)
 	print('theinsertnodestime', time.time() - t0)
 	t0 = time.time()
 	g.insert_edges(edges)
@@ -205,7 +199,7 @@ def job(inputjob, recursiondepth=100):
 def ds(ds, recursiondepth=100):
 	g = graph()
 	nodes, edges, atmaxdepth = recurse_ds(ds, recursiondepth)
-	g.insert_nodes(nodes[0], None, 0, atmaxdepth, jobnotds=False)
+	g.insert_nodes(nodes, None, 0, atmaxdepth, jobnotds=False)
 	g.insert_edges_ds(edges)
 	return g.write()
 
