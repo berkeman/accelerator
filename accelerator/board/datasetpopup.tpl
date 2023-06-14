@@ -7,9 +7,10 @@
 	</font></div>
 	<div id="columns" style="display:none">
 		<br><h1>Columns:</h1>
-		<table id="columnstable" style="margin-left:10px"></table>
+		<ul id="columnstable"></ul>
 	</div>
-	<br><div id="timestamp"></div>
+	<br>
+	<div id="timestamp"></div>
 
 	<script>
 		function populatelist(jobid, items, location, maxitems=5) {

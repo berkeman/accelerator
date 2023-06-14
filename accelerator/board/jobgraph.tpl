@@ -4,8 +4,8 @@
 % arrowangle = pi/6
 
 <svg id="jobgraph" version="1.1" xmlns="http://www.w3.org/2000/svg"
-	 viewBox="{{' '.join(map(str, (svgdata['bbox'][0],svgdata['bbox'][1],svgdata['bbox'][2]-svgdata['bbox'][0],svgdata['bbox'][3]-svgdata['bbox'][1])))}}"
-		 width="100%" height="400px">
+	viewBox="{{' '.join(map(str, (svgdata['bbox'][0],svgdata['bbox'][1],svgdata['bbox'][2]-svgdata['bbox'][0],svgdata['bbox'][3]-svgdata['bbox'][1])))}}"
+		width="100%" height="400px">
 	% print(' '.join(map(str, (svgdata['bbox'][0],svgdata['bbox'][1],svgdata['bbox'][2]-svgdata['bbox'][0],svgdata['bbox'][3]-svgdata['bbox'][1]))))
 	% for item in svgdata['nodes'].values():
 		<text x="{{item.x}}" y="{{item.y + 5}}" fill="blue4" text-anchor="middle" font-weight="bold">

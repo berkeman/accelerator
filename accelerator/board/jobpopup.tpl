@@ -1,5 +1,5 @@
 <div id="jobpopup">
-	<a id="jobid" href="pelle">kalle</a>
+	Job: <a id="jobid" href="pelle">kalle</a>
 	<div id="method"></div></br>
 	<a id="source">Source</a>  <a id="help">Help</a>
 	<div id="atmaxdepth" style="display:none"><font color="var(--popup-atmaxdepth)">
@@ -23,6 +23,7 @@
 		<br><h1>Subjobs:</h1>
 			<ul id="subjobstable"></ul>
 	</div>
+	<br>
 	<div id="timestamp"></div>
 	<script>
 		function populatelist(jobid, items, location, maxitems=5) {
@@ -99,5 +100,5 @@
 			const popup = document.querySelector("#jobpopup");
 			popup.style.display = 'none';
 		}
-	 </script>
+	</script>
 </div>
