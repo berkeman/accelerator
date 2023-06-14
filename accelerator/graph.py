@@ -91,11 +91,9 @@ def recurse_joblist(inputv, maxdepth=MAXDEPTH):
 	starts = set(inputv) - set(parents)
 	dones = set()
 	stack = list( (x, 0) for x in starts)
-	print('stack', stack)
 	levels = dict()
 	while stack:
 		current, level = stack.pop()
-		print('iter', current, level, current in joins, current in dones)
 		if current in joins:
 			level = max(level, levels[current]) if current in levels else level
 			if set(parents[current]) - set(dones):
@@ -104,7 +102,6 @@ def recurse_joblist(inputv, maxdepth=MAXDEPTH):
 		for child in children[current]:
 			edges.add((current, child))
 			if child not in dones:
-				print('insert', child, level + 1)
 				stack.insert(0, (child, level + 1))
 		levels[current] = level
 		dones.add(current)
