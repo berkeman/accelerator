@@ -1,8 +1,7 @@
 <div id="jobpopup">
 	Dataset: <a id="dataset" href="pelle">kalle</a><br>
-	Job: <a id="jobid" href="pelle">kalle</a><br>
-	Source: <a id="source" href="to_source">method</a><br>
-	<br><div id="timestamp"></div>
+	Job: <a id="jobid" href="pelle">kalle</a><div id=method>dfdf</div>
+	<a id="source">Source</a>  <a id="help">Help</a>
 	<div id="atmaxdepth" style="display:none"><font color="var(--popup-atmaxdepth)">
 		<b>Reached recursion limit - no dependencies drawn!</b>
 	</font></div>
@@ -10,6 +9,7 @@
 		<br><h1>Columns:</h1>
 		<table id="columnstable" style="margin-left:10px"></table>
 	</div>
+	<br><div id="timestamp"></div>
 
 	<script>
 		function populatelist(jobid, items, location, maxitems=5) {
@@ -55,7 +55,8 @@
 			popup.children["dataset"].href = "/dataset/" + ds;
 			popup.children["jobid"].textContent = jobid;
 			popup.children["jobid"].href =  "/job/" + jobid;
-			popup.children["source"].textContent = method;
+			popup.children["method"].textContent = '(' + method + ')';
+			popup.children["help"].href = "/method/" + method;
 			popup.children["source"].href ='/job/' + jobid + "/method.tar.gz" + '/';
 			popup.children["timestamp"].textContent = '[' + timestamp + ']';
 			console.log(atmaxdepth)

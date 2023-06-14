@@ -1,6 +1,7 @@
 <div id="jobpopup">
-	<a id="jobid" href="pelle">kalle</a>  (<a id="source" href="to_source">method</a>)<br>
-	<div id="timestamp"></div>
+	<a id="jobid" href="pelle">kalle</a>
+	<div id="method"></div></br>
+	<a id="source">Source</a>  <a id="help">Help</a>
 	<div id="atmaxdepth" style="display:none"><font color="var(--popup-atmaxdepth)">
 		<b>Reached recursion limit - no dependencies drawn!</b>
 	</font></div>
@@ -22,6 +23,7 @@
 		<br><h1>Subjobs:</h1>
 			<ul id="subjobstable"></ul>
 	</div>
+	<div id="timestamp"></div>
 	<script>
 		function populatelist(jobid, items, location, maxitems=5) {
 			var thelist = document.querySelector(location);
@@ -66,7 +68,8 @@
 			popup.style.left = e.clientX + 'px';
 			popup.children["jobid"].textContent = jobid;
 			popup.children["jobid"].href =  "/job/" + jobid;
-			popup.children["source"].textContent = method;
+			popup.children["method"].textContent = '(' + method + ')';
+			popup.children["help"].href =  "/method/" + method;
 			popup.children["source"].href ='/job/' + jobid + "/method.tar.gz" + '/';
 			popup.children["timestamp"].textContent = '[' + timestamp + ']';
 			if (atmaxdepth === 'True') {
