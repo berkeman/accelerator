@@ -24,9 +24,9 @@
 <div id="svgcontainer" class="box">
 
 	% if graphtype in ('job', 'urditem'):
-	%    include jobpopup
+	%    include('jobpopup')
 	% else:
-	%    include datasetpopup
+	%    include('datasetpopup')
 	% end
 
 	<script>
@@ -61,11 +61,14 @@
 		}
 	</script>
 
+	<svg id="jobgraph" version="1.1" xmlns="http://www.w3.org/2000/svg"
+		viewBox="{{' '.join(map(str, (svgdata['bbox'])))}}" width="100%" height="400px">
 	% if graphtype in ('job', 'urditem'):
-	%    include jobgraph
+	%    include('jobgraph')
 	% else:
-	%    include datasetgraph
+	%    include('datasetgraph')
 	% end
+	</svg>
 
 	<script>
 		function getWidth(element) {
