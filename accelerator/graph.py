@@ -75,11 +75,10 @@ def recurse_ds(inputitem, maxdepth=MAXDEPTH):
 
 
 def recurse_joblist(inputv, maxdepth=MAXDEPTH):
-	# Same as recurse_jobs (see comments there), but with arbitrary
-	# number of graphs, since jobs in a joblist may not be connected.
-	nodes = defaultdict(list)
+	# This is a breadth-first algo, that computes the level of each
+	# join node to be max of all its input's levels.
 	edges = set()
-	atmaxdepth = set()
+	atmaxdepth = set()  # @@@ currently not implemented, this algo recurses everything!
 	children = defaultdict(set)
 	parents = defaultdict(set)
 	for item in inputv:
@@ -90,21 +89,27 @@ def recurse_joblist(inputv, maxdepth=MAXDEPTH):
 	joins = {key: sorted(val) for key, val in parents.items() if len(val) > 1}
 	starts = set(inputv) - set(parents)
 	dones = set()
-	stack = list( (x, 0) for x in starts)
+	stack = list( (None, x, 0) for x in starts)
 	levels = dict()
+	joinedparents = defaultdict(set)
 	while stack:
-		current, level = stack.pop()
+		parent, current, level = stack.pop()
+		print(current, level)
 		if current in joins:
 			level = max(level, levels[current]) if current in levels else level
-			if set(parents[current]) - set(dones):
-				levels[current] = level
+			levels[current] = level
+			joinedparents[current].add(parent)
+			if joinedparents[current] == set(parents[current]):
+				pass
+			else:
 				continue
-		for child in children[current]:
-			edges.add((current, child))
-			if child not in dones:
-				stack.insert(0, (child, level + 1))
 		levels[current] = level
+		for child in children[current]:
+			edges.add((current, child, None))
+			if child not in dones:
+				stack.insert(0, (current, child, level + 1))
 		dones.add(current)
+	nodes = defaultdict(list)
 	for k, v in levels.items():
 		nodes[v].append(k)
 	return nodes, edges, atmaxdepth
@@ -143,7 +148,7 @@ def recurse_jobs(inputitem, maxdepth=MAXDEPTH):
 				node2children[current] = sorted(alljobdeps(current))
 			for child in node2children[current]:
 				stack.append((child, level + 1))
-				edges.add((current, child))
+				edges.add((current, child, None))
 		dones.add(current)
 	# Phase 2, recurse again and fix level differences
 	levels = dict()
@@ -173,7 +178,7 @@ def jlist(urdentry, recursiondepth=100):
 	names = {}
 	for name, jobid in jlist:
 		names[jobid] = name
-		g.insert_nodes(nodes, names, 0, atmaxdepth, jobsinurdlist, job2urddep)
+	g.insert_nodes(nodes, names, 0, atmaxdepth, edges, jobsinurdlist, job2urddep)
 	g.insert_edges(edges)
 	return g.write()
 
@@ -185,7 +190,7 @@ def job(inputjob, recursiondepth=100):
 	nodes, edges, atmaxdepth = recurse_jobs(inputjob, recursiondepth)
 	print('therecursiontime', time.time() - t0)
 	t0 = time.time()
-	g.insert_nodes(nodes, None, 0, atmaxdepth)
+	g.insert_nodes(nodes, None, 0, atmaxdepth, edges)
 	print('theinsertnodestime', time.time() - t0)
 	t0 = time.time()
 	g.insert_edges(edges)
@@ -196,7 +201,7 @@ def job(inputjob, recursiondepth=100):
 def ds(ds, recursiondepth=100):
 	g = graph()
 	nodes, edges, atmaxdepth = recurse_ds(ds, recursiondepth)
-	g.insert_nodes(nodes, None, 0, atmaxdepth, jobnotds=False)
+	g.insert_nodes(nodes, None, 0, atmaxdepth, edges)
 	g.insert_edges_ds(edges)
 	return g.write()
 
@@ -205,7 +210,7 @@ class graph():
 	def __init__(self):
 		self.svg = SVG()
 		self.bbox = [None, None, None, None]
-	def insert_nodes(self, nodes, jobnames, xoffset, atmaxdepth, validjobset=None, job2urddep=None, jobnotds=True):
+	def insert_nodes(self, nodes, jobnames, xoffset, atmaxdepth, edges, validjobset=None, job2urddep=None):
 		"""
 		nodes = {level: [nodes]}
 		labelfun(x) generates a label string from object x
@@ -213,7 +218,19 @@ class graph():
 		atmaxdepth is set of nodes that have reached recursion depth
 		validjobset is the main set of jobs to plot, those outside are plotted differently
 		"""
+		order = {x: str(ix) for ix, x in enumerate(sorted(nodes[0]))}
+		parents = defaultdict(set)
+		for s,d, _ in edges:
+			parents[d].add(s)
+
 		for level, jobsatlevel in sorted(nodes.items()):
+			if level > 0:
+				for n in jobsatlevel:
+					v = []
+					for parent in parents[n]:
+						v.append(order[parent])
+					order[n] = ''.join(sorted(v))
+			jobsatlevel = sorted(jobsatlevel, key = lambda x: order[x])
 			adjlev = level - min(nodes)
 			for ix, j in enumerate(jobsatlevel):
 				x = (xoffset + adjlev + 0.3 * sin(ix)) * 160
@@ -251,7 +268,7 @@ class graph():
 
 	def insert_edges(self, edges):
 		self.svg.edges = edges
-		for s, d in edges:
+		for s, d, _ in edges:
 			self.svg.arrow2(s, d)
 
 	def write(self):
