@@ -46,30 +46,6 @@ def dsdeps(ds):
 	return ret
 
 
-def recurse_ds(inputitem, maxdepth=MAXDEPTH):
-	edges = set()
-	atmaxdepth = set()
-	dones = set()
-	levels = dict()
-	stack = [(inputitem, 0), ]
-	while stack:
-		current, level = stack.pop()
-		if current in dones:
-			continue
-		levels[current] = level
-		if level >= maxdepth:
-			atmaxdepth.add(current)
-		else:
-			for child, relation in dsdeps(current).items():
-				stack.append((child, level + 1))
-				edges.add((current, child, relation))
-		dones.add(current)
-	nodes = defaultdict(list)
-	for k, v in levels.items():
-		nodes[v].append(k)
-	return nodes, edges, atmaxdepth
-
-
 def recurse_joblist(inputv, maxdepth=MAXDEPTH):
 	# This is a breadth-first algo, that computes the level of each
 	# join node to be max of all its input's levels.
@@ -164,6 +140,30 @@ def recurse_jobs(inputitem, maxdepth=MAXDEPTH):
 	return nodes, edges, atmaxdepth
 
 
+def recurse_ds(inputitem, maxdepth=MAXDEPTH):
+	edges = set()
+	atmaxdepth = set()
+	dones = set()
+	levels = dict()
+	stack = [(inputitem, 0), ]
+	while stack:
+		current, level = stack.pop()
+		if current in dones:
+			continue
+		levels[current] = level
+		if level >= maxdepth:
+			atmaxdepth.add(current)
+		else:
+			for child, relation in dsdeps(current).items():
+				stack.append((child, level + 1))
+				edges.add((current, child, relation))
+		dones.add(current)
+	nodes = defaultdict(list)
+	for k, v in levels.items():
+		nodes[v].append(k)
+	return nodes, edges, atmaxdepth
+
+
 def jlist(urdentry, recursiondepth=100):
 	g = graph()
 	job2urddep = {Job(x[1]): str(k) + '/' + str(item.timestamp) for k, item in urdentry.deps.items() for x in item.joblist}
@@ -232,7 +232,7 @@ class graph:
 							notinjoblist = job2urddep[j]
 						else:
 							notinjoblist = True
-					self.jobnode_job(
+					self.node_job(
 						j, x=x, y=y,
 						name=jobnames.get(j) if jobnames else None,
 						atmaxdepth=j in atmaxdepth,
@@ -240,7 +240,7 @@ class graph:
 					)
 				else:
 					# This is a Dataset
-					self.jobnode_ds(
+					self.node_ds(
 						j, x=x, y=y,
 						atmaxdepth=j in atmaxdepth,
 						notinurdlist=None,
@@ -248,7 +248,7 @@ class graph:
 				for ix, (fun, var) in enumerate(((min, x), (min, y), (max, x), (max, y))):
 					self.bbox[ix] = fun(self.bbox[ix] if not self.bbox[ix] is None else var, var)
 
-	def jobnode_ds(self, id, x, y, atmaxdepth=False, notinurdlist=True):
+	def node_ds(self, id, x, y, atmaxdepth=False, notinurdlist=True):
 		job = id.job
 		self.nodes[id] = DotDict(
 			jobid=str(job),
@@ -261,7 +261,7 @@ class graph:
 			columns=tuple((key, val.type) for key, val in id.columns.items()),
 		)
 
-	def jobnode_job(self, id, x, y, name=None, atmaxdepth=False, notinurdlist=True):
+	def node_job(self, id, x, y, name=None, atmaxdepth=False, notinurdlist=True):
 		self.nodes[id] = DotDict(
 			jobid=str(id),
 			method=id.method,
