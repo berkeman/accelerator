@@ -39,6 +39,10 @@ from accelerator.shell.workdir import job_data, workdir_jids
 from accelerator.compat import setproctitle, url_quote, urlencode
 from accelerator import __version__ as ax_version
 
+from accelerator.graph import jlist as graph_jlist
+from accelerator.graph import job as graph_job
+from accelerator.graph import ds as graph_ds
+
 # why wasn't Accept specified in a sane manner (like sending it in preference order)?
 def get_best_accept(*want):
 	d = {want[0]: -1} # fallback to first specified
@@ -415,6 +419,7 @@ def run(cfg, from_shell=False):
 			current = False
 			files = None
 			subjobs = None
+		svgdata = graph_job(job)
 		return dict(
 			job=job,
 			aborted=aborted,
@@ -424,6 +429,13 @@ def run(cfg, from_shell=False):
 			params=job.params,
 			subjobs=subjobs,
 			files=files,
+			svgdata=dict(
+				nodes=svgdata[0],
+				edges=svgdata[1],
+				bbox=svgdata[2],
+				neighbour_nodes=svgdata[3],
+				neighbour_edges=svgdata[4]
+			)
 		)
 
 	@bottle.get('/dataset/<dsid:path>')
@@ -444,7 +456,14 @@ def run(cfg, from_shell=False):
 			bottle.response.content_type = 'application/json; charset=UTF-8'
 			return json.dumps(res)
 		else:
-			return dict(ds=ds)
+			svgdata = graph_ds(ds)
+			return dict(ds=ds, svgdata=dict(
+				nodes=svgdata[0],
+				edges=svgdata[1],
+				bbox=svgdata[2],
+				neighbour_nodes=svgdata[3],
+				neighbour_edges=svgdata[4]
+			))
 
 	def load_workdir(jobs, name):
 		known = call_s('workdir', name)
@@ -508,7 +527,17 @@ def run(cfg, from_shell=False):
 	def urditem(user, build, ts):
 		key = user + '/' + build + '/' + ts
 		d = call_u(key)
-		return dict(key=key, entry=d)
+		svgdata = graph_jlist(d)
+		return dict(key=key,
+					entry=d,
+					svgdata=dict(
+						nodes=svgdata[0],
+						edges=svgdata[1],
+						bbox=svgdata[2],
+						neighbour_nodes=svgdata[3],
+						neighbour_edges=svgdata[4]
+					)
+				)
 
 	@bottle.get('/h/<name:path>')
 	def hashed_file(name):
@@ -535,6 +564,7 @@ def run(cfg, from_shell=False):
 		kw = {'reloader': True}
 	else:
 		kw = {'quiet': True}
+	bottle.debug(True)
 	kw['server'] = WaitressServer
 	listen = cfg.board_listen
 	if isinstance(listen, tuple):
