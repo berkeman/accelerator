@@ -27,7 +27,7 @@
 	<div id="timestamp"></div>
 	<script>
 		function populatelist(jobid, items, location, maxitems=5) {
-			var thelist = document.querySelector(location);
+			const thelist = document.querySelector(location);
 			thelist.style = 'display:none';
 			if (items.length) {
 				thelist.style = 'display:block';
@@ -35,25 +35,23 @@
 				thetable.innerHTML = '';
 				ix = 0;
 				for (const item of items) {
-					var x = document.createElement("a");
+					const x = document.createElement("a");
 					if (location === '#files') {
 						x.href = '/job/' + jobid + '/' + item;
 					} else if (location === '#datasets') {
 						x.href = '/dataset/' + item;
 					} else if (location === '#subjobs') {
 						x.href = '/job/' + item;
-					} else {
-						x.href = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX';
 					}
 					x.textContent = item;
-					var li = document.createElement("li");
+					const li = document.createElement("li");
 					li.appendChild(x);
 					thetable.appendChild(li);
 					ix += 1;
 					if (items.length > maxitems && ix === maxitems) {
-						var sublen = items.length - maxitems;
-						var x = document.createTextNode("... and " +sublen.toString() + " more.");
-						var li = document.createElement("li");
+						const sublen = items.length - maxitems;
+						const x = document.createTextNode("... and " +sublen.toString() + " more.");
+						const li = document.createElement("li");
 						li.appendChild(x);
 						thetable.appendChild(li);
 						break;
@@ -64,7 +62,6 @@
 		function jobpopup(e, jobid, files, datasets, subjobs, method, atmaxdepth, timestamp, notinurdlist) {
 			const popup = document.querySelector("#jobpopup");
 			popup.style.display = 'block';
-			//popup.style.top = e.clientY + 'px';
 			popup.style.top = '100px';
 			popup.style.left = e.clientX + 'px';
 			popup.children["jobid"].textContent = jobid;
