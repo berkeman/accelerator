@@ -1,5 +1,3 @@
-from time import time
-from datetime import datetime
 from math import sin
 from collections import defaultdict
 from accelerator import JobWithFile, Job
@@ -89,7 +87,7 @@ def recurse_joblist(inputv, maxdepth=MAXDEPTH):
 	joins = {key: sorted(val) for key, val in parents.items() if len(val) > 1}
 	starts = set(inputv) - set(parents)
 	dones = set()
-	stack = list( (None, x, 0) for x in starts)
+	stack = list((None, x, 0) for x in starts)
 	levels = dict()
 	joinedparents = defaultdict(set)
 	while stack:
@@ -210,26 +208,19 @@ class graph():
 		self.svg = SVG()
 		self.bbox = [None, None, None, None]
 	def insert_nodes(self, nodes, jobnames, atmaxdepth, edges, validjobset=None, job2urddep=None):
-		"""
-		nodes = {level: [nodes]}
-		labelfun(x) generates a label string from object x
-		xoffset is leftmost position of new graph
-		atmaxdepth is set of nodes that have reached recursion depth
-		validjobset is the main set of jobs to plot, those outside are plotted differently
-		"""
 		order = {x: str(ix) for ix, x in enumerate(sorted(nodes[0]))}
 		children = defaultdict(set)
-		for s,d, _ in edges:
+		for s, d, _ in edges:
 			children[s].add(d)
 		for level, jobsatlevel in sorted(nodes.items()):
-			jobsatlevel = sorted(jobsatlevel, key = lambda x: order[x])
-			plotorder = {n:order[n] for n in jobsatlevel}
+			jobsatlevel = sorted(jobsatlevel, key=lambda x: order[x])
+			plotorder = {n: order[n] for n in jobsatlevel}
 			for n in jobsatlevel:
 				for ix, c in enumerate(sorted(children[n])):
 					if c not in order:
 						order[c] = order[n] + str(ix)
 				order.pop(n)
-			for ix, (key, val) in enumerate(sorted(order.items(), key=lambda x:x[1])):
+			for ix, (key, val) in enumerate(sorted(order.items(), key=lambda x: x[1])):
 				order[key] = str(ix)
 			for ix, j in enumerate(jobsatlevel):
 				x = 160 * (level + 0.3 * sin(ix))
