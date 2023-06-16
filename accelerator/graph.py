@@ -177,7 +177,7 @@ def jlist(urdentry, recursiondepth=100):
 	names = {}
 	for name, jobid in jlist:
 		names[jobid] = name
-	g.insert_nodes(nodes, names, 0, atmaxdepth, edges, jobsinurdlist, job2urddep)
+	g.insert_nodes(nodes, names, atmaxdepth, edges, jobsinurdlist, job2urddep)
 	g.insert_edges(edges)
 	return g.write()
 
@@ -189,7 +189,7 @@ def job(inputjob, recursiondepth=100):
 	nodes, edges, atmaxdepth = recurse_jobs(inputjob, recursiondepth)
 	print('therecursiontime', time.time() - t0)
 	t0 = time.time()
-	g.insert_nodes(nodes, None, 0, atmaxdepth, edges)
+	g.insert_nodes(nodes, None, atmaxdepth, edges)
 	print('theinsertnodestime', time.time() - t0)
 	t0 = time.time()
 	g.insert_edges(edges)
@@ -200,7 +200,7 @@ def job(inputjob, recursiondepth=100):
 def ds(ds, recursiondepth=100):
 	g = graph()
 	nodes, edges, atmaxdepth = recurse_ds(ds, recursiondepth)
-	g.insert_nodes(nodes, None, 0, atmaxdepth, edges)
+	g.insert_nodes(nodes, None, atmaxdepth, edges)
 	g.insert_edges_ds(edges)
 	return g.write()
 
@@ -209,7 +209,7 @@ class graph():
 	def __init__(self):
 		self.svg = SVG()
 		self.bbox = [None, None, None, None]
-	def insert_nodes(self, nodes, jobnames, xoffset, atmaxdepth, edges, validjobset=None, job2urddep=None):
+	def insert_nodes(self, nodes, jobnames, atmaxdepth, edges, validjobset=None, job2urddep=None):
 		"""
 		nodes = {level: [nodes]}
 		labelfun(x) generates a label string from object x
@@ -231,10 +231,9 @@ class graph():
 				order.pop(n)
 			for ix, (key, val) in enumerate(sorted(order.items(), key=lambda x:x[1])):
 				order[key] = str(ix)
-			adjlev = level - min(nodes)
 			for ix, j in enumerate(jobsatlevel):
-				x = 160 * (xoffset + adjlev + 0.3 * sin(ix))
-				y = 140 * int(plotorder[j]) + 70 * sin(adjlev / 3)
+				x = 160 * (level + 0.3 * sin(ix))
+				y = 140 * int(plotorder[j]) + 70 * sin(level / 3)
 				notinjoblist = False
 				if isinstance(j, Job):
 					# This is a Job
