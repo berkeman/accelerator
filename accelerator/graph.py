@@ -190,7 +190,6 @@ def ds(ds, recursiondepth=100):
 
 class graph:
 	def __init__(self):
-		self.nodedata = dict()
 		self.nodes = dict()
 		self.edges = dict()
 		self.neighbour_nodes = defaultdict(set)
@@ -200,7 +199,7 @@ class graph:
 	def creategraph(self, nodes, edges, atmaxdeph, jobnames={}, jobsinurdlist=set(), job2urddep={}):
 		self.insert_nodes(nodes, edges, atmaxdeph, jobnames, jobsinurdlist, job2urddep)
 		self.insert_edges(edges)
-
+		# do some final adjustments to the bounding box
 		x1, y1, x2, y2 = self.bbox
 		dy = y2 - y1
 		dy = min(400, max(100, dy))
@@ -250,54 +249,39 @@ class graph:
 					self.bbox[ix] = fun(self.bbox[ix] if not self.bbox[ix] is None else var, var)
 
 	def jobnode_ds(self, id, x, y, atmaxdepth=False, notinurdlist=True):
-		self.nodedata[id] = (x, y)
 		job = id.job
 		self.nodes[id] = DotDict(
 			jobid=str(job),
 			method=job.method,
 			x=x,
 			y=y,
-			columns=tuple((key, val.type) for key, val in id.columns.items()),
 			atmaxdepth=atmaxdepth,
 			timestamp=datetime.fromtimestamp(job.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
+			# specific to ds
+			columns=tuple((key, val.type) for key, val in id.columns.items()),
 		)
 
 	def jobnode_job(self, id, x, y, name=None, atmaxdepth=False, notinurdlist=True):
-		self.nodedata[id] = (x, y)
 		self.nodes[id] = DotDict(
 			jobid=str(id),
 			method=id.method,
+			x=x,
+			y=y,
+			atmaxdepth=atmaxdepth,
+			timestamp=datetime.fromtimestamp(id.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
+			# specific to job
 			files=sorted(id.files()),
 			datasets=id.datasets,
 			subjobs=id.post.subjobs,
 			name=name,
-			x=x,
-			y=y,
-			atmaxdepth=atmaxdepth,
 			notinurdlist=notinurdlist,
-			timestamp=datetime.fromtimestamp(id.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
 		)
-
-	def insert_edges_ds(self, edges):
-		self.edges = edges
-		for s, d, relation in edges:
-			self.arrow_ds(s, d, relation)
 
 	def insert_edges(self, edges):
 		self.edges = edges
 		for s, d, _ in edges:
-			self.arrow_job(s, d)
-
-	def arrow_job(self, fromid, toid):
-		edgekey = ''.join((fromid, toid))
-		self.neighbour_nodes[fromid].add(toid)
-		self.neighbour_nodes[toid].add(fromid)
-		self.neighbour_edges[fromid].add(edgekey)
-		self.neighbour_edges[toid].add(edgekey)
-
-	def arrow_ds(self, fromid, toid, relation):
-		edgekey = ''.join((fromid, toid))
-		self.neighbour_nodes[fromid].add(toid)
-		self.neighbour_nodes[toid].add(fromid)
-		self.neighbour_edges[fromid].add(edgekey)
-		self.neighbour_edges[toid].add(edgekey)
+			edgekey = ''.join((s, d))
+			self.neighbour_nodes[s].add(d)
+			self.neighbour_nodes[d].add(s)
+			self.neighbour_edges[s].add(edgekey)
+			self.neighbour_edges[d].add(edgekey)
