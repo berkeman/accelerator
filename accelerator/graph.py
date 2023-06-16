@@ -94,7 +94,6 @@ def recurse_joblist(inputv, maxdepth=MAXDEPTH):
 	joinedparents = defaultdict(set)
 	while stack:
 		parent, current, level = stack.pop()
-		print(current, level)
 		if current in joins:
 			level = max(level, levels[current]) if current in levels else level
 			levels[current] = level
@@ -219,22 +218,23 @@ class graph():
 		validjobset is the main set of jobs to plot, those outside are plotted differently
 		"""
 		order = {x: str(ix) for ix, x in enumerate(sorted(nodes[0]))}
-		parents = defaultdict(set)
+		children = defaultdict(set)
 		for s,d, _ in edges:
-			parents[d].add(s)
-
+			children[s].add(d)
 		for level, jobsatlevel in sorted(nodes.items()):
-			if level > 0:
-				for n in jobsatlevel:
-					v = []
-					for parent in parents[n]:
-						v.append(order[parent])
-					order[n] = ''.join(sorted(v))
 			jobsatlevel = sorted(jobsatlevel, key = lambda x: order[x])
+			plotorder = {n:order[n] for n in jobsatlevel}
+			for n in jobsatlevel:
+				for ix, c in enumerate(sorted(children[n])):
+					if c not in order:
+						order[c] = order[n] + str(ix)
+				order.pop(n)
+			for ix, (key, val) in enumerate(sorted(order.items(), key=lambda x:x[1])):
+				order[key] = str(ix)
 			adjlev = level - min(nodes)
 			for ix, j in enumerate(jobsatlevel):
-				x = (xoffset + adjlev + 0.3 * sin(ix)) * 160
-				y = (ix - len(jobsatlevel) / 2) * 140 + sin(adjlev / 3) * 70
+				x = 160 * (xoffset + adjlev + 0.3 * sin(ix))
+				y = 140 * int(plotorder[j]) + 70 * sin(adjlev / 3)
 				notinjoblist = False
 				if isinstance(j, Job):
 					# This is a Job
