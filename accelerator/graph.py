@@ -8,20 +8,20 @@ MAXDEPTH = 1000
 
 
 
-def alljobdeps(job):
+def jobdeps(job):
 	""" Return a list of all the job's dependencies """
-	res = defaultdict(list)
+	res = set()
 	# jobs
 	for key, value in job.params.jobs.items():
 		if not isinstance(value, (list, tuple)):
 			value = [value, ]
 		for val in value:
 			if val:
-				res['job'].append(val)
+				res.add(val)
 	# options Jobwithfile
 	for key, value in job.params.options.items():
 		if isinstance(value, JobWithFile):
-			res['jwf'].append(value.job)
+			res.add(value.job)
 		# @@ handle or sorts of nested options here
 	# datasets
 	for key, value in job.params.datasets.items():
@@ -29,11 +29,8 @@ def alljobdeps(job):
 			value = [value, ]
 		for val in value:
 			if val:
-				res['ds'].append(val.job)
-	# subjobs
-#	for key, flag in job.post.subjobs.items():
-#		res['sub'].append(Job(key))
-	return res['ds'] + res['job'] + res['jwf']  # + res['sub']
+				res.add(val.job)
+	return res
 
 
 def dsdeps(ds):
@@ -81,7 +78,7 @@ def recurse_joblist(inputv, maxdepth=MAXDEPTH):
 	children = defaultdict(set)
 	parents = defaultdict(set)
 	for item in inputv:
-		deps = sorted(alljobdeps(item))
+		deps = sorted(jobdeps(item))
 		children[item] = deps
 		for d in deps:
 			parents[d].add(item)
@@ -143,7 +140,7 @@ def recurse_jobs(inputitem, maxdepth=MAXDEPTH):
 		else:
 			if current not in node2children:
 				# populate "cache".  Used by second recursion too!
-				node2children[current] = sorted(alljobdeps(current))
+				node2children[current] = sorted(jobdeps(current))
 			for child in node2children[current]:
 				stack.append((child, level + 1))
 				edges.add((current, child, None))
