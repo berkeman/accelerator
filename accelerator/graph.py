@@ -7,9 +7,8 @@ from accelerator import DotDict
 MAXDEPTH = 1000
 
 
-
 def jobdeps(job):
-	""" Return a list of all the job's dependencies """
+	""" Return all the job's dependencies """
 	res = set()
 	# jobs
 	for key, value in job.params.jobs.items():
@@ -34,6 +33,7 @@ def jobdeps(job):
 
 
 def dsdeps(ds):
+	""" return all the dataset's parents and previous """
 	ret = dict()
 	if ds.parent:
 		if isinstance(ds.parent, list):
@@ -46,7 +46,7 @@ def dsdeps(ds):
 	return ret
 
 
-def recurse_joblist(inputv, maxdepth=MAXDEPTH):
+def recurse_joblist(inputv):
 	# This is a breadth-first algo, that computes the level of each
 	# join node to be max of all its input's levels.
 	edges = set()
@@ -164,12 +164,12 @@ def recurse_ds(inputitem, maxdepth=MAXDEPTH):
 	return nodes, edges, atmaxdepth
 
 
-def jlist(urdentry, recursiondepth=100):
+def jlist(urdentry):
 	g = graph()
 	job2urddep = {Job(x[1]): str(k) + '/' + str(item.timestamp) for k, item in urdentry.deps.items() for x in item.joblist}
 	jlist = urdentry.joblist
 	jobsinurdlist = tuple(Job(item[1]) for item in reversed(jlist))
-	nodes, edges, atmaxdepth = recurse_joblist(jobsinurdlist, recursiondepth)
+	nodes, edges, atmaxdepth = recurse_joblist(jobsinurdlist)
 	names = {}
 	for name, jobid in jlist:
 		names[jobid] = name
@@ -212,8 +212,8 @@ class graph:
 		for s, d, _ in edges:
 			children[s].add(d)
 		for level, jobsatlevel in sorted(nodes.items()):
-			jobsatlevel=sorted(jobsatlevel, key=lambda x: order[x])
-			plotorder={n: order[n] for n in jobsatlevel}
+			jobsatlevel = sorted(jobsatlevel, key=lambda x: order[x])
+			plotorder = {n: order[n] for n in jobsatlevel}
 			for n in jobsatlevel:
 				for ix, c in enumerate(sorted(children[n])):
 					if c not in order:
@@ -224,14 +224,16 @@ class graph:
 			for ix, j in enumerate(jobsatlevel):
 				x = 160 * (level + 0.3 * sin(ix))
 				y = 140 * int(plotorder[j]) + 70 * sin(level / 3)
-				notinjoblist = False
+				for ix, (fun, var) in enumerate(((min, x), (min, y), (max, x), (max, y))):
+					self.bbox[ix] = fun(self.bbox[ix] if not self.bbox[ix] is None else var, var)
 				if isinstance(j, Job):
-					# This is a Job
 					if validjobset and j not in validjobset:  # i.e. job is not in this urdlist
 						if job2urddep and j in job2urddep:
-							notinjoblist = job2urddep[j]
+							notinjoblist = job2urddep[j]  # but in a dependency urdlist
 						else:
 							notinjoblist = True
+					else:
+						notinjoblist = False
 					self.node_job(
 						j, x=x, y=y,
 						name=jobnames.get(j) if jobnames else None,
@@ -239,16 +241,12 @@ class graph:
 						notinurdlist=notinjoblist,
 					)
 				else:
-					# This is a Dataset
 					self.node_ds(
 						j, x=x, y=y,
 						atmaxdepth=j in atmaxdepth,
-						notinurdlist=None,
 					)
-				for ix, (fun, var) in enumerate(((min, x), (min, y), (max, x), (max, y))):
-					self.bbox[ix] = fun(self.bbox[ix] if not self.bbox[ix] is None else var, var)
 
-	def node_ds(self, id, x, y, atmaxdepth=False, notinurdlist=True):
+	def node_ds(self, id, x, y, atmaxdepth=False):
 		job = id.job
 		self.nodes[id] = DotDict(
 			jobid=str(job),
