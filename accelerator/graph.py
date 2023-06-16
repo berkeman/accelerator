@@ -1,7 +1,8 @@
 from math import sin
 from collections import defaultdict
+from datetime import datetime
 from accelerator import JobWithFile, Job
-from accelerator.svg import SVG
+from accelerator import DotDict
 
 MAXDEPTH = 1000
 
@@ -175,46 +176,48 @@ def jlist(urdentry, recursiondepth=100):
 	names = {}
 	for name, jobid in jlist:
 		names[jobid] = name
-	g.insert_nodes(nodes, names, atmaxdepth, edges, jobsinurdlist, job2urddep)
-	g.insert_edges(edges)
-	return g.write()
+	return g.creategraph(nodes, edges, atmaxdepth, names, jobsinurdlist, job2urddep)
 
 
 def job(inputjob, recursiondepth=100):
 	g = graph()
-	import time
-	t0 = time.time()
 	nodes, edges, atmaxdepth = recurse_jobs(inputjob, recursiondepth)
-	print('therecursiontime', time.time() - t0)
-	t0 = time.time()
-	g.insert_nodes(nodes, None, atmaxdepth, edges)
-	print('theinsertnodestime', time.time() - t0)
-	t0 = time.time()
-	g.insert_edges(edges)
-	print('theinsertedgestime', time.time() - t0)
-	return g.write()
+	return g.creategraph(nodes, edges, atmaxdepth)
 
 
 def ds(ds, recursiondepth=100):
 	g = graph()
 	nodes, edges, atmaxdepth = recurse_ds(ds, recursiondepth)
-	g.insert_nodes(nodes, None, atmaxdepth, edges)
-	g.insert_edges_ds(edges)
-	return g.write()
+	return g.creategraph(nodes, edges, atmaxdepth)
 
 
-class graph():
+class graph:
 	def __init__(self):
-		self.svg = SVG()
+		self.nodedata = dict()
+		self.nodes = dict()
+		self.edges = dict()
+		self.neighbour_nodes = defaultdict(set)
+		self.neighbour_edges = defaultdict(set)
 		self.bbox = [None, None, None, None]
-	def insert_nodes(self, nodes, jobnames, atmaxdepth, edges, validjobset=None, job2urddep=None):
+
+	def creategraph(self, nodes, edges, atmaxdeph, jobnames={}, jobsinurdlist=set(), job2urddep={}):
+		self.insert_nodes(nodes, edges, atmaxdeph, jobnames, jobsinurdlist, job2urddep)
+		self.insert_edges(edges)
+
+		x1, y1, x2, y2 = self.bbox
+		dy = y2 - y1
+		dy = min(400, max(100, dy))
+		self.bbox = [-50 + x1, y1 - 50, 100 + x2 - x1, dy + 150]
+		return self.nodes, self.edges, self.bbox, self.neighbour_nodes, self.neighbour_edges
+
+	def insert_nodes(self, nodes, edges, atmaxdepth, jobnames, validjobset, job2urddep):
 		order = {x: str(ix) for ix, x in enumerate(sorted(nodes[0]))}
 		children = defaultdict(set)
 		for s, d, _ in edges:
 			children[s].add(d)
 		for level, jobsatlevel in sorted(nodes.items()):
-			jobsatlevel = sorted(jobsatlevel, key=lambda x: order[x])
-			plotorder = {n: order[n] for n in jobsatlevel}
+			jobsatlevel=sorted(jobsatlevel, key=lambda x: order[x])
+			plotorder={n: order[n] for n in jobsatlevel}
 			for n in jobsatlevel:
 				for ix, c in enumerate(sorted(children[n])):
 					if c not in order:
@@ -233,7 +236,7 @@ class graph():
 							notinjoblist = job2urddep[j]
 						else:
 							notinjoblist = True
-					self.svg.jobnode2(
+					self.jobnode_job(
 						j, x=x, y=y,
 						name=jobnames.get(j) if jobnames else None,
 						atmaxdepth=j in atmaxdepth,
@@ -241,7 +244,7 @@ class graph():
 					)
 				else:
 					# This is a Dataset
-					self.svg.jobnode_ds(
+					self.jobnode_ds(
 						j, x=x, y=y,
 						atmaxdepth=j in atmaxdepth,
 						notinurdlist=None,
@@ -249,20 +252,55 @@ class graph():
 				for ix, (fun, var) in enumerate(((min, x), (min, y), (max, x), (max, y))):
 					self.bbox[ix] = fun(self.bbox[ix] if not self.bbox[ix] is None else var, var)
 
-				# @@@@@@@@@@@ dataset.parent as a list is not tested at all!!!!!!!!!!!!!!!!!!!!!!!!
+	def jobnode_ds(self, id, x, y, atmaxdepth=False, notinurdlist=True):
+		self.nodedata[id] = (x, y)
+		job = id.job
+		self.nodes[id] = DotDict(
+			jobid=str(job),
+			method=job.method,
+			x=x,
+			y=y,
+			columns=tuple((key, val.type) for key, val in id.columns.items()),
+			atmaxdepth=atmaxdepth,
+			timestamp=datetime.fromtimestamp(job.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
+		)
+
+	def jobnode_job(self, id, x, y, name=None, atmaxdepth=False, notinurdlist=True):
+		self.nodedata[id] = (x, y)
+		self.nodes[id] = DotDict(
+			jobid=str(id),
+			method=id.method,
+			files=sorted(id.files()),
+			datasets=id.datasets,
+			subjobs=id.post.subjobs,
+			name=name,
+			x=x,
+			y=y,
+			atmaxdepth=atmaxdepth,
+			notinurdlist=notinurdlist,
+			timestamp=datetime.fromtimestamp(id.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
+		)
 
 	def insert_edges_ds(self, edges):
-		self.svg.edges = edges
+		self.edges = edges
 		for s, d, relation in edges:
-			self.svg.arrow_ds(s, d, relation)
+			self.arrow_ds(s, d, relation)
 
 	def insert_edges(self, edges):
-		self.svg.edges = edges
+		self.edges = edges
 		for s, d, _ in edges:
-			self.svg.arrow2(s, d)
+			self.arrow_job(s, d)
 
-	def write(self):
-		x1, y1, x2, y2 = self.bbox
-		dy = y2 - y1
-		dy = min(400, max(100, dy))
-		return self.svg.nodes, self.svg.edges, (-50 + x1, y1 - 50, 100 + x2 - x1, dy + 150), self.svg.neighbour_nodes, self.svg.neighbour_edges
+	def arrow_job(self, fromid, toid):
+		edgekey = ''.join((fromid, toid))
+		self.neighbour_nodes[fromid].add(toid)
+		self.neighbour_nodes[toid].add(fromid)
+		self.neighbour_edges[fromid].add(edgekey)
+		self.neighbour_edges[toid].add(edgekey)
+
+	def arrow_ds(self, fromid, toid, relation):
+		edgekey = ''.join((fromid, toid))
+		self.neighbour_nodes[fromid].add(toid)
+		self.neighbour_nodes[toid].add(fromid)
+		self.neighbour_edges[fromid].add(edgekey)
+		self.neighbour_edges[toid].add(edgekey)
