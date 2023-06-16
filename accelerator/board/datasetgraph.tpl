@@ -38,7 +38,7 @@
 	</text>
 	<text x="{{ item.x }}" y="{{ item.y + item.size + 45 }}"
 		font-size="12" text-anchor="middle" fill="black">
-		{{len(item.columns)}} x {{'{:,}'.format(sum(ds.lines)).replace(',', '.')}}
+		{{len(item.columns)}} x {{'{:,}'.format(sum(ds.lines)).replace(',', ' ')}}
 	</text>
 % end
 % # Draw edges
