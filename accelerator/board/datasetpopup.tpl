@@ -58,7 +58,6 @@
 			popup.children["help"].href = "/method/" + method;
 			popup.children["source"].href ='/job/' + jobid + "/method.tar.gz" + '/';
 			popup.children["timestamp"].textContent = '[' + timestamp + ']';
-			console.log(atmaxdepth)
 			if (atmaxdepth === true) {
 				popup.children["atmaxdepth"].style.display = 'block';
 			} else {

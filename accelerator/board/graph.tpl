@@ -95,9 +95,7 @@
 
 	<script>
 		shape = document.querySelector('#jobgraph');
-		console.log('init', shape.getAttribute("viewBox"));
 		const init = shape.viewBox.baseVal;
-		console.log('init', init);
 		let mouseStartPosition = {x: 0, y: 0};
 		let mousePosition = {x: 0, y: 0};
 		let viewboxStartPosition = {x: 0, y: 0};
@@ -105,12 +103,10 @@
 		let viewboxSize = {x: init.width, y: init.height};
 		let viewboxScale = 1;
 		let actualscale = Math.max(init.width / getWidth(shape), init.height / shape.clientHeight);
-		console.log('actual', actualscale);
 		let mouseDown = false;
 		shape.addEventListener("mousemove", mousemove);
 		shape.addEventListener("mousedown", mousedown);
 		shape.addEventListener("wheel", wheel);
-		console.log('init scale', viewboxScale)
 
 		function mousedown(e) {
 			mouseStartPosition.x = e.pageX;

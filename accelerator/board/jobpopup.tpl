@@ -43,8 +43,6 @@
 						x.href = '/dataset/' + item;
 						x.textContent = item;
 					} else if (location === '#subjobs') {
-						console.log(item[0])
-						console.log(item[1])
 						x.href = '/job/' + item[0];
 						x.textContent = item[0] + '    (' + item[1] + ')';
 					}
