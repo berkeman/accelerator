@@ -1,6 +1,6 @@
 <div id="jobpopup" class="box">
-	Job: <a id="jobid" href=""></a>
-	<div id="method"></div></br>
+	<div id="method" style="font-style:italic;text-align:center"></div><br>
+	Job: <a id="jobid" href=""></a><br><br>
 	<a id="source">Source</a>  <a id="help">Help</a>
 	<div id="atmaxdepth" style="display:none"><font color="var(--popup-atmaxdepth)">
 		<b>Reached recursion limit - no dependencies drawn!</b>
@@ -66,7 +66,7 @@
 			popup.style.display = 'block';
 			popup.children["jobid"].textContent = jobid;
 			popup.children["jobid"].href =  "/job/" + jobid;
-			popup.children["method"].textContent = '(' + method + ')';
+			popup.children["method"].textContent = method;
 			popup.children["help"].href =  "/method/" + method;
 			popup.children["source"].href ='/job/' + jobid + "/method.tar.gz" + '/';
 			popup.children["timestamp"].textContent = '[' + timestamp + ']';
