@@ -27,7 +27,7 @@
 			{{dumps(item.jobid)}},
 			{{dumps(item.files)}},
 			{{dumps(item.datasets)}},
-			{{dumps(tuple(item.subjobs.keys()))}},
+			{{dumps(item.subjobs)}},
 			{{dumps(item.method)}},
 			{{dumps(item.atmaxdepth)}},
 			{{dumps(item.timestamp)}},

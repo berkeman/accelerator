@@ -38,12 +38,16 @@
 					const x = document.createElement("a");
 					if (location === '#files') {
 						x.href = '/job/' + jobid + '/' + item;
+						x.textContent = item;
 					} else if (location === '#datasets') {
 						x.href = '/dataset/' + item;
+						x.textContent = item;
 					} else if (location === '#subjobs') {
-						x.href = '/job/' + item;
+						console.log(item[0])
+						console.log(item[1])
+						x.href = '/job/' + item[0];
+						x.textContent = item[0] + '    (' + item[1] + ')';
 					}
-					x.textContent = item;
 					const li = document.createElement("li");
 					li.appendChild(x);
 					thetable.appendChild(li);

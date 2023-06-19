@@ -269,7 +269,7 @@ class graph:
 			# specific to job
 			files=sorted(id.files()),
 			datasets=id.datasets,
-			subjobs=id.post.subjobs,
+			subjobs=tuple((x, Job(x).method) for x in id.post.subjobs),
 			name=name,
 			notinurdlist=notinurdlist,
 		)
