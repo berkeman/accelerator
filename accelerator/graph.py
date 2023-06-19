@@ -48,7 +48,7 @@ def dsdeps(ds):
 
 def recurse_joblist(inputv):
 	# This is a breadth-first algo, that computes the level of each
-	# join node to be max of all its input's levels.
+	# join node to be max of all its parent's levels.
 	edges = set()
 	atmaxdepth = set()  # @@@ currently not implemented, this algo recurses everything!
 	children = defaultdict(set)
@@ -87,9 +87,9 @@ def recurse_joblist(inputv):
 
 
 def recurse_jobs(inputitem, maxdepth=MAXDEPTH):
-	# Create list of edges and nodes for jobs decendingt from inputitem.
-	# Each job gets associated with a "level" which is the depth in a
-	# job tree such that all edges goes from a lower level to a higher.
+	# Depth first algo, that stores max differences in level when two
+	# or more parents enter a node.  On a second recursion, this delta
+	# difference is added to the subgraph having the node as root.
 	edges = set()  # set of graph edges (i.e. node tuples)
 	atmaxdepth = set()  # set of nodes that are at max recursion depth
 	node2children = defaultdict(set)  # a "cache" for nodes' children
@@ -133,7 +133,6 @@ def recurse_jobs(inputitem, maxdepth=MAXDEPTH):
 			continue
 		for child in node2children[current]:
 			stack.append((child, level + 1))
-	# Convert to same format as recurse_joblist
 	nodes = defaultdict(list)
 	for k, v in levels.items():
 		nodes[v].append(k)
