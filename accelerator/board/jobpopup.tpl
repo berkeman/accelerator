@@ -62,8 +62,6 @@
 		function jobpopup(e, jobid, files, datasets, subjobs, method, atmaxdepth, timestamp, notinurdlist) {
 			const popup = document.querySelector("#jobpopup");
 			popup.style.display = 'block';
-			popup.style.top = '100px';
-			popup.style.left = e.clientX + 'px';
 			popup.children["jobid"].textContent = jobid;
 			popup.children["jobid"].href =  "/job/" + jobid;
 			popup.children["method"].textContent = '(' + method + ')';
@@ -91,6 +89,7 @@
 			populatelist(jobid, files, '#files');
 			populatelist(jobid, datasets, '#datasets');
 			populatelist(jobid, subjobs, '#subjobs');
+			positionpopup(popup, e);
 		}
 
 		function jobpopup_off() {

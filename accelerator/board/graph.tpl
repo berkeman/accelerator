@@ -22,6 +22,18 @@
 
 
 <div id="svgcontainer" class="box">
+	<script>
+		function getWidth(element) {
+			var styles = window.getComputedStyle(element);
+			var padding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
+			return element.clientWidth - padding;
+		}
+		function getHeight(element) {
+			var styles = window.getComputedStyle(element);
+			var padding = parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom);
+			return element.clientHeight - padding;
+		}
+	</script>
 
 	% if graphtype in ('job', 'urditem'):
 	%    include('jobpopup')
@@ -30,6 +42,16 @@
 	% end
 
 	<script>
+		function positionpopup(popup, e) {
+			if (e.clientX > getWidth(document.querySelector('#svgcontainer')) / 2) {
+				popup.style.left = e.clientX - getWidth(popup) + 'px'
+			} else {
+				popup.style.left = e.clientX + 'px';
+			}
+			//if (e.clientY > getWidth(document.querySelector('#svgcontainer')) / 2)
+			popup.style.top = e.clientY + 'px';
+		}
+
 		function highlight_nodes(thisnode, onoff) {
 			if (onoff) {
 				thisnode.setAttribute('fill', 'var(--node-highlight)');
@@ -71,12 +93,6 @@
 	</svg>
 
 	<script>
-		function getWidth(element) {
-			var styles = window.getComputedStyle(element);
-			var padding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
-			return element.clientWidth - padding;
-		}
-
 		shape = document.querySelector('#jobgraph');
 		console.log('init', shape.getAttribute("viewBox"));
 		const init = shape.viewBox.baseVal;
