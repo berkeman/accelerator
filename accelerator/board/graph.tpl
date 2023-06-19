@@ -44,7 +44,8 @@
 	<script>
 		function positionpopup(popup, e) {
 			if (e.clientX > getWidth(document.querySelector('#svgcontainer')) / 2) {
-				popup.style.left = e.clientX - getWidth(popup) + 'px'
+				const x = Math.max(0, e.clientX - getWidth(popup));
+				popup.style.left = x + 'px'
 			} else {
 				popup.style.left = e.clientX + 'px';
 			}
