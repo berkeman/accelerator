@@ -36,11 +36,7 @@ def dsdeps(ds):
 	""" return all the dataset's parents and previous """
 	ret = dict()
 	if ds.parent:
-		if isinstance(ds.parent, list):
-			for item in ds.parent:
-				ret[item] = 'parent'
-		else:
-			ret[ds.parent] = 'parent'
+		ret[ds.parent] = 'parent'
 	if ds.previous:
 		ret[ds.previous] = 'previous'
 	return ret
