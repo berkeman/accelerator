@@ -1,5 +1,5 @@
-<div id="jobpopup">
-	Job: <a id="jobid" href="pelle">kalle</a>
+<div id="jobpopup" class="box">
+	Job: <a id="jobid" href=""></a>
 	<div id="method"></div></br>
 	<a id="source">Source</a>  <a id="help">Help</a>
 	<div id="atmaxdepth" style="display:none"><font color="var(--popup-atmaxdepth)">

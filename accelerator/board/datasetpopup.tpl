@@ -1,6 +1,6 @@
-<div id="jobpopup">
+<div id="jobpopup" class="box">
 	Dataset: <a id="dataset" href="pelle">kalle</a><br>
-	Job: <a id="jobid" href="pelle">kalle</a><div id=method>dfdf</div>
+	Job: <a id="jobid" href=""></a><div id=method></div>
 	<a id="source">Source</a>  <a id="help">Help</a>
 	<div id="atmaxdepth" style="display:none"><font color="var(--popup-atmaxdepth)">
 		<b>Reached recursion limit - no dependencies drawn!</b>
