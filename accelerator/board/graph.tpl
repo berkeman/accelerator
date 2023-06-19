@@ -9,8 +9,8 @@
 	@@@ css-a grafens fontstorlekar osv [Paolo]
 	@@@ visa filename på csvimport kanske?
 	@@@ mark node while menu active  (kanske använda "this" som Carl pratade om)
-	@@@ man vill veta vilken metod ett subjob i subjoblistan är (men den infon skickas inte över)
 
+	@@@ x man vill veta vilken metod ett subjob i subjoblistan är (men den infon skickas inte över)
 	@@@ X traversera urdlistor baklänges också!
 	@@@ X använd ax_repr mm samt template ur board.py!
 	@@@ X grafen följer inte musen i skala vid inzoom av stor graph
@@ -98,15 +98,15 @@
 		console.log('init', shape.getAttribute("viewBox"));
 		const init = shape.viewBox.baseVal;
 		console.log('init', init);
-		var mouseStartPosition = {x: 0, y: 0};
-		var mousePosition = {x: 0, y: 0};
-		var viewboxStartPosition = {x: 0, y: 0};
-		var viewboxPosition = {x: init.x, y: init.y};
-		var viewboxSize = {x: init.width, y: init.height};
-		var viewboxScale = 1;
-		var actualscale = Math.max(init.width / getWidth(shape), init.height / shape.clientHeight);
+		let mouseStartPosition = {x: 0, y: 0};
+		let mousePosition = {x: 0, y: 0};
+		let viewboxStartPosition = {x: 0, y: 0};
+		let viewboxPosition = {x: init.x, y: init.y};
+		let viewboxSize = {x: init.width, y: init.height};
+		let viewboxScale = 1;
+		let actualscale = Math.max(init.width / getWidth(shape), init.height / shape.clientHeight);
 		console.log('actual', actualscale);
-		var mouseDown = false;
+		let mouseDown = false;
 		shape.addEventListener("mousemove", mousemove);
 		shape.addEventListener("mousedown", mousedown);
 		shape.addEventListener("wheel", wheel);
@@ -141,10 +141,10 @@
 		}
 
 		function wheel(e) {
-			var scale = (e.deltaY < 0) ? 0.90 : 1/0.90;
+			let scale = (e.deltaY < 0) ? 0.90 : 1/0.90;
 			if ((viewboxScale * scale < 8.) && (viewboxScale * scale > 1./256.))
 			{
-				var mpos = {x: mousePosition.x * actualscale, y: mousePosition.y * actualscale};
+				let mpos = {x: mousePosition.x * actualscale, y: mousePosition.y * actualscale};
 				viewboxPosition.x = viewboxPosition.x + (mpos.x * (1-scale));
 				viewboxPosition.y = viewboxPosition.y + (mpos.y * (1-scale));
 				viewboxScale *= scale;
@@ -155,8 +155,8 @@
 		}
 
 		function setviewbox() {
-			var vp = {x: 0, y: 0};
-			var vs = {x: 0, y: 0};
+			let vp = {x: 0, y: 0};
+			let vs = {x: 0, y: 0};
 			vp.x = viewboxPosition.x;
 			vp.y = viewboxPosition.y;
 			vs.x = viewboxSize.x * viewboxScale;
