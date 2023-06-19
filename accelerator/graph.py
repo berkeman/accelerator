@@ -197,7 +197,7 @@ class graph:
 		# do some final adjustments to the bounding box
 		x1, y1, x2, y2 = self.bbox
 		dy = y2 - y1
-		dy = min(400, max(100, dy))
+		dy = max(100, dy)
 		self.bbox = [-50 + x1, y1 - 50, 100 + x2 - x1, dy + 150]
 		return self.nodes, self.edges, self.bbox, self.neighbour_nodes, self.neighbour_edges
 
