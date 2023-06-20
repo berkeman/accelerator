@@ -54,7 +54,7 @@ def synthesis(job):
 	socket_path = os.path.realpath('socket')
 	p = Popen(options.command_prefix + ['urd-server', '--listen', socket_path, '--path', db_path, '--allow-passwordless'])
 
-	url = 'unixhttp://' + quote_plus(socket_path) + '/'
+	url = 'unixhttp://' + quote_plus(socket_path).replace('+', '%20') + '/'
 	headers = {'Content-Type': 'application/json', 'Authorization': 'Basic dGVzdDpwYXNz'}
 	def check(url_part, want, post_data=None):
 		got = call(url + url_part, server_name='urd', data=post_data, headers=headers, fmt=json.loads)
