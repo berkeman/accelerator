@@ -1,8 +1,3 @@
-% def fixit(x):
-%     # Need something that produces valid selectors
-%     return x.replace('/', 'slash').replace('.', 'dot')
-% end
-
 <!--
 	@@@ helhetsgrepp på escaping!
 	@@@ javascript alla let, var, const

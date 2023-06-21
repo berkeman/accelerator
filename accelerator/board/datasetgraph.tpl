@@ -9,7 +9,7 @@
 %     color='node-atmaxdepth'
 % end
 % item.size = 30
-	<circle id="{{fixit(ds)}}" class="hovernode" onclick="jobpopup(
+	<circle id="{{ds}}" class="hovernode" onclick="jobpopup(
 			event,
 			{{dumps(item.jobid)}},
 			{{dumps(item.method)}},
@@ -21,8 +21,8 @@
 		onmouseover="highlight_nodes(this, true)"
 		onmouseout="highlight_nodes(this, false)"
 		fill-opacity="50%"
-		data-neighbour_nodes="{{dumps(list(fixit(x) for x in svgdata['neighbour_nodes'][ds]))}}"
-		data-neighbour_edges="{{dumps(list(fixit(x) for x in svgdata['neighbour_edges'][ds]))}}"
+		data-neighbour_nodes="{{dumps(list(svgdata['neighbour_nodes'][ds]))}}"
+		data-neighbour_edges="{{dumps(list(svgdata['neighbour_edges'][ds]))}}"
 		cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}"
 		fill="var(--{{color}})"
 		data-origfill="var(--{{color}})"
@@ -43,7 +43,7 @@
 % end
 % # Draw edges
 % for fromid, toid, relation in svgdata['edges']:
-	% key = fixit(''.join((fromid, toid)))
+	% key = ''.join((fromid, toid))
 	<g id={{key}}>
 		% fromnode = svgdata['nodes'][fromid]
 		% tonode = svgdata['nodes'][toid]
