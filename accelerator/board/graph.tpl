@@ -23,11 +23,6 @@
 			var padding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
 			return element.clientWidth - padding;
 		}
-		function getHeight(element) {
-			var styles = window.getComputedStyle(element);
-			var padding = parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom);
-			return element.clientHeight - padding;
-		}
 	</script>
 
 	% if graphtype in ('job', 'urditem'):
@@ -89,25 +84,32 @@
 	</svg>
 
 	<script>
-		shape = document.querySelector('#jobgraph');
-		const init = shape.viewBox.baseVal;
-		let mouseStartPosition = {x: 0, y: 0};
-		let mousePosition = {x: 0, y: 0};
-		let viewboxStartPosition = {x: 0, y: 0};
+		let svg = document.querySelector('#jobgraph');
+		let move_init_epage = {x: NaN, y: NaN};            // just declaring this variable
+		let move_init_viewboxposition = {x: NaN, y: NaN};  // just declaring this variable
+		let pt = svg.createSVGPoint();                     // just decraling a point variable
+		let viewboxScale = 1;                              // at viewboxScale==1, everything fits perfectly.
+		const init = svg.viewBox.baseVal;
 		let viewboxPosition = {x: init.x, y: init.y};
 		let viewboxSize = {x: init.width, y: init.height};
-		let viewboxScale = 1;
-		let actualscale = Math.max(init.width / getWidth(shape), init.height / shape.clientHeight);
+		let actualscale = Math.max(init.width / getWidth(svg), init.height / svg.clientHeight); // svg-pixels per screen-pixels
 		let mouseDown = false;
-		shape.addEventListener("mousemove", mousemove);
-		shape.addEventListener("mousedown", mousedown);
-		shape.addEventListener("wheel", wheel);
+		svg.addEventListener("mousemove", mousemove);
+		svg.addEventListener("mousedown", mousedown);
+		svg.addEventListener("wheel", wheel);
+
+		function mousetosvgcoords(e) {
+			// mouse pointer in svg coordinate system
+			pt.x = e.pageX;
+			pt.y = e.pageY;
+			return pt.matrixTransform(svg.getScreenCTM().inverse());
+		}
 
 		function mousedown(e) {
-			mouseStartPosition.x = e.pageX;
-			mouseStartPosition.y = e.pageY;
-			viewboxStartPosition.x = viewboxPosition.x;
-			viewboxStartPosition.y = viewboxPosition.y;
+			move_init_epage.x = e.pageX;
+			move_init_epage.y = e.pageY;
+			move_init_viewboxposition.x = viewboxPosition.x;
+			move_init_viewboxposition.y = viewboxPosition.y;
 			window.addEventListener("mouseup", mouseup);
 			mouseDown = true;
 			e.preventDefault();
@@ -121,11 +123,9 @@
 		}
 
 		function mousemove(e) {
-			mousePosition.x = e.offsetX;
-			mousePosition.y = e.offsetY;
 			if (mouseDown) {
-				viewboxPosition.x = viewboxStartPosition.x + (mouseStartPosition.x - e.pageX) * actualscale;
-				viewboxPosition.y = viewboxStartPosition.y + (mouseStartPosition.y - e.pageY) * actualscale;
+				viewboxPosition.x = move_init_viewboxposition.x + (move_init_epage.x - e.pageX) * actualscale;
+				viewboxPosition.y = move_init_viewboxposition.y + (move_init_epage.y - e.pageY) * actualscale;
 				setviewbox();
 			}
 			e.preventDefault();
@@ -135,12 +135,14 @@
 			let scale = (e.deltaY < 0) ? 0.90 : 1/0.90;
 			if ((viewboxScale * scale < 8.) && (viewboxScale * scale > 1./256.))
 			{
-				let mpos = {x: mousePosition.x * actualscale, y: mousePosition.y * actualscale};
-				viewboxPosition.x = viewboxPosition.x + (mpos.x * (1-scale));
-				viewboxPosition.y = viewboxPosition.y + (mpos.y * (1-scale));
+				let mpos = mousetosvgcoords(e);
+				viewboxPosition.x = mpos.x * (1 - scale) + scale * viewboxPosition.x;
+				viewboxPosition.y = mpos.y * (1 - scale) + scale * viewboxPosition.y;
+				console.log('offset after', viewboxPosition);
 				viewboxScale *= scale;
 				actualscale *= scale;
 				setviewbox();
+				console.log(actualscale, viewboxScale);
 			}
 			e.preventDefault();
 		}
@@ -152,8 +154,7 @@
 			vp.y = viewboxPosition.y;
 			vs.x = viewboxSize.x * viewboxScale;
 			vs.y = viewboxSize.y * viewboxScale;
-			shape = document.querySelector('#jobgraph');
-			shape.setAttribute("viewBox", vp.x + " " + vp.y + " " + vs.x + " " + vs.y);
+			svg.setAttribute("viewBox", vp.x + " " + vp.y + " " + vs.x + " " + vs.y);
 		}
 	</script>
 </div>
