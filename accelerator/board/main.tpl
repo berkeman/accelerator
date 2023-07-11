@@ -1,6 +1,7 @@
 {{ ! template('head', title='') }}
 
 	<div id="bonus-info">
+		<a href="/doc/">online documentation</a>
 		<table id="workdirs">
 			% for workdir in sorted(workdirs):
 				<tr>

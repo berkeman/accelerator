@@ -335,6 +335,19 @@ def run(cfg, from_shell=False):
 			dirs['..'] = os.path.join('/results', a, '') if a else '/'
 		return res
 
+	@bottle.get('/doc/')
+	@bottle.get('/doc/<filename:path>')
+	def doc(filename='index.html'):
+		root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../build/html')
+		if not os.path.exists(root):
+			return('Install "sphinx" (pip install sphinx)')
+#		source = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../source')
+#		from sphinx.cmd.build import main
+#		print(source, root)
+#		main(['-M', 'html', source, root])
+
+		return bottle.static_file(filename, root=root)
+
 	@bottle.get('/results')
 	@bottle.get('/results/')
 	@bottle.get('/results/<path:path>')
