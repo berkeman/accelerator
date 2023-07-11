@@ -1,3 +1,0 @@
-API
-===
-.. include:: currentjob.rst

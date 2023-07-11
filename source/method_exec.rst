@@ -55,12 +55,24 @@ declared early in the source:
 .. code-block::
    :caption: Example of the three types of input parameters
 
-   options = dict(x=3, stuff={'a': 4, 'name': 'protomolecule', z=float})
+   options = dict(
+                 x=3,
+                 stuff={
+                     'a': 4,
+                     'name': 'protomolecule',
+                     'z'=float,
+             })
    datasets = ('source', ['inputs'],)
-   jobs = ('previous')
+   jobs = ('previous',)
 
-The *options* parameter is a dictionary, that can take almost
+The ``options`` parameter is a dictionary, that can take almost
 "anything", with or without default values and type definitions.
+
+NOTE: ``datasets`` and ``jobs`` are *tuples*, and therefore it is *key
+to remember to add a comma* after any single item like the
+``jobs=('previous',)`` assignment above.  Otherwise it will be
+interpreted as a string and things will break.
+
 
 The *datasets* parameter is a list or tuple of datasets.  Note the
 "``['inputs']``" above that specifies a list of input datasets with
@@ -85,6 +97,9 @@ and inside the method it looks like this
        print(jobs.previous)
 
 
+See manual on formal option-rules for more info (flera sidor...)@@
+       
+
 
 Execution and Data Flow
 -----------------------
@@ -100,133 +115,135 @@ The functions will be described below in reverse order, starting with
 ``synthesis()``.
 
 
-``synthesis`` is executed as a single process, and its return value is
-stored persistently as the job's output value, like shown in this example:
+- ``synthesis`` is executed as a single process, and its return value is
+  stored persistently as the job's output value, like shown in this example:
 
-.. code-block::
-    :caption: This is method ``a_test.py``
+  .. code-block::
+      :caption: This is method ``a_test.py``
 
-    options = dict(x=3)
-    def synthesis()
-        val = options.x * 2
-        return dict(value=val, caption="this is atest")
+      options = dict(x=3)
+      def synthesis()
+          val = options.x * 2
+          return dict(value=val, caption="this is atest")
 
-.. code-block::
-    :caption: and a corresponding build script ``build_mytest.py`` to build it.
+  .. code-block::
+      :caption: and a corresponding build script ``build_mytest.py`` to build it.
 
-    def main(urd):
-        job = urd.build('test', x=10)
-	print(job.load['value'])
+      def main(urd):
+          job = urd.build('test', x=10)
+  	print(job.load['value'])
 
-If this is executed using ``ax run mytest``, the build script will
-execute the method ``test`` and print the value "20" to standard
-output.
-
-
-``analysis`` is forked into several processes and used for parallel
-processing applications.  This is particularly useful together with
-Exax's *Datasets* described here (@).  The number of forks is
-statically specified in the configuration file (@), and optionally
-available as the ``slices`` input parameter.  The forks are numbered
-from zero to ``slices`` and available as the ``sliceno`` parameter:
-
-.. code-block::
-    :caption: Example of analysis() function.
-
-    def analysis(sliceno, slices):
-        print('This is slice %d/%d' % (sliceno, slices))
-        return sliceno * sliceno
-
-The return value from ``analysis()`` is available as
-"``analysis_res``" in the ``synthesis()`` input parameter.
-``analysis_res`` is an iterator, containing one element per analysis
-process.  It also has a convenient class method for merging all
-results together, like this
-
-.. code-block::
-    :caption: Use of analysis_res and its automagic result merger.
-
-    def synthesis(analysis_res):
-        x = analysis_res.merge_auto()
-
-``merge_auto()`` typically do what is expected.  In the example above,
-the returned integers from ``analysis()`` will be added together into
-one number.
+  If this is executed using ``ax run mytest``, the build script will
+  execute the method ``test`` and print the value "20" to standard
+  output.
 
 
-``prepare()`` is executed first, and just like ``synthesis()`` run in
-a single process.  The main reason for ``prepare()`` is to make it
-possible to set up datastructures and datasets prior to parallel
-processing in the ``analysis()`` function.  If no parallel processing
-is required, it is encouraged to use ``synthesis()`` instead of
-``prepare()``.
+- ``analysis()`` is forked into several processes and used for parallel
+  processing applications.  This is particularly useful together with
+  Exax's *Datasets* described here (@).  The number of forks is
+  statically specified in the configuration file (@), and optionally
+  available as the ``slices`` input parameter.  The forks are numbered
+  from zero to ``slices`` and available as the ``sliceno`` parameter:
+
+  .. code-block::
+      :caption: Example of analysis() function.
+
+      def analysis(sliceno, slices):
+          print('This is slice %d/%d' % (sliceno, slices))
+          return sliceno * sliceno
+
+  The return value from ``analysis()`` is available as
+  "``analysis_res``" in the ``synthesis()`` input parameter.
+  ``analysis_res`` is an iterator, containing one element per analysis
+  process.  It also has a convenient class method for merging all
+  results together, like this
+
+  .. code-block::
+      :caption: Use of analysis_res and its automagic result merger.
+
+      def synthesis(analysis_res):
+          x = analysis_res.merge_auto()
+
+  ``merge_auto()`` typically do what is expected.  In the example above,
+  the returned integers from ``analysis()`` will be added together into
+  one number.
 
 
+- ``prepare()`` is executed first, and just like ``synthesis()`` run in
+  a single process.  The main reason for ``prepare()`` is to make it
+  possible to set up datastructures and datasets prior to parallel
+  processing in the ``analysis()`` function.  If no parallel processing
+  is required, it is encouraged to use ``synthesis()`` instead of
+  ``prepare()``.
 
-Descriptions
-------------
+  The return value from ``prepare()`` is available to both
+  ``analysis()`` and ``synthesis()`` as ``"prepare_res"``, like this
 
-It is possible to add a description of what the method is doing using
-the ``description`` variable.  This description is available in the
-*Board* (@) and using the ``ax method`` (@) command, and it looks like this
+  .. code-block::
+      :caption: prepare_res example
 
-.. code-block::
-    :caption: Example of description
+      def prepare(job):
+          dw = job.datasetwriter()
+          dw.add('index', 'number')
+          return dw
 
-    description="""Collect movie ratings.
-
-    Movie ratings are collected using a parallel interation
-    over all...
-    """
-
-If the description is multi-lined, the first row is a short
-description that will be shown when typing ``ax method`` to list all
-methods and their short descriptions.  A detailed description may
-follow on consecutive lines, and it will be shown when doing ``ax
-method <a particular method>``.  Exax updates its record of
-descriptions when re-scanning the method directories.
-
-
-
-Storing stdout and stderr
--------------------------
-
-Everything written to ``stdout`` and ``stderr`` (using for example
-plain ``print()``-statements) is always stored persistently in the job
-directory.  It can be retreived using the ``ax job`` command, for
-example like this
-
-.. code-block::
-   :caption: ``ax job`` print stdout and stderr
-
-    ax job test-43 -O
-
-It is also straightforward to view the output in *Board*.
-
-In a program, the output is accessible using the ``job.output()``
-function (@).
-
-
-
-Writing Files
--------------
+      def analysis(sliceno, prepare_res):
+          dw = prepare_res
+          or ix in range(10):
+              dw.write(ix)
 
 Return values from ``prepare()`` and ``analysis`` are not stored in
 the job directory by default.  In contrast, the return value from
 ``synthesis()`` is always stored and considered to the the default
 output from the job.
 
-Additional files can be stored by a method in the usual Python way.
-There are, however, some helper functions that makes Exax aware of the
-files, so that they can be found easily later on.
 
-@ exempel på job-save och job-load mellan metod och buildscript.
 
-Reading and writing files in ``analysis()`` is special, though,
-because this function is running as several parallel processes.  For
-this reason, it is possible to work with *sliced files*, simply
-meaning that one "filename" in the program corresponds to a set of
-files on disk, one for each process.
+Writing Files
+-------------
+
+A method can create any number of files while executing.  If Exax is
+aware of these files, it can associate jobs with files, and this has a
+number of advantages (@).
+
+NOTE: *Files created by a job should always be stored in the
+corresponding job directory.*  The current working directory is set to
+the current job directory when the method is executing.
+
+NOTE: The "``result directory``" should be the place to find files
+that are considered to be relevant "output" from a project run.  Soft
+links in the result directory link to files in jobs using the
+``job.link_result()`` function (@).
+
+There are built-in helper functions for creating files in the correct
+location and at the same time ensuring that Exax is aware of their
+existence.  Here's a simple example of how a file is created by a
+method (using the ``save()`` function) and then accessed in the build
+script that created the job.
+
+.. code-block::
+   :caption: Writing and reading files (see  currentjob@ ref for info about save() and more.
+
+    # in a method
+    def synthesis(job):
+        data = ...
+	job.save(data, 'afilename')
+
+    # in the build script
+    def main(urd):
+        job = urd.build('methodthatsaveafile')
+        data = {}
+        for fn in job.files:
+            data[fn] = job.load(fn)
+
+There are two functions for serialising data to files, and one
+providing full control... see (@)
+
+Reading and writing files in ``analysis()`` is special, because this
+function is running as several parallel processes.  For this reason,
+it is possible to work with *sliced files*, simply meaning that one
+"filename" in the program corresponds to a set of files on disk, one
+for each process.
 
 In addition, it is possible to create temporary files, that only
 exists during the execution of the method and will be automatically
@@ -238,14 +255,15 @@ if disk space is a concern.
 Keeping Track of created files
 ------------------------------
 
-Sometimes a method is creating one or more output files.  Any file
-written will be stored in the current job directory, so that the
-relation to input, source code, and output is always clear.
-
-It turns out that it is very convenient if Exax is aware of all files
-created in a job.  Files can be listed and viewed in *Board* and using
+Any file written by a job will be stored in the current job directory,
+so that the relation to input, source code, and output is always
+clear.  It turns out that it is very convenient if Exax is aware of
+all these files.  Files can be listed and viewed in *Board* and using
 the ``ax job`` command, and it is also very useful to have a way to
 find files in a build script.
+
+The ``save()`` and ``json_save()`` functions (@ref) create connections
+between the jobs and its files automatically.
 
 For these reasons, there is a wrapper around the ``open()`` function
 available in the ``job`` input parameter that is used much like the
@@ -289,6 +307,51 @@ using the ``register_file()`` function.
        # use external program ffmpeg to generate a movie file "out.mp4"
        subprocess.run(['ffmpeg', ..., 'out.mp4'])
        job.register_file('out.mp4')
+
+
+
+Descriptions
+------------
+
+It is possible to add a description of what the method is doing using
+the ``description`` variable.  This description is available in the
+*Board* (@) and using the ``ax method`` (@) command, and it looks like this
+
+.. code-block::
+    :caption: Example of description
+
+    description="""Collect movie ratings.
+
+    Movie ratings are collected using a parallel interation
+    over all...
+    """
+
+If the description is multi-lined, the first row is a short
+description that will be shown when typing ``ax method`` to list all
+methods and their short descriptions.  A detailed description may
+follow on consecutive lines, and it will be shown when doing ``ax
+method <a particular method>``.  Exax updates its record of
+descriptions when re-scanning the method directories.
+
+
+
+Storing stdout and stderr
+-------------------------
+
+Everything written to ``stdout`` and ``stderr`` (using for example
+plain ``print()``-statements) is always stored persistently in the job
+directory.  It can be retreived using the ``ax job`` command, for
+example like this
+
+.. code-block:: sh
+   :caption: ``ax job`` print stdout and stderr
+
+    ax job test-43 -O
+
+It is also straightforward to view the output in *Board*.
+
+In a program, the output is accessible using the ``job.output()``
+function (@).
 
 
 
