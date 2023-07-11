@@ -10,6 +10,8 @@ Welcome to exax's online documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   commands
+
    quick
 
    method
