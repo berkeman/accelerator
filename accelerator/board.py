@@ -338,7 +338,7 @@ def run(cfg, from_shell=False):
 	@bottle.get('/doc/')
 	@bottle.get('/doc/<filename:path>')
 	def doc(filename='index.html'):
-		root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../build/html')
+		root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../doc/build/html')
 		if not os.path.exists(root):
 			return('Install "sphinx" (pip install sphinx)')
 #		source = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../source')
