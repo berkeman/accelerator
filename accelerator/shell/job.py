@@ -201,10 +201,10 @@ def show_output_d(d, verbose):
 				print(colour('=' * len(k), 'job/header'))
 			print(out, end='' if out.endswith('\n') else '\n')
 
-def main(argv, cfg):
+def createparser(prog=None):
 	descr = 'show setup.json, dataset list, etc for jobs'
 	parser = ArgumentParser(
-		prog=argv.pop(0),
+		prog=prog,
 		description=descr,
 		formatter_class=RawTextHelpFormatter,
 	)
@@ -231,6 +231,11 @@ def main(argv, cfg):
 		     'use spec! to only consider current jobs.\n' +
 		     'you can also do things like spec.source.'
 	)
+	return parser
+
+def main(argv, cfg):
+	prog = argv.pop(0)
+	parser = createparser(prog)
 	args = parser.parse_intermixed_args(argv)
 	res = 0
 	for path in args.jobid:

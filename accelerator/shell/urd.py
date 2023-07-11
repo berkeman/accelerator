@@ -31,9 +31,8 @@ from accelerator.error import UrdError
 from accelerator.compat import url_quote
 
 
-def main(argv, cfg):
-	prog = argv.pop(0)
-	user = environ.get('USER', 'NO-USER')
+def createparser(user='user', prog=None):
+	prog = 'ax urd' if not prog else prog
 	description = '''
 		path is an optionally shortened path to an urd list.
 		one element is a list name, two elements are list and timestamp.
@@ -50,12 +49,12 @@ def main(argv, cfg):
 		list of timestamps and ^ to move backwards (earlier, up).
 
 		examples:
-		  "%(prog)s example" is "%(prog)s %(user)s/example/latest"
-		  "%(prog)s :example:" is also "%(prog)s %(user)s/example/latest"
-		  "%(prog)s example/2021-04-14" is "%(prog)s %(user)s/example/2021-04-14"
-		  "%(prog)s :foo/bar/first:" is "%(prog)s foo/bar/first"
-		  "%(prog)s :bar/first~:" is the second timestamp in %(user)s/bar
-		  "%(prog)s example/" is "%(prog)s %(user)s/example/since/0"
+		  - "%(prog)s example" is "%(prog)s %(user)s/example/latest"
+		  - "%(prog)s :example:" is also "%(prog)s %(user)s/example/latest"
+		  - "%(prog)s example/2021-04-14" is "%(prog)s %(user)s/example/2021-04-14"
+		  - "%(prog)s :foo/bar/first:" is "%(prog)s foo/bar/first"
+		  - "%(prog)s :bar/first~:" is the second timestamp in %(user)s/bar
+		  - "%(prog)s example/" is "%(prog)s %(user)s/example/since/0"
 	'''.strip().replace('\t', '') % dict(prog=prog, user=user)
 	parser = ArgumentParser(
 		prog=prog,
@@ -63,6 +62,13 @@ def main(argv, cfg):
 		description=description,
 	)
 	parser.add_argument('path', nargs='*', default=['/'])
+	return parser
+
+
+def main(argv, cfg):
+	prog = argv.pop(0)
+	user = environ.get('USER', 'NO-USER')
+	parser = createparser(user=user, prog=prog)
 	args = parser.parse_intermixed_args(argv)
 	def resolve_path_part(path):
 		if not path:
