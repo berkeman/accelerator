@@ -310,7 +310,8 @@ Keeping Track of created files
 Any file written by a job will be stored in the current job directory,
 so that the relation to input, source code, and output is always
 clear.  It turns out that it is advantageous if exax is aware of
-created files.
+created files.  Typically, this happens automatically, but there are
+exceptions that it is good to be aware of.
 
 .. tip ::  Files can be listed and viewed in *exax Board* using a web browser.
 
@@ -414,31 +415,61 @@ function (@, skriv om hur accessa out, err, analysis, ...).
 
 
 
-------------------
-
-description (``ax method``)
-      
-create them
-
-enable in configfile
-
-
-functions
-
-parameters
-
-internal return values
-merge_auto
-
-exit return values
-
-job object, job.open
-
-what is in the job directory:
- + profiling
- + list of all files, subjobs, ...
-
-
 Subjobs
 -------
 
+Subjobs may be built from a running method, in the ``synthesis()``
+function.  Here is an example
+
+.. code-block::
+   :caption: Building a job from within a job.
+
+   from accelerator.subjobs import build
+
+   def synthesis():
+       job = build('mymethod')
+
+The ``subjobs.build()`` call uses the same input parameters and syntax
+as the ``urd.build()`` call in a build scripts.  Similarly, the
+returned ``job`` object is an instance of the ``Job`` class (@) that
+contains some useful helper functionality.
+
+.. note :: Subjobs are *not* visible in build script and do not show
+   up in ``urd.joblist``!
+
+
+
+Subjobs and Datasets
+^^^^^^^^^^^^^^^^^^^^
+
+Datasets created by subjobs can be made available to the job that
+built the subjob, to make it look like the dataset was created there.
+It works as show in the following example
+
+.. code-block::
+   :caption: Link a subjob's dataset to the current job.
+
+   from accelerator import subjobs
+
+   def synthesis():
+       job = subjobs.build('create_a_dataset')
+       ds = job.dataset(<name>)
+       ds = ds.link_to_here(name=<anothername>)
+
+In the example above, the method ``create_a_dataset`` creates a
+dataset.  A reference to this dataset is created using the
+``job.dataset()`` function.  Finally, using the ``ds.link_to_here()``
+function, a soft link is created in the current job directory,
+pointing to the job directory of the subjob, completing the illusion
+that the dataset is created by the current method.
+
+Similarly, it is possible to override the dataset's ``previous``, like so
+
+.. code-block::
+   :caption: Override a subjob's dataset's previous
+
+    ...
+    ds = ds.link_to_here(name=<anothername>, override_previous=<some dataset>)
+
+The ``ds_link_to_here()`` function returns a reference to the "new"
+linked dataset.
