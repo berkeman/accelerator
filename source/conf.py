@@ -28,5 +28,8 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'nature'  # 'classic', 'alabaster'
-html_static_path = ['_static']
+html_theme = 'sphinx_rtd_theme' # 'python_docs_theme', 'nature', 'classic', 'alabaster'
+html_static_path = ['_static',]
+html_theme_options = {
+	'prev_next_buttons_location': 'both',
+}
