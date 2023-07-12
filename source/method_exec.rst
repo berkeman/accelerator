@@ -1,8 +1,11 @@
 Methods - Writing and Executing
 ===============================
 
-This chapter describes how to write and work with methods.
-For information about file naming and directories, see :ref:`method`.
+All source code in a project is separated into one or more files
+called methods.
+
+This chapter describes how to write and work with methods.  For
+information about file naming and directories, see chapter :doc:`method`.
 
 
 Building Methods
@@ -26,13 +29,15 @@ Methods can be built either in build scripts (@) or as subjobs (@)
 from other methods.  In a build script, it may look like this
 
 .. code-block::
+   :caption: Building ``mymethod`` from a build script.
 
    def main(urd):
        job = urd.build('mymethod', x=3)
 
-and similarly in a method:
+and similarly in a method
 
 .. code-block::
+   :caption: Building ``mymethod`` from another method.
 
    from accelerator.subjobs import build
 
@@ -65,27 +70,32 @@ declared early in the source:
    datasets = ('source', ['inputs'],)
    jobs = ('previous',)
 
-The ``options`` parameter is a dictionary, that can take almost
-"anything", with or without default values and type definitions.
+.. note:: ``datasets`` and ``jobs`` are *tuples*, and therefore it is *key
+  to remember to add a comma* after any single item like the
+  ``jobs=('previous',)`` assignment above.  Otherwise it will be
+  interpreted as a string or characters, and things will break.
 
-NOTE: ``datasets`` and ``jobs`` are *tuples*, and therefore it is *key
-to remember to add a comma* after any single item like the
-``jobs=('previous',)`` assignment above.  Otherwise it will be
-interpreted as a string and things will break.
+- The ``options`` parameter is a dictionary, that can take almost
+  "anything", with or without default values and type definitions.
 
+- The ``datasets`` parameter is a list or tuple of datasets.  Note the
+  "``['inputs']``" above that specifies a list of input datasets with
+  the name "``input``".
 
-The *datasets* parameter is a list or tuple of datasets.  Note the
-"``['inputs']``" above that specifies a list of input datasets with
-the name "``input``".
+- The ``jobs`` parameter is similar to ``datasets``, but contains a list
+  of named jobs.
 
-The *jobs* parameter is similar to ``datasets``, but contains a list
-of named jobs.
-
-The parameters are set by in the build call like this:
+The parameters are set by the build call like this:
 
 .. code-block::
 
-   build('method', x=37, stuff=dict(name='thename', z=4.2), source=ds, inputs=[ds1, ds2, ds3], previous=job0)
+   build('method',
+         x=37,
+         stuff=dict(name='thename', z=4.2),
+         source=ds,
+         inputs=[ds1, ds2, ds3],
+         previous=job0
+   )
 
 and inside the method it looks like this
 

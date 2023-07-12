@@ -1,14 +1,29 @@
-Quickstart/Summary/Something
+Quickstart
 ==========
+
+
+Install
+
+.. code-block::
+
+   pip install accelerator
+
 
 Get help
 
 .. code-block::
 
    ax help
-   
 
-Show available method directories, methods and descriptions:
+
+Start a new project
+
+.. code-block::
+
+   ax init <projectname>
+
+
+Show available method directories, methods and descriptions
 
 .. code-block::
    
