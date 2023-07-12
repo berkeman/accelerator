@@ -1,6 +1,11 @@
 Methods - Writing and Executing
 ===============================
 
+@@@ methods compute stuff and stores results.
+@@@ input data to methods comes from other methods/jobs or from input_directory
+@@@ relevant output is linked in result_directory
+
+
 All source code in a project is separated into one or more files
 called methods.
 

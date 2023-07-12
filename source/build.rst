@@ -2,39 +2,40 @@ Buildscripts
 ============
 
 
-Buildscripts are used to execute methods, pass data and parameters,
-and collect resulting output.
+Buildscripts are used to execute methods (@), pass data and
+parameters, and collect resulting output.
 
 
 How to find, name, and execute them
 -----------------------------------
 
-Buildscripts are stored in :ref:`method directories <method:method directories>` and are
-identified by filenames starting with the string "``build``".  The
+Buildscripts are stored along methods in method directories (@) and
+are identified by filenames starting with the string "``build``".  The
 "default" build script is named ``build.py`` and executed using ``ax
 run``.  A build script named ``build_something.py`` is executed using
 ``ax run something``, and so on.
 
-All available buildscripts can be listed along with descriptions using
-the ``ax script`` command.
+.. tip :: All available buildscripts can be listed along with
+  descriptions using the ``ax script`` command.
 
 
 Building Jobs
 -------------
 
-All build scripts are composed of a function called ``main()``, that
-provides one object called ``urd``, like this
+All build scripts contains a function called ``main()``, that provides
+one object called ``urd``, like this
 
 .. code-block::
+   :caption: Minimal build script.
 
    def main(urd):
        # do something here...
 
 A build script is typically used to build a number of jobs that may
 pass data and results from one to the next.  Jobs are built using the
-``urd.build()`` call.  The first argument to the call is the name of a
-:ref:`method <method:Execution and dataflow in a method>` to be executed, and the remaining
-arguments are either input to the method or to the build process.
+``urd.build()`` call.  The first argument to the call is the name of
+the method (@) to be executed, and the remaining arguments are either
+input parameters to the method or to the build process.
 
 
 Here are some very simple examples
@@ -53,14 +54,15 @@ Here are some very simple examples
 	job2 = urd.build('next_method', prev=job1)
 
 .. code-block::
-    :caption: Create a link to a file created by job1 to ``result_directory``
+    :caption: Create a link to a file created by job1 to ``result_directory``.
 
     def main(urd):
         job = urd.build('awesome_method', x=3)
 	job.link_result('outfile.txt')
 
 In the last example, the resulting file created by the
-``awesome_method`` job will appear as a soft link in the ``result
+``awesome_method`` job is considered to be of value for a human
+observer and will therefore appear (as a soft link) in the ``result
 directory`` (@@@).
 
 The ``.build()`` function is just one of several class methods
@@ -74,13 +76,13 @@ Use JobList to find references to jobs
 --------------------------------------
 
 The ``urd`` input parameter from the ``main()``-function has a member
-``joblist`` of type :ref:`JobList <api:The JobList Class>` that collects
-references to and information about every built job inside a build
-script.  A joblist is used to find references to previously built
-jobs.
+``joblist`` of type :ref:`JobList <api:The JobList Class>` that
+collects references to and information about every built job inside a
+build script.  It is used to find references to jobs build previously
+in the script.
 
-Here's a simple example of how it can be used to retrieve a reference
-to an earlier built job:
+Here's an example of how it can be used to retrieve a reference to an
+earlier built job:
 
 .. code-block::
     :caption: The last line uses ``urd.joblist.find()`` to locate a specific job using the method's name.
@@ -91,11 +93,12 @@ to an earlier built job:
 	urd.build('dosomething', source=urd.joblist.find('csvimport')
 
 The job is located using ``urd.joblist.find()`` based on the method's
-name.  This will not work if a method is called several times with
-different input parameters, since the different executions cannot be
-uniquely identified using the method name.  To solve this, each build
-call can get a name assigned, as the ``find()``-call can also lookup
-methods based on the assigned name, like in this example:
+name.  The ``find()`` function will return the *last* job created
+based on the ``csvimport`` method, so if there are several builds
+based on this metho, they cannot be uniquely identified using this
+approach.  One solution is to assigning a unique *name* to each build,
+since the ``find()``-call can also lookup methods based on the
+assigned names, like in this example:
 	
 .. code-block::
     :caption: The last line uses ``urd.joblist.find()`` to locate a specific job using assigned names.
@@ -106,12 +109,14 @@ methods based on the assigned name, like in this example:
 	...
 	urd.build('dosomething', source=urd.joblist.find('firstfile')
 
-NOTE: The ``urd.joblist`` object itself is a reference to the last
-built job in the joblist.  As will be apparent later, accessing the
-last job in a list is a very common pattern.
+.. tip :: The ``urd.joblist`` object itself is also a reference to the
+   *last* built job in the joblist.  Accessing the last job in a list
+   is a very common pattern.
 
-Joblists can also be made persistent, se next section on urd sessions
-and the urd database.
+Joblists are created and only exists while executing the build script,
+but it is possible to make them persistent for future use and for
+sharing jobs with others.  See next section on urd sessions and the
+urd database for more information.
 
 
 
@@ -120,14 +125,15 @@ Urd Sessions and the Urd Database
 
 Joblists can be stored persistently in the Urd transaction database,
 so references to anything from one particular job to all jobs ever
-executed can be retrieved in a simple way.  Information is always
-appended to this database, it is never removed or changed.
+executed can be retrieved in a simple way.  In a transaction database,
+information is always appended, it is never removed or changed, so a
+complete history will always be available.
 
-Entries in the urd database can be explored using the ``ax urd`` command.
+.. tip :: Entries in the urd database can be explored using the ``ax urd`` command.
 
-Storing a joblist persistently done by encapsulating the executions to
-be stored between ``urd.begin()`` and ``urd.finish()`` calls, like in
-the following example:
+Storing a joblist persistently is done by encapsulating the build
+calls to be stored between ``urd.begin()`` and ``urd.finish()`` calls,
+like in the following example:
 
 .. code-block::
     :caption: An *urd session* is defined by ``begin`` and ``finish`` calls.
@@ -137,22 +143,22 @@ the following example:
         job = urd.build('awesome_method', x=3)
 	urd.finish('testlist')
 
-The nomenclature is that the session has been stored in the *urdlist*
-``testlist`` with *timestamp* ``2023-06-20``.  The name of the urdlist
-must be the same for both ``begin()`` and ``finish()``.
+The nomenclature is that the *session* has been stored in the
+*urdlist* ``testlist`` with *timestamp* ``2023-06-20``.  The name of
+the urdlist must be the same for both ``begin()`` and ``finish()``.
+
+.. note :: Nothing is stored in the database until ``urd.finish()`` is called.
+
+.. note :: Urd sessions cannot be nested.
 
 
-NOTE: Nothing is stored in the database until ``urd.finish()`` is called.
-
-NOTE: There can only be max one ongoing urd session at any given time!
-
-If the entry to be stored already exists in the database, with the
-same key, same timestamp and same contents of the session itself, Exax
-accepts the input silently but it does not store anything.  On the
-other hand, an exception will be raised if the key and timestamp
-already exists, but the contents is different.  This is a great way to
-verify that the database contains the same thing as is produced by the
-current state of the code base.
+If the entry to be stored already exists in the database, meaning that
+the key, timestamp, and contents is the same, exax accepts the input
+silently but it does not store anything.  On the other hand, an
+exception will be raised if the key and timestamp already exists, but
+the contents is different.  This is a great way to verify that the
+database contains the same thing as is produced by the current state
+of the code base.
 
 
 
@@ -168,9 +174,9 @@ datetimes may be specified using strings in format
 
 (See Python’s ``datetime`` module for explanation.)
 
-A specific timestamp can be shorter than the above specification in
-order to cover wider time ranges. The following examples cover all
-possible cases::
+A specific timestamp can be shortened than the above specification in
+order to represent a wider time range. The following examples cover
+all possible cases::
 
   '2016-10-25'                 # day resolution
   '2016-10-25 15'              # hour resolution
@@ -195,7 +201,7 @@ can be inserted at any time giving the appearance of that everything
 after the marker timestamp is removed, like in this example:
 
 .. code-block::
-    :caption: urd session with restart marker
+    :caption: Urd session with restart marker.
 
     def main(urd):
 	urd.truncate('testlist', '2023')
@@ -204,7 +210,8 @@ after the marker timestamp is removed, like in this example:
 The above ``truncate`` call makes all entries in ``testlist`` that
 are from 2023 or later inaccessible.
 
-NOTE: An urdlist is cleared completely by truncating to zero.
+.. tip ::  Truncating to zero gives the appearance of a completely empty urdlist.
+
 
 
 Overwriting the Last session
@@ -213,10 +220,10 @@ Overwriting the Last session
 Although data cannot be erased or changed in the urd database, it is
 possible to *replace* the last entry by a new one.  Both the old and
 new entry will be stored in the database, but only the latter will be
-considered.  This example shows how to do it:
+visible.  This example shows how to do it:
 
 .. code-block::
-    :caption: Replace last entry
+    :caption: Replace last urd entry.
 
     def main(urd):
         urd.begin('testlist', '2023-06-20', update=True)
@@ -245,29 +252,47 @@ The abort() function is used like this
    # execution continues here, a new session can be initiated
    urd.begin('newtest')
 
+A new urd session can be initiated once the previous is finished or aborted.
 
 
 
 Finding and listing existing sessions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A specific session can be retrieved from the Urd database using its
-*key* (@@@ key=name=path?)  and *timestamp*.  There are two sets of
-functions assigned for this, one that will record and associate the
-lookup with the ongoing session, and one that will not. The reason for
-recording lookups is to provide the possibility for a session to
-contain references to all other sessions used to create it, and
-thereby ensuring transparency.
+A specific urd session, i.e. a joblist with some meta information, can
+be retrieved from the Urd database using its *key* (@@@
+key=name=path?)  and *timestamp*.  There are two sets of functions
+assigned for this
 
-The function calls that record the lookup are ``get()``, ``first()``,
-and ``latest()``. For any of these calls to work, they have to be
-issued from *within* a session, i.e. after a ``begin()``
-call. Otherwise Urd would not be able to record session
-dependencies and an exception is raised.
+  - one that will record and associate the lookup with the ongoing
+    session, and
+    
+  - one that will not.
 
-The function calls that do not record anything are the ``peek()``,
-``peek_first()``, and ``peek_latest()`` calls, that otherwise is
-equivalent to the non-peek versions.
+Recording lookups is for transparency reasons, to make it clear which
+jobs that are used as inputs to new jobs.  For example, the
+``process`` session at ``2023-02-01`` is based on jobs in the
+``import`` session with the same date.
+
+The function calls that record the lookups are
+
+  - ``get()``,
+  - ``first()``, and
+  - ``latest()``.
+
+For any of these calls to work, they have to be issued from *within*
+an ongoing session, i.e. after a ``begin()`` call. Otherwise Urd would
+not be able to record session dependencies and an exception is raised.
+
+The function calls that do not record anything are the
+
+  - ``peek()``,
+  - ``peek_first()``, and
+  - ``peek_latest()``
+
+calls, that in all other aspects are equivalent to the non-peek versions.
+All these functions will be explained below.
+
 
 - Finding an exact or closest match:  ``get()`` or ``peek()``
 
@@ -339,8 +364,8 @@ called with a timestamp like this
    
     urd.since('test', '2016-10-05')
     
-which returns a list with all existing timestamps more recent than the
-one provided, such as for example
+which returns a list with all existing timestamps in the ``test`` urd
+list more recent than the one provided, such as for example
 
 .. code-block::
 

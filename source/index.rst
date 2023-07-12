@@ -9,19 +9,20 @@ Welcome to exax's online documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
-   commands
+   :numbered:
 
    quick
+
+   commands
 
    method
    method_exec
    build
-   job
+   urd
+
    dataset
 
    config
-   urd
 
    api/currentjob.rst
    api/job.rst
