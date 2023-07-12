@@ -46,8 +46,8 @@ ax init
 
    It also performs a ``git init`` by default.
 
-   NOTE: After running this command, you probably what to have a look
-   at, and perhaps modify, ``accelerator.conf``.
+   .. note:: After running this command, you probably what to have a look
+             at, and perhaps modify, ``accelerator.conf``.
 
 
    DIR : @replace
@@ -64,7 +64,7 @@ ax init
    --input : @replace
       Input directory, i.e., path to directory where input files are stored.
 
-      NOTE: This is not set by default!
+      .. NOTE:: This is not set by default!
 
    --force : @replace
       Go ahead even though directory is not empty, or workdir exists with incompatible slice count.
