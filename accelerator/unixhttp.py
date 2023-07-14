@@ -1,7 +1,8 @@
 ############################################################################
 #                                                                          #
 # Copyright (c) 2017 eBay Inc.                                             #
-# Modifications copyright (c) 2019-2021 Carl Drougge                       #
+# Modifications copyright (c) 2019-2023 Carl Drougge                       #
+# Modifications copyright (c) 2023 Pablo Correa Gómez                      #
 #                                                                          #
 # Licensed under the Apache License, Version 2.0 (the "License");          #
 # you may not use this file except in compliance with the License.         #
@@ -20,7 +21,7 @@
 from __future__ import print_function
 from __future__ import division
 
-from accelerator.compat import PY3, unquote_plus
+from accelerator.compat import PY3
 from accelerator.compat import urlopen, Request, URLError, HTTPError
 from accelerator.extras import json_encode, json_decode
 from accelerator.error import ServerError, UrdError, UrdPermissionError, UrdConflictError
@@ -40,7 +41,7 @@ import socket
 class UnixHTTPConnection(HTTPConnection):
 	def __init__(self, host, *a, **kw):
 		HTTPConnection.__init__(self, 'localhost', *a, **kw)
-		self.unix_path = unquote_plus(host.split(':', 1)[0])
+		self.unix_path = host
 
 	def connect(self):
 		s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -74,6 +75,11 @@ def call(url, data=None, fmt=json_decode, headers={}, server_name='server', retr
 	if data is not None and not isinstance(data, bytes):
 		data = json_encode(data)
 	err = None
+	if url.startswith('unixhttp://'):
+		# The path ends up in the Host-header if we don't override it, and
+		# if the path contains characters that aren't in latin-1 that breaks.
+		headers = dict(headers)
+		headers['Host'] = server_name
 	req = Request(url, data=data, headers=headers)
 	for attempt in range(1, retries + 2):
 		resp = None

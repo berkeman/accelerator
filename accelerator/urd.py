@@ -184,7 +184,7 @@ class DB:
 		assert writets not in self._parsed
 		if logfileversion == '3':
 			if line[2] == 'add':
-				line[-1] = json.dumps(line[-1]) # caption is json encoded is v4
+				line[-1] = json.dumps(line[-1]) # caption is json encoded in v4
 		else:
 			assert logfileversion == '4', logfileversion
 		self._parsed[writets] = line[2:]
@@ -593,6 +593,10 @@ def main(argv, cfg):
 	if not authdict and not args.allow_passwordless:
 		raise Exception('No users in %r and --allow-passwordless not specified.' % (auth_fn,))
 	db = DB(args.path, not args.quiet)
+
+	# The standard DotDict is now ordered, but that doesn't suit urd.
+	DotDict.__eq__ = dict.__eq__
+	DotDict.__ne__ = dict.__ne__
 
 	bottle.install(jsonify)
 

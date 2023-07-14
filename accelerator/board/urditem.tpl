@@ -4,8 +4,9 @@
 	<h2>urd item graph</h2>
 	% include('graph.tpl', graphtype='urditem')
 	<table class="urd-table">
+		% saved_caption = entry.caption
 		% for thing in ('timestamp', 'user', 'build', 'caption',):
-			<tr><td>{{ thing }}</td><td>{{ entry.pop(thing) }}</td></tr>
+			<tr><td>{{ thing }}</td><td id="urd-{{ thing }}">{{ entry.pop(thing) }}</td></tr>
 		% end
 		% for thing in sorted(entry):
 			% if thing not in ('joblist', 'deps',):
@@ -14,12 +15,12 @@
 		% end
 		<tr><td>deps</td><td>
 			% for dep, depentry in sorted(entry.deps.items()):
-				<a href="/urd/{{ dep }}/{{ depentry.timestamp }}">
+				<a href="/urd/{{ url_quote(dep) }}/{{ depentry.timestamp }}">
 					{{ dep }}/{{ depentry.timestamp }}
 				</a>
 				<ol>
 					% for method, job in depentry.joblist:
-						<li>{{ method }} <a href="/job/{{ job }}">{{ job }}</a></li>
+						<li>{{ method }} <a href="/job/{{ url_quote(job) }}">{{ job }}</a></li>
 					% end
 				</ol>
 			% end
@@ -27,9 +28,15 @@
 		<tr><td>joblist</td><td>
 			<ol>
 				% for method, job in entry.joblist:
-					<li>{{ method }} <a href="/job/{{ job }}">{{ job }}</a></li>
+					<li>{{ method }} <a href="/job/{{ url_quote(job) }}">{{ job }}</a></li>
 				% end
 			</ol>
 		</td></tr>
 	</table>
+<script language="javascript">
+(function() {
+	const el = document.getElementById('urd-caption');
+	parseANSI(el, {{! js_quote(saved_caption) }});
+})();
+</script>
 </body>

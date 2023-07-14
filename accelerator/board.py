@@ -122,9 +122,9 @@ def ax_link(v):
 		if isinstance(v, Dataset):
 			job = bottle.html_escape(v.job)
 			name = bottle.html_escape(v.name)
-			return '<a href="/job/%s">%s</a>/<a href="/dataset/%s">%s</a>' % (job, job, ev, name,)
+			return '<a href="/job/%s">%s</a>/<a href="/dataset/%s">%s</a>' % (url_quote(v.job), job, url_quote(v), name,)
 		elif isinstance(v, Job):
-			return '<a href="/job/%s">%s</a>' % (ev, ev,)
+			return '<a href="/job/%s">%s</a>' % (url_quote(v), ev,)
 		else:
 			return ev
 	else:
@@ -153,14 +153,23 @@ def populate_hashed():
 			name2hashed[filename] = '/h/ERROR'
 			print(e, file=sys.stderr)
 
+
+def js_quote(obj):
+	# If the string contains '</script>' that will end the script, even if
+	# it's in the middle of a string. Escape < to avoid problems like that.
+	return json.dumps(obj).replace('<', '\\074')
+
+
 def template(tpl_name, **kw):
 	return bottle.template(
 		tpl_name,
 		ax_repr=ax_repr,
 		ax_link=ax_link,
 		ax_version=ax_version,
+		js_quote=js_quote,
 		name2hashed=name2hashed,
 		template=template,
+		url_quote=url_quote,
 		**kw
 	)
 
@@ -240,6 +249,12 @@ def main(argv, cfg):
 def run(cfg, from_shell=False):
 	project = os.path.split(cfg.project_directory)[1]
 	setproctitle('ax board-server for %s on %s' % (project, cfg.board_listen,))
+
+	# The default path filter (i.e. <something:path>) does not match newlines,
+	# but we want it to do so (e.g. in case someone names a dataset with one).
+	def pathfilter(config):
+		return r'(:?.|\n)+?', None, None
+	bottle.default_app[0].router.add_filter('path', pathfilter)
 
 	populate_hashed()
 
@@ -551,6 +566,15 @@ def run(cfg, from_shell=False):
 						neighbour_edges=svgdata[4]
 					)
 				)
+
+	@bottle.get('/h/<name:path>')
+	def hashed_file(name):
+		if name not in hashed:
+			return bottle.HTTPError(404, 'Not Found')
+		data, ctype = hashed[name]
+		bottle.response.content_type = ctype
+		bottle.response.set_header('Cache-Control', 'max-age=604800, immutable')
+		return data
 
 	@bottle.get('/h/<name:path>')
 	def hashed_file(name):

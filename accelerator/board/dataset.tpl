@@ -1,6 +1,5 @@
 {{ ! template('head', title=ds) }}
 
-% import json
 % def tdif(k, v):
 	% if v:
 		<tr><td>{{ k }}</td><td>{{ ! ax_link(v) }}</td></tr>
@@ -41,7 +40,7 @@
 	<h2>contents:</h2>
 	<script language="javascript">
 		const lines = {{ lines }};
-		const columns = {{! json.dumps(sorted(ds.columns)) }};
+		const columns = {{! js_quote(sorted(ds.columns)) }};
 		function toggle() {
 			const checks = [];
 			for (let ix = 0; ix < columns.length; ix++) {
@@ -72,7 +71,7 @@
 				tbody.appendChild(tr);
 				return tr;
 			};
-			const url = '/dataset/{{ ds }}?lines=' + want_lines + '&column='
+			const url = '/dataset/{{ url_quote(ds) }}?lines=' + want_lines + '&column='
 			for (let col = 0; col < columns.length; col++) {
 				if (!document.getElementById('wantCol' + col).checked) continue;
 				const td = document.getElementById('col' + col);
