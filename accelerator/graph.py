@@ -192,8 +192,17 @@ class graph:
 		self.bbox = [None, None, None, None]
 
 	def creategraph(self, nodes, edges, atmaxdeph, jobnames={}, jobsinurdlist=set(), job2urddep={}):
+		nodeids = {n: 'node' + str(ix) for ix, n in enumerate(sorted(set.union(*(set(nn) for nn in nodes.values()))))}
 		self.insert_nodes(nodes, edges, atmaxdeph, jobnames, jobsinurdlist, job2urddep)
+		for key, n in self.nodes.items():
+			n.nodeid = nodeids[key]
+		self.nodes = {n.nodeid: n for n in self.nodes.values()}
+		e2 = set()
+		for s, d, x in edges:
+			e2.add((nodeids[s], nodeids[d], x))
+		edges = e2
 		self.insert_edges(edges)
+
 		# do some adjustments to the bounding box
 		x1, y1, x2, y2 = self.bbox
 		dy = max(100, y2 - y1)

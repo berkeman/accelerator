@@ -22,7 +22,7 @@
 	% else:
 	%     name = '%s (%s)' % (item.method, item.name)
 	% end
-	<circle id="{{item.jobid}}" class="hovernode" onclick="jobpopup(
+	<circle id="{{item.nodeid}}" class="hovernode" onclick="jobpopup(
 			event,
 			{{dumps(item.jobid)}},
 			{{dumps(item.files)}},
@@ -36,8 +36,8 @@
 		onmouseover="highlight_nodes(this, true)"
 		onmouseout="highlight_nodes(this, false)"
 		fill-opacity="50%"
-		data-neighbour_nodes="{{dumps(list(svgdata['neighbour_nodes'][item.jobid]))}}"
-		data-neighbour_edges="{{dumps(list(svgdata['neighbour_edges'][item.jobid]))}}"
+		data-neighbour_nodes="{{dumps(list(svgdata['neighbour_nodes'][item.nodeid]))}}"
+		data-neighbour_edges="{{dumps(list(svgdata['neighbour_edges'][item.nodeid]))}}"
 		cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}"
 		fill="var(--{{color}})"
 		data-origfill="var(--{{color}})"
@@ -45,11 +45,11 @@
 	/>
 	<text x="{{ item.x }}" y="{{ item.y + item.size + 15 }}" font-weight="bold"
 		font-size="12" text-anchor="middle" fill="black">
-		<a href="{{ '/job/' + item.jobid }}">{{ item.jobid }}</a>
+		<a href="{{ '/job/' + url_quote(item.jobid) }}">{{ item.jobid }}</a>
 	</text>
 	<text x="{{ item.x }}" y="{{ item.y + item.size + 30 }}"
 		font-size="12" text-anchor="middle" fill="black">
-		<a href="{{ '/job/' + item.jobid + '/method.tar.gz' + '/'}}">{{ name}}</a>
+		<a href="{{ '/job/' + url_quote(item.jobid) + '/method.tar.gz' + '/'}}">{{ name}}</a>
 	</text>
 % end
 % # Draw edges
