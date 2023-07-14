@@ -194,11 +194,11 @@ class graph:
 	def creategraph(self, nodes, edges, atmaxdeph, jobnames={}, jobsinurdlist=set(), job2urddep={}):
 		self.insert_nodes(nodes, edges, atmaxdeph, jobnames, jobsinurdlist, job2urddep)
 		self.insert_edges(edges)
-		# do some final adjustments to the bounding box
+		# do some adjustments to the bounding box
 		x1, y1, x2, y2 = self.bbox
-		dy = y2 - y1
-		dy = max(100, dy)
-		self.bbox = [-50 + x1, y1 - 50, 100 + x2 - x1, dy + 150]
+		dy = max(100, y2 - y1)
+		dx = max(100, x2 - x1)
+		self.bbox = [x1 - 50, y1 - 50, dx + 100, dy + 100]
 		return dict(
 			nodes=self.nodes,
 			edges=self.edges,
@@ -228,13 +228,12 @@ class graph:
 				for ix, (fun, var) in enumerate(((min, x), (min, y), (max, x), (max, y))):
 					self.bbox[ix] = fun(self.bbox[ix] if not self.bbox[ix] is None else var, var)
 				if isinstance(j, Job):
+					notinjoblist = False
 					if validjobset and j not in validjobset:  # i.e. job is not in this urdlist
 						if job2urddep and j in job2urddep:
 							notinjoblist = job2urddep[j]  # but in a dependency urdlist
 						else:
 							notinjoblist = True
-					else:
-						notinjoblist = False
 					self.node_job(
 						j, x=x, y=y,
 						name=jobnames.get(j) if jobnames else None,
