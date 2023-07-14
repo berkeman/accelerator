@@ -13,8 +13,6 @@ Welcome to exax's online documentation!
 
    quick
 
-   commands
-
    method
    method_exec
    build
@@ -26,6 +24,13 @@ Welcome to exax's online documentation!
 
    api/currentjob.rst
    api/job.rst
+   api/joblist.rst
+   api/urd.rst
+   api/dataset.rst
+   api/datasetchain.rst
+   api/datasetwriter.rst
+
+   commands
 
 input directory
 result directory

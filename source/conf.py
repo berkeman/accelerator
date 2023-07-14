@@ -33,3 +33,7 @@ html_static_path = ['_static',]
 html_theme_options = {
 	'prev_next_buttons_location': 'both',
 }
+html_css_files = [
+    'css/custom.css',
+]
+html_show_sourcelink = False

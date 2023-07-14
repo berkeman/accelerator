@@ -37,8 +37,8 @@ for definition of workdirs, like in this example
    workdirs:
         ${USER} /workdirs/${USER}/
 
-where the same confiuration file can be used by multiple users, while
-having unique workdirs for each user.
+so that the same confiuration file can be used by multiple users,
+while having unique workdirs for each user.
 
 -----
 
