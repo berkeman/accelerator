@@ -52,12 +52,12 @@
 			method= encodeURIComponent(method);
 			ds = encodeURIComponent(ds);
 			popup.children["dataset"].textContent = decodeURIComponent(ds);
-			popup.children["dataset"].href = "/dataset/" + ds;
+			popup.children["dataset"].href = "/dataset/" + encodeURI(ds);
 			popup.children["jobid"].textContent = jobid;
-			popup.children["jobid"].href =  "/job/" + jobid;
+			popup.children["jobid"].href =  "/job/" + encodeURI(jobid);
 			popup.children["method"].textContent = method;
 			popup.children["help"].href = "/method/" + method;
-			popup.children["source"].href ='/job/' + jobid + "/method.tar.gz" + '/';
+			popup.children["source"].href ='/job/' + encodeURI(jobid) + "/method.tar.gz" + '/';
 			popup.children["timestamp"].textContent = '[' + timestamp + ']';
 			if (atmaxdepth === true) {
 				popup.children["atmaxdepth"].style.display = 'block';

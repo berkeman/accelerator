@@ -37,13 +37,13 @@
 				for (const item of items) {
 					const x = document.createElement("a");
 					if (location === '#files') {
-						x.href = '/job/' + jobid + '/' + item;
+						x.href = '/job/' + encodeURI(jobid) + '/' + item;
 						x.textContent = item;
 					} else if (location === '#datasets') {
-						x.href = '/dataset/' + item;
+						x.href = '/dataset/' + encodeURI(item);
 						x.textContent = item;
 					} else if (location === '#subjobs') {
-						x.href = '/job/' + item[0];
+						x.href = '/job/' + encodeURI(item[0]);
 						x.textContent = item[0] + '    (' + item[1] + ')';
 					}
 					const li = document.createElement("li");
@@ -65,10 +65,10 @@
 			const popup = document.querySelector("#jobpopup");
 			popup.style.display = 'block';
 			popup.children["jobid"].textContent = jobid;
-			popup.children["jobid"].href =  "/job/" + jobid;
+			popup.children["jobid"].href =  "/job/" + encodeURI(jobid);
 			popup.children["method"].textContent = method;
 			popup.children["help"].href =  "/method/" + method;
-			popup.children["source"].href ='/job/' + jobid + "/method.tar.gz" + '/';
+			popup.children["source"].href ='/job/' + encodeURI(jobid) + "/method.tar.gz" + '/';
 			popup.children["timestamp"].textContent = '[' + timestamp + ']';
 			if (atmaxdepth === 'True') {
 				popup.children["atmaxdepth"].style.display = 'block';
