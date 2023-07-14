@@ -457,13 +457,7 @@ def run(cfg, from_shell=False):
 			params=job.params,
 			subjobs=subjobs,
 			files=files,
-			svgdata=dict(
-				nodes=svgdata[0],
-				edges=svgdata[1],
-				bbox=svgdata[2],
-				neighbour_nodes=svgdata[3],
-				neighbour_edges=svgdata[4]
-			)
+			svgdata=svgdata,
 		)
 
 	@bottle.get('/dataset/<dsid:path>')
@@ -485,13 +479,7 @@ def run(cfg, from_shell=False):
 			return json.dumps(res)
 		else:
 			svgdata = graph_ds(ds)
-			return dict(ds=ds, svgdata=dict(
-				nodes=svgdata[0],
-				edges=svgdata[1],
-				bbox=svgdata[2],
-				neighbour_nodes=svgdata[3],
-				neighbour_edges=svgdata[4]
-			))
+			return dict(ds=ds, svgdata=svgdata)
 
 	def load_workdir(jobs, name):
 		known = call_s('workdir', name)
@@ -556,16 +544,7 @@ def run(cfg, from_shell=False):
 		key = user + '/' + build + '/' + ts
 		d = call_u(key)
 		svgdata = graph_jlist(d)
-		return dict(key=key,
-					entry=d,
-					svgdata=dict(
-						nodes=svgdata[0],
-						edges=svgdata[1],
-						bbox=svgdata[2],
-						neighbour_nodes=svgdata[3],
-						neighbour_edges=svgdata[4]
-					)
-				)
+		return dict(key=key, entry=d, svgdata=svgdata)
 
 	@bottle.get('/h/<name:path>')
 	def hashed_file(name):

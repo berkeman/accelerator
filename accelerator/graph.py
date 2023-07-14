@@ -199,7 +199,13 @@ class graph:
 		dy = y2 - y1
 		dy = max(100, dy)
 		self.bbox = [-50 + x1, y1 - 50, 100 + x2 - x1, dy + 150]
-		return self.nodes, self.edges, self.bbox, self.neighbour_nodes, self.neighbour_edges
+		return dict(
+			nodes=self.nodes,
+			edges=self.edges,
+			bbox=self.bbox,
+			neighbour_nodes=self.neighbour_nodes,
+			neighbour_edges=self.neighbour_edges
+		)
 
 	def insert_nodes(self, nodes, edges, atmaxdepth, jobnames, validjobset, job2urddep):
 		order = {x: str(ix) for ix, x in enumerate(sorted(nodes[0]))}
