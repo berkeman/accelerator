@@ -1,6 +1,6 @@
 %from json import dumps
 %from math import atan2, sin, cos, pi
-% arrowlen = 20
+% arrowlen = 15
 % arrowangle = pi/8
 
 % for item in svgdata['nodes'].values():
@@ -61,19 +61,18 @@
 	<g id={{key}}>
 		% fromnode = svgdata['nodes'][fromid]
 		% tonode = svgdata['nodes'][toid]
-		% x1, y1 = fromnode.x, fromnode.y
-		% x2, y2 = tonode.x, tonode.y
-		% a = atan2(y2 - y1, x2 - x1)
-		% x1 = x1 + fromnode.size * cos(a)
-		% y1 = y1 + fromnode.size * sin(a)
-		% x2 = x2 - tonode.size * cos(a)
-		% y2 = y2 - tonode.size * sin(a)
-		<line x1="{{x1}}" x2="{{x2}}" y1="{{y1}}" y2="{{y2}}" stroke="black" stroke-width="2"/>
-		% x1 = x2 - arrowlen * cos(a + arrowangle)
-		% y1 = y2 - arrowlen * sin(a + arrowangle)
-		<line x1="{{x1}}" x2="{{x2}}" y1="{{y1}}" y2="{{y2}}" stroke="black" stroke-width="2"/>
-		% x1 = x2 - arrowlen * cos(a - arrowangle)
-		% y1 = y2 - arrowlen * sin(a - arrowangle)
-		<line x1="{{x1}}" x2="{{x2}}" y1="{{y1}}" y2="{{y2}}" stroke="black" stroke-width="2"/>
+		% fx, fy = fromnode.x, fromnode.y
+		% tx, ty = tonode.x, tonode.y
+		% a = atan2(ty - fy, tx - fx)
+		% fx = fx + fromnode.size * cos(a)
+		% fy = fy + fromnode.size * sin(a)
+		% tx = tx - tonode.size * cos(a)
+		% ty = ty - tonode.size * sin(a)
+		<line x1="{{fx}}" x2="{{tx}}" y1="{{fy}}" y2="{{ty}}" stroke="black" stroke-width="2"/>
+		% x1 = tx - arrowlen * cos(a + arrowangle)
+		% y1 = ty - arrowlen * sin(a + arrowangle)
+		% x2 = tx - arrowlen * cos(a - arrowangle)
+		% y2 = ty - arrowlen * sin(a - arrowangle)
+		<polygon points="{{tx}},{{ty}} {{x1}},{{y1}} {{x2}},{{y2}}"/> stroke="black"/>
 	</g>
 % end
