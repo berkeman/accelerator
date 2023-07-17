@@ -1,4 +1,3 @@
-%from json import dumps
 %from math import atan2, sin, cos, pi, sqrt
 % arrowlen = 10
 % arrowangle = pi/6
@@ -14,18 +13,18 @@
 		class="hovernode"
 		onclick="popupmenu(
 			event,
-			{{dumps(item.jobid)}},
-			{{dumps(item.method)}},
-			{{dumps(item.ds)}},
-			{{dumps(item.columns)}},
-			{{dumps(item.atmaxdepth)}},
-			{{dumps(item.timestamp)}},
+			{{js_quote(item.jobid)}},
+			{{js_quote(item.method)}},
+			{{js_quote(item.ds)}},
+			{{js_quote(item.columns)}},
+			{{js_quote(item.atmaxdepth)}},
+			{{js_quote(item.timestamp)}},
 		)"
 		onmouseover="highlight_nodes(this, true)"
 		onmouseout="highlight_nodes(this, false)"
 		fill-opacity="50%"
-		data-neighbour_nodes="{{dumps(list(svgdata['neighbour_nodes'][item.nodeid]))}}"
-		data-neighbour_edges="{{dumps(list(svgdata['neighbour_edges'][item.nodeid]))}}"
+		data-neighbour_nodes="{{js_quote(list(svgdata['neighbour_nodes'][item.nodeid]))}}"
+		data-neighbour_edges="{{js_quote(list(svgdata['neighbour_edges'][item.nodeid]))}}"
 		cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}"
 		fill="var(--{{color}})"
 		data-origfill="var(--{{color}})"
