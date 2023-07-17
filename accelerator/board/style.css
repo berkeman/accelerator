@@ -59,22 +59,22 @@
 
 }
 
-#jobpopup {
+#popupmenu {
     background: #ffffff;
     position: absolute;
     display: none;
     border: 2px solid black;
 }
-#jobpopup ul {
+#popupmenu ul {
     list-style-type:none;
     margin: 0;
     padding: 10px;
 }
-#jobpopup h1 {
+#popupmenu h1 {
     font-size: 1.05em;
     margin-bottom:  0em;
 }
-#jobpopup #notinurdlist  {
+#popupmenu #notinurdlist  {
     color: #c64;
 }
 

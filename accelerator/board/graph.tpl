@@ -113,7 +113,7 @@
 			window.addEventListener("mouseup", mouseup);
 			mouseDown = true;
 			e.preventDefault();
-			jobpopup_off();
+			popupmenu_off();
 		}
 
 		function mouseup(e) {

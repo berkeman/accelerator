@@ -1,4 +1,4 @@
-<div id="jobpopup" class="box">
+<div id="popupmenu" class="box">
 	<div id="method" style="font-style:italic;font-weight:bold;text-align:center"></div><br>
 	Job: <a id="jobid" href=""></a><br><br>
 	<a id="source">Source</a>  <a id="help">Help</a>
@@ -61,8 +61,8 @@
 				}
 			}
 		}
-		function jobpopup(e, jobid, files, datasets, subjobs, method, atmaxdepth, timestamp, notinurdlist) {
-			const popup = document.querySelector("#jobpopup");
+		function popupmenu(e, jobid, files, datasets, subjobs, method, atmaxdepth, timestamp, notinurdlist) {
+			const popup = document.querySelector("#popupmenu");
 			popup.style.display = 'block';
 			popup.children["jobid"].textContent = jobid;
 			popup.children["jobid"].href =  "/job/" + encodeURI(jobid);
@@ -94,8 +94,8 @@
 			positionpopup(popup, e);
 		}
 
-		function jobpopup_off() {
-			const popup = document.querySelector("#jobpopup");
+		function popupmenu_off() {
+			const popup = document.querySelector("#popupmenu");
 			popup.style.display = 'none';
 		}
 	</script>

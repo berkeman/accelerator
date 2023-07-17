@@ -12,7 +12,7 @@
 	<circle
 		id="{{item.nodeid}}"
 		class="hovernode"
-		onclick="jobpopup(
+		onclick="popupmenu(
 			event,
 			{{dumps(item.jobid)}},
 			{{dumps(item.method)}},
