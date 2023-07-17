@@ -1,6 +1,39 @@
 ax commands
 ===========
 
+Mention C-t somewhere!
+
+
+
+history operators
+-----------------
+
+Use '~' to go to the earlier current job
+Use '^' to go to the previous job (or dataset, using {jobs/datasets}.parent
+usr '+' to go to next future job
+several '~' or '+' may be used after eachother, like 'job~~~++ == job~+~+~ == job~'
+use '.previous', '.jobs.source', etc to jump to other job
+use number together with '~' and '+', like this '~10'
+<, > prev/next job i same workdir
+! ensure current job
+
+jobid
+ax job :urdlist/timestamp: sista jobbet i den listan
+ax job :urdlist/timestamp^: sista jobbet i föregående lista
+ax job :urdlist/timestamp:-3 tredje sista
+ax job :urdlist/timestamp:0 första
+~ ger nästa
+
+urd history operators
+---------------------
+ax urd list ger sista i list
+ax urd :list: samma
+ax urd :list^: ger item före sista i list osv.
+
+
+
+
+
 Remains:
 
 -         abort  abort running job(s)
