@@ -4,12 +4,12 @@
 % arrowangle = pi/6
 
 % for ds, item in svgdata['nodes'].items():
-% color='node-ds-default'
-% if item.atmaxdepth:
-%     color='node-atmaxdepth'
-% end
-% item.size = 30
-	<circle id="{{ds}}" class="hovernode" onclick="jobpopup(
+%   color='node-ds-default'
+%   if item.atmaxdepth:
+%       color='node-atmaxdepth'
+%   end
+%   item.size = 30
+	<circle id="{{item.nodeid}}" class="hovernode" onclick="jobpopup(
 			event,
 			{{dumps(item.jobid)}},
 			{{dumps(item.method)}},
