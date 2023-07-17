@@ -457,6 +457,13 @@ def run(cfg, from_shell=False):
 			files = None
 			subjobs = None
 		svgdata = graph_job(job)
+
+		try:
+			methods = call_s('methods')
+			description = methods.get(job.method).description.text
+		except Exception:
+			description = ''
+
 		return dict(
 			job=job,
 			aborted=aborted,
@@ -467,6 +474,7 @@ def run(cfg, from_shell=False):
 			subjobs=subjobs,
 			files=files,
 			svgdata=svgdata,
+			description=description,
 		)
 
 	@bottle.get('/dataset/<dsid:path>')
