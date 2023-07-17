@@ -256,16 +256,17 @@ class graph:
 					)
 
 	def node_ds(self, id, x, y, atmaxdepth=False):
-		job = id.job
 		self.nodes[id] = DotDict(
-			jobid=str(job),
-			method=job.method,
+			jobid=str(id.job),
+			ds=str(id),
+			method=id.job.method,
 			x=x,
 			y=y,
 			atmaxdepth=atmaxdepth,
-			timestamp=datetime.fromtimestamp(job.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
+			timestamp=datetime.fromtimestamp(id.job.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
 			# specific to ds
 			columns=tuple((key, val.type) for key, val in id.columns.items()),
+			lines="%d x % s" % (len(id.columns), '{:,}'.format(sum(id.lines)).replace(',', ' ')),
 		)
 
 	def node_job(self, id, x, y, name=None, atmaxdepth=False, notinurdlist=True):

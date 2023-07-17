@@ -3,17 +3,20 @@
 % arrowlen = 10
 % arrowangle = pi/6
 
-% for ds, item in svgdata['nodes'].items():
+% for item in svgdata['nodes'].values():
 %   color='node-ds-default'
 %   if item.atmaxdepth:
 %       color='node-atmaxdepth'
 %   end
 %   item.size = 30
-	<circle id="{{item.nodeid}}" class="hovernode" onclick="jobpopup(
+	<circle
+		id="{{item.nodeid}}"
+		class="hovernode"
+		onclick="jobpopup(
 			event,
 			{{dumps(item.jobid)}},
 			{{dumps(item.method)}},
-			{{dumps(ds)}},
+			{{dumps(item.ds)}},
 			{{dumps(item.columns)}},
 			{{dumps(item.atmaxdepth)}},
 			{{dumps(item.timestamp)}},
@@ -21,8 +24,8 @@
 		onmouseover="highlight_nodes(this, true)"
 		onmouseout="highlight_nodes(this, false)"
 		fill-opacity="50%"
-		data-neighbour_nodes="{{dumps(list(svgdata['neighbour_nodes'][ds]))}}"
-		data-neighbour_edges="{{dumps(list(svgdata['neighbour_edges'][ds]))}}"
+		data-neighbour_nodes="{{dumps(list(svgdata['neighbour_nodes'][item.nodeid]))}}"
+		data-neighbour_edges="{{dumps(list(svgdata['neighbour_edges'][item.nodeid]))}}"
 		cx="{{item.x}}" cy="{{item.y}}" r="{{item.size}}"
 		fill="var(--{{color}})"
 		data-origfill="var(--{{color}})"
@@ -30,15 +33,15 @@
 	/>
 	<text x="{{ item.x }}" y="{{ item.y + item.size + 15 }}" font-weight="bold"
 		font-size="12" text-anchor="middle" fill="black">
-		<a href="{{ '/dataset/' + ds }}">{{ ds }}</a>
+		<a href="{{ '/dataset/' + url_quote(item.ds) }}">{{ item.ds }}</a>
 	</text>
 	<text x="{{ item.x }}" y="{{ item.y + item.size + 30 }}"
 		font-size="12" text-anchor="middle" fill="black">
-		<a href="{{ '/job/' + item.jobid + '/method.tar.gz' + '/'}}">{{ item.method }}</a>
+		<a href="{{ '/job/' + url_quote(item.jobid) + '/method.tar.gz' + '/'}}">{{ item.method }}</a>
 	</text>
 	<text x="{{ item.x }}" y="{{ item.y + item.size + 45 }}"
 		font-size="12" text-anchor="middle" fill="black">
-		{{len(item.columns)}} x {{'{:,}'.format(sum(ds.lines)).replace(',', ' ')}}
+		{{ item.lines }}
 	</text>
 % end
 % # Draw edges

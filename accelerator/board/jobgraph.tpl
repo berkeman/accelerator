@@ -1,7 +1,7 @@
 %from json import dumps
 %from math import atan2, sin, cos, pi
-% arrowlen = 10
-% arrowangle = pi/6
+% arrowlen = 20
+% arrowangle = pi/8
 
 % for item in svgdata['nodes'].values():
 	<text x="{{item.x}}" y="{{item.y + 5}}" fill="blue4" text-anchor="middle" font-weight="bold">
@@ -22,7 +22,10 @@
 	% else:
 	%     name = '%s (%s)' % (item.method, item.name)
 	% end
-	<circle id="{{item.nodeid}}" class="hovernode" onclick="jobpopup(
+	<circle
+		id="{{item.nodeid}}"
+		class="hovernode"
+		onclick="jobpopup(
 			event,
 			{{dumps(item.jobid)}},
 			{{dumps(item.files)}},

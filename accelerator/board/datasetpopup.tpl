@@ -48,10 +48,7 @@
 		function jobpopup(e, jobid, method, ds, columns, atmaxdepth, timestamp) {
 			const popup = document.querySelector("#jobpopup");
 			popup.style.display = 'block';
-			jobid = encodeURIComponent(jobid);
-			method= encodeURIComponent(method);
-			ds = encodeURIComponent(ds);
-			popup.children["dataset"].textContent = decodeURIComponent(ds);
+			popup.children["dataset"].textContent = ds;
 			popup.children["dataset"].href = "/dataset/" + encodeURI(ds);
 			popup.children["jobid"].textContent = jobid;
 			popup.children["jobid"].href =  "/job/" + encodeURI(jobid);
