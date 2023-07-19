@@ -511,7 +511,7 @@ def run(cfg, from_shell=False):
 	def method(name):
 		methods = call_s('methods')
 		if name not in methods:
-			return bottle.HTTPError(404, 'Method %s not found' % (name,))
+			return bottle.HTTPError(404, 'Method %r not found.' % (name,))
 		return dict(name=name, data=methods[name], cfg=cfg)
 
 	@bottle.get('/urd')
