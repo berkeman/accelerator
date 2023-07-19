@@ -32,6 +32,8 @@ Welcome to exax's online documentation!
 
    commands
 
+   status
+
 input directory
 result directory
 
