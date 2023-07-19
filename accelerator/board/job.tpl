@@ -32,6 +32,15 @@
 	% elif not current:
 		<div class="warning">Job is not current.</div>
 	% end
+
+	<i>
+	% for line in description.split('\n'):
+		{{ line }}<br>
+	% end
+	</i>
+
+	<h2>job graph</h2>
+	% include('graph.tpl', graphtype='job')
 	<h2>setup</h2>
 	<div class="box">
 		<a href="/method/{{ url_quote(params.method) }}">{{ params.package }}.{{ params.method }}</a><br>

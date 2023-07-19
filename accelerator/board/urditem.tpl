@@ -1,6 +1,8 @@
 {{ ! template('head', title=key) }}
 
 	<h1>{{ key }}</h1>
+	<h2>urd item graph</h2>
+	% include('graph.tpl', graphtype='urditem')
 	<table class="urd-table">
 		% saved_caption = entry.caption
 		% for thing in ('timestamp', 'user', 'build', 'caption',):
