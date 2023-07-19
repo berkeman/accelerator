@@ -152,19 +152,11 @@ def git(method_dir):
 	check_call(['git', 'add', '--', 'accelerator.conf', '.gitignore', method_dir])
 
 
-def main(argv, cfg):
-	from os import makedirs, listdir, chdir
-	from os.path import exists, join, realpath, dirname
-	from sys import version_info
-	from argparse import RawTextHelpFormatter
+def createparser(prog=None):
 	from accelerator.shell.parser import ArgumentParser
-	from accelerator.compat import shell_quote
-	from accelerator.error import UserError
-	from accelerator.extras import DotDict
-	import accelerator
-
+	from argparse import RawTextHelpFormatter
 	parser = ArgumentParser(
-		prog=argv.pop(0),
+		prog=prog,
 		description=r'''
 			creates an accelerator project directory.
 			defaults to the current directory.
@@ -182,6 +174,20 @@ def main(argv, cfg):
 	parser.add_argument('--no-git', action='store_true', negation='yes', help='don\'t create git repository')
 	parser.add_argument('--examples', action='store_true', negation='no', help='copy examples to project directory')
 	parser.add_argument('directory', default='.', help='project directory to create. default "."', metavar='DIR', nargs='?')
+	return parser
+
+
+def main(argv, cfg):
+	from os import makedirs, listdir, chdir
+	from os.path import exists, join, realpath, dirname
+	from sys import version_info
+	from accelerator.compat import shell_quote
+	from accelerator.error import UserError
+	from accelerator.extras import DotDict
+	import accelerator
+
+	prog = argv.pop(0)
+	parser = createparser(prog)
 	options = parser.parse_intermixed_args(argv)
 
 	assert options.name

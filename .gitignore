@@ -6,3 +6,5 @@ __pycache__/
 /accelerator.egg-info
 /accelerator/standard_methods/_generated_*.c
 /accelerator/version.txt
+/doc/build/doctrees/
+/doc/build/html/

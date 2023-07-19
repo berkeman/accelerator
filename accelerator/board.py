@@ -350,6 +350,19 @@ def run(cfg, from_shell=False):
 			dirs['..'] = os.path.join('/results', a, '') if a else '/'
 		return res
 
+	@bottle.get('/doc/')
+	@bottle.get('/doc/<filename:path>')
+	def doc(filename='index.html'):
+		root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../doc/build/html')
+		if not os.path.exists(root):
+			return('Install "sphinx" (pip install sphinx)')
+#		source = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../source')
+#		from sphinx.cmd.build import main
+#		print(source, root)
+#		main(['-M', 'html', source, root])
+
+		return bottle.static_file(filename, root=root)
+
 	@bottle.get('/results')
 	@bottle.get('/results/')
 	@bottle.get('/results/<path:path>')
@@ -400,8 +413,17 @@ def run(cfg, from_shell=False):
 					info = members[0]
 				else:
 					return template('job_method_list', members=members, job=job)
-			bottle.response.content_type = 'text/plain; charset=UTF-8'
-			return tar.extractfile(info).read()
+			code = tar.extractfile(info).read()
+			try:
+				from pygments import highlight
+				from pygments.lexers import PythonLexer
+				from pygments.formatters import HtmlFormatter
+				data = highlight(code, PythonLexer(), HtmlFormatter())
+				code = '<style>' + HtmlFormatter().get_style_defs('.highlight') + '</style>' + data
+				bottle.response.content_type = 'text/html; charset=UTF-8'
+			except Exception:
+				bottle.response.content_type = 'text/plain; charset=UTF-8'
+			return code
 
 	@bottle.get('/job/<jobid>/<name:path>')
 	def job_file(jobid, name):

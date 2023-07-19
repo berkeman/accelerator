@@ -93,10 +93,9 @@ def unrename_column(type_job, ds, colname):
 	rev_rename = {v: k for k, v in rename.items() if k in ds.columns}
 	return rev_rename.get(colname, colname)
 
-
-def main(argv, cfg):
+def createparser(prog=None):
 	usage = "%(prog)s [options] ds [ds [...]]"
-	parser = ArgumentParser(prog=argv.pop(0), usage=usage)
+	parser = ArgumentParser(prog=prog, usage=usage)
 	parser.add_argument('-c', '--chain',            action='store_true', negation='no',   help='list all datasets in a chain')
 	parser.add_argument('-C', '--non-empty-chain',  action='store_true', negation='no',   help='list all non-empty datasets in a chain')
 	parser.add_argument('-l', '--list',             action='store_true', negation='dont', help='list all datasets in a job with number of rows')
@@ -108,6 +107,11 @@ def main(argv, cfg):
 	parser.add_argument('-S', '--chainedslices',    action='store_true', negation='no',   help='same as -s but for full chain')
 	parser.add_argument('-w', '--location',         action='store_true', negation='no',   help='show where (ds/filename) each column is stored')
 	parser.add_argument("dataset", nargs='+', help='the job part of the dataset name can be specified in the same ways as for "ax job". you can use ds~ or ds~N to follow the chain N steps backwards, or ^ to follow .parent. this requires specifying the ds-name, so wd-1~ will not do this, but wd-1/default~ will.')
+	return parser
+
+def main(argv, cfg):
+	prog = argv.pop(0)
+	parser = createparser(prog)
 	args = parser.parse_intermixed_args(argv)
 	args.chain = args.chain or args.non_empty_chain
 
