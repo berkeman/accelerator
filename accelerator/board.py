@@ -410,8 +410,7 @@ def run(cfg, from_shell=False):
 					return template('job_method_list', members=members, job=job)
 			code = tar.extractfile(info).read()
 			bottle.response.content_type = 'text/plain; charset=UTF-8'
-			name = tar.getnames()[0]
-			if name and name.endswith('.py'):
+			if info.name.endswith('.py'):
 				accept = get_best_accept('text/plain', 'text/html')
 				if accept == 'text/html':
 					try:
