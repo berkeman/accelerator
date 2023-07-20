@@ -217,25 +217,39 @@ class graph:
 		)
 
 	def insert_nodes(self, nodes, edges, atmaxdepth, jobnames, validjobset, job2urddep):
-		order = {x: str(ix) for ix, x in enumerate(sorted(nodes[0]))}
+		class Ordering:
+			"""
+			The init function takes the first level of nodes as
+			input.  The update function takes each consecutive level
+			of nodes as input.  It returns two lists, the first
+			contains the nodes in sorted order, and the second is a
+			positive integer offset (starting at zero) indicating in
+			which order the nodes should be drawn.
+			"""
+			def __init__(self, nodes):
+				self.order = {x: str(ix) for ix, x in enumerate(sorted(nodes))}
+			def update(self, nodes):
+				nodes = sorted(nodes, key=lambda x: self.order[x])
+				orders = tuple(int(self.order[n]) for n in nodes)
+				for n in nodes:
+					for ix, c in enumerate(sorted(children[n])):
+						if c not in self.order:
+							self.order[c] = self.order[n] + str(ix)
+					self.order.pop(n)
+				for ix, (key, val) in enumerate(sorted(self.order.items(), key=lambda x: x[1])):
+					self.order[key] = str(ix)
+				return nodes, orders
+		order = Ordering(nodes[0])
 		children = defaultdict(set)
 		for s, d, _ in edges:
 			children[s].add(d)
 		for level, jobsatlevel in sorted(nodes.items()):
-			jobsatlevel = sorted(jobsatlevel, key=lambda x: order[x])
-			plotorder = {n: order[n] for n in jobsatlevel}
-			for n in jobsatlevel:
-				for ix, c in enumerate(sorted(children[n])):
-					if c not in order:
-						order[c] = order[n] + str(ix)
-				order.pop(n)
-			for ix, (key, val) in enumerate(sorted(order.items(), key=lambda x: x[1])):
-				order[key] = str(ix)
-			for ix, j in enumerate(jobsatlevel):
+			jobsatlevel, offset = order.update(jobsatlevel)
+			for ix, (j, ofs) in enumerate(zip(jobsatlevel, offset)):
 				x = 160 * (level + 0.3 * sin(ix))
-				y = 140 * int(plotorder[j]) + 70 * sin(level / 3)
-				for ix, (fun, var) in enumerate(((min, x), (min, y), (max, x), (max, y))):
-					self.bbox[ix] = fun(self.bbox[ix] if not self.bbox[ix] is None else var, var)
+				y = 140 * ofs + 70 * sin(level / 3)
+				for i, (fun, var) in enumerate(((min, x), (min, y), (max, x), (max, y))):
+					self.bbox[i] = fun(self.bbox[i] if not self.bbox[i] is None else var, var)
 				if isinstance(j, Job):
 					notinjoblist = False
 					if validjobset and j not in validjobset:  # i.e. job is not in this urdlist
