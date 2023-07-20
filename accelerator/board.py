@@ -354,7 +354,7 @@ def run(cfg, from_shell=False):
 	@bottle.get('/doc/<filename:path>')
 	def doc(filename='index.html'):
 		if not os.path.exists(DOC_PATH):
-			return('Install "sphinx" (pip install sphinx), and run "make"')
+			return('Install "sphinx" (pip install sphinx sphinx-rtd-theme sphinx-argparse), and run "make html"')
 		return bottle.static_file(filename, root=DOC_PATH)
 
 
