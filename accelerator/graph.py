@@ -160,7 +160,6 @@ def recurse_ds(inputitem, maxdepth=MAXDEPTH):
 
 
 def jlist(urdentry):
-	g = graph()
 	job2urddep = {Job(x[1]): str(k) + '/' + str(item.timestamp) for k, item in urdentry.deps.items() for x in item.joblist}
 	jlist = urdentry.joblist
 	jobsinurdlist = tuple(Job(item[1]) for item in reversed(jlist))
@@ -168,53 +167,21 @@ def jlist(urdentry):
 	names = {}
 	for name, jobid in jlist:
 		names[jobid] = name
-	return g.creategraph(nodes, edges, atmaxdepth, names, jobsinurdlist, job2urddep)
+	return creategraph(nodes, edges, atmaxdepth, names, jobsinurdlist, job2urddep)
 
 
 def job(inputjob, recursiondepth=100):
-	g = graph()
 	nodes, edges, atmaxdepth = recurse_jobs(inputjob, recursiondepth)
-	return g.creategraph(nodes, edges, atmaxdepth)
+	return creategraph(nodes, edges, atmaxdepth)
 
 
 def ds(ds, recursiondepth=100):
-	g = graph()
 	nodes, edges, atmaxdepth = recurse_ds(ds, recursiondepth)
-	return g.creategraph(nodes, edges, atmaxdepth)
+	return creategraph(nodes, edges, atmaxdepth)
 
 
-class graph:
-	def __init__(self):
-		self.nodes = dict()
-		self.edges = dict()
-		self.neighbour_nodes = defaultdict(set)
-		self.neighbour_edges = defaultdict(set)
-		self.bbox = [None, None, None, None]
-
-	def creategraph(self, nodes, edges, atmaxdeph, jobnames={}, jobsinurdlist=set(), job2urddep={}):
-		nodeids = {n: 'node' + str(ix) for ix, n in enumerate(sorted(set.union(*(set(nn) for nn in nodes.values()))))}
-		self.insert_nodes(nodes, edges, atmaxdeph, jobnames, jobsinurdlist, job2urddep, nodeids)
-		self.nodes = {n.nodeid: n for n in self.nodes.values()}
-		e2 = set()
-		for s, d, x in edges:
-			e2.add((nodeids[s], nodeids[d], x))
-		edges = e2
-		self.insert_edges(edges)
-
-		# do some adjustments to the bounding box
-		x1, y1, x2, y2 = self.bbox
-		dy = max(100, y2 - y1)
-		dx = max(100, x2 - x1)
-		self.bbox = [x1 - 50, y1 - 50, dx + 100, dy + 100]
-		return dict(
-			nodes=self.nodes,
-			edges=self.edges,
-			bbox=self.bbox,
-			neighbour_nodes=self.neighbour_nodes,
-			neighbour_edges=self.neighbour_edges
-		)
-
-	def insert_nodes(self, nodes, edges, atmaxdepth, jobnames, validjobset, job2urddep, nodeids):
+def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2urddep={}):
+	def nodes_with_attributes(nodes, edges, atmaxdepth, jobnames, validjobset, job2urddep):
 		class Ordering:
 			"""
 			The init function takes the first level of nodes as
@@ -237,6 +204,8 @@ class graph:
 				for ix, (key, val) in enumerate(sorted(self.order.items(), key=lambda x: x[1])):
 					self.order[key] = str(ix)
 				return nodes, orders
+		outnodes = {}
+		bbox = [None, None, None, None]
 		order = Ordering(nodes[0])
 		children = defaultdict(set)
 		for s, d, _ in edges:
@@ -246,10 +215,13 @@ class graph:
 			for ix, (j, ofs) in enumerate(zip(jobsatlevel, offset)):
 				x = 160 * (level + 0.3 * sin(ix))
 				y = 140 * ofs + 70 * sin(level / 3)
+				# update bounding box
 				for i, (fun, var) in enumerate(((min, x), (min, y), (max, x), (max, y))):
-					self.bbox[i] = fun(self.bbox[i] if not self.bbox[i] is None else var, var)
+					bbox[i] = fun(bbox[i] if not bbox[i] is None else var, var)
+				# remains to create a node with attributes
 				jj = j if isinstance(j, Job) else j.job
-				self.nodes[j] = DotDict(
+				nodeix = nodeids[j]
+				outnodes[nodeix] = DotDict(
 					nodeid=nodeids[j],
 					jobid=str(j), x=x, y=y,
 					atmaxdepth=j in atmaxdepth,
@@ -263,7 +235,7 @@ class graph:
 							notinjoblist = job2urddep[j]  # but in a dependency urdlist
 						else:
 							notinjoblist = True
-					self.nodes[j].update(dict(
+					outnodes[nodeix].update(dict(
 						files=sorted(j.files()),
 						datasets=j.datasets,
 						subjobs=tuple((x, Job(x).method) for x in j.post.subjobs),
@@ -271,17 +243,42 @@ class graph:
 						notinurdlist=notinjoblist,
 					))
 				else:
-					self.nodes[j].update(dict(
+					# j is Dataset
+					outnodes[nodeix].update(dict(
 						ds=str(j),
 						columns=tuple((key, val.type) for key, val in j.columns.items()),
 						lines="%d x % s" % (len(j.columns), '{:,}'.format(sum(j.lines)).replace(',', ' ')),
 					))
-
-	def insert_edges(self, edges):
-		self.edges = edges
-		for s, d, _ in edges:
+		return outnodes, bbox
+	def create_edges(edges):
+		neighbour_nodes = defaultdict(set)
+		neighbour_edges = defaultdict(set)
+		outedges = set()
+		for s, d, rel in edges:
+			s = nodeids[s]
+			d = nodeids[d]
 			edgekey = ''.join((s, d))
-			self.neighbour_nodes[s].add(d)
-			self.neighbour_nodes[d].add(s)
-			self.neighbour_edges[s].add(edgekey)
-			self.neighbour_edges[d].add(edgekey)
+			neighbour_nodes[s].add(d)
+			neighbour_nodes[d].add(s)
+			neighbour_edges[s].add(edgekey)
+			neighbour_edges[d].add(edgekey)
+			outedges.add((s, d, rel))
+		return outedges, neighbour_nodes, neighbour_edges
+
+	# create unique string node ids
+	nodeids = {n: 'node' + str(ix) for ix, n in enumerate(sorted(set.union(*(set(nn) for nn in nodes.values()))))}
+	# create nodes (with geometrical locations) and a bounding box
+	outnodes, bbox = nodes_with_attributes(nodes, edges, atmaxdepth, jobnames, jobsinurdlist, job2urddep)
+	outedges, neighbour_nodes, neighbour_edges = create_edges(edges)
+	# do some adjustments to the bounding box
+	x1, y1, x2, y2 = bbox
+	dy = max(100, y2 - y1)
+	dx = max(100, x2 - x1)
+	bbox = [x1 - 50, y1 - 50, dx + 100, dy + 100]
+	return dict(
+		nodes=outnodes,
+		edges=outedges,
+		bbox=bbox,
+		neighbour_nodes=neighbour_nodes,
+		neighbour_edges=neighbour_edges
+	)
