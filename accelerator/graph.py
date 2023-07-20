@@ -193,9 +193,7 @@ class graph:
 
 	def creategraph(self, nodes, edges, atmaxdeph, jobnames={}, jobsinurdlist=set(), job2urddep={}):
 		nodeids = {n: 'node' + str(ix) for ix, n in enumerate(sorted(set.union(*(set(nn) for nn in nodes.values()))))}
-		self.insert_nodes(nodes, edges, atmaxdeph, jobnames, jobsinurdlist, job2urddep)
-		for key, n in self.nodes.items():
-			n.nodeid = nodeids[key]
+		self.insert_nodes(nodes, edges, atmaxdeph, jobnames, jobsinurdlist, job2urddep, nodeids)
 		self.nodes = {n.nodeid: n for n in self.nodes.values()}
 		e2 = set()
 		for s, d, x in edges:
@@ -216,7 +214,7 @@ class graph:
 			neighbour_edges=self.neighbour_edges
 		)
 
-	def insert_nodes(self, nodes, edges, atmaxdepth, jobnames, validjobset, job2urddep):
+	def insert_nodes(self, nodes, edges, atmaxdepth, jobnames, validjobset, job2urddep, nodeids):
 		class Ordering:
 			"""
 			The init function takes the first level of nodes as
@@ -250,6 +248,14 @@ class graph:
 				y = 140 * ofs + 70 * sin(level / 3)
 				for i, (fun, var) in enumerate(((min, x), (min, y), (max, x), (max, y))):
 					self.bbox[i] = fun(self.bbox[i] if not self.bbox[i] is None else var, var)
+				jj = j if isinstance(j, Job) else j.job
+				self.nodes[j] = DotDict(
+					nodeid=nodeids[j],
+					jobid=str(j), x=x, y=y,
+					atmaxdepth=j in atmaxdepth,
+					timestamp=datetime.fromtimestamp(jj.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
+					method=jj.method,
+				)
 				if isinstance(j, Job):
 					notinjoblist = False
 					if validjobset and j not in validjobset:  # i.e. job is not in this urdlist
@@ -257,29 +263,19 @@ class graph:
 							notinjoblist = job2urddep[j]  # but in a dependency urdlist
 						else:
 							notinjoblist = True
-					self.nodes[j] = DotDict(
-						jobid=str(j), x=x, y=y,
-						atmaxdepth=j in atmaxdepth,
-						timestamp=datetime.fromtimestamp(j.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
-						# specific to job
-						method=j.method,
+					self.nodes[j].update(dict(
 						files=sorted(j.files()),
 						datasets=j.datasets,
 						subjobs=tuple((x, Job(x).method) for x in j.post.subjobs),
 						name=jobnames.get(j) if jobnames else None,
 						notinurdlist=notinjoblist,
-					)
+					))
 				else:
-					self.nodes[j] = DotDict(
-						jobid=str(j.job), x=x, y=y,
-						atmaxdepth=j in atmaxdepth,
-						timestamp=datetime.fromtimestamp(j.job.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
+					self.nodes[j].update(dict(
 						ds=str(j),
-						method=j.job.method,
-						# specific to ds
 						columns=tuple((key, val.type) for key, val in j.columns.items()),
 						lines="%d x % s" % (len(j.columns), '{:,}'.format(sum(j.lines)).replace(',', ' ')),
-					)
+					))
 
 	def insert_edges(self, edges):
 		self.edges = edges
