@@ -257,47 +257,29 @@ class graph:
 							notinjoblist = job2urddep[j]  # but in a dependency urdlist
 						else:
 							notinjoblist = True
-					self.node_job(
-						j, x=x, y=y,
-						name=jobnames.get(j) if jobnames else None,
+					self.nodes[j] = DotDict(
+						jobid=str(j), x=x, y=y,
 						atmaxdepth=j in atmaxdepth,
+						timestamp=datetime.fromtimestamp(j.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
+						# specific to job
+						method=j.method,
+						files=sorted(j.files()),
+						datasets=j.datasets,
+						subjobs=tuple((x, Job(x).method) for x in j.post.subjobs),
+						name=jobnames.get(j) if jobnames else None,
 						notinurdlist=notinjoblist,
 					)
 				else:
-					self.node_ds(
-						j, x=x, y=y,
+					self.nodes[j] = DotDict(
+						jobid=str(j.job), x=x, y=y,
 						atmaxdepth=j in atmaxdepth,
+						timestamp=datetime.fromtimestamp(j.job.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
+						ds=str(j),
+						method=j.job.method,
+						# specific to ds
+						columns=tuple((key, val.type) for key, val in j.columns.items()),
+						lines="%d x % s" % (len(j.columns), '{:,}'.format(sum(j.lines)).replace(',', ' ')),
 					)
-
-	def node_ds(self, id, x, y, atmaxdepth=False):
-		self.nodes[id] = DotDict(
-			jobid=str(id.job),
-			ds=str(id),
-			method=id.job.method,
-			x=x,
-			y=y,
-			atmaxdepth=atmaxdepth,
-			timestamp=datetime.fromtimestamp(id.job.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
-			# specific to ds
-			columns=tuple((key, val.type) for key, val in id.columns.items()),
-			lines="%d x % s" % (len(id.columns), '{:,}'.format(sum(id.lines)).replace(',', ' ')),
-		)
-
-	def node_job(self, id, x, y, name=None, atmaxdepth=False, notinurdlist=True):
-		self.nodes[id] = DotDict(
-			jobid=str(id),
-			method=id.method,
-			x=x,
-			y=y,
-			atmaxdepth=atmaxdepth,
-			timestamp=datetime.fromtimestamp(id.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
-			# specific to job
-			files=sorted(id.files()),
-			datasets=id.datasets,
-			subjobs=tuple((x, Job(x).method) for x in id.post.subjobs),
-			name=name,
-			notinurdlist=notinurdlist,
-		)
 
 	def insert_edges(self, edges):
 		self.edges = edges
