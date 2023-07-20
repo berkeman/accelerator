@@ -47,13 +47,14 @@ def recurse_joblist(inputv):
 	# join node to be max of all its parent's levels.
 	edges = set()
 	atmaxdepth = set()  # @@@ currently not implemented, this algo recurses everything!
-	children = defaultdict(set)
+	children = defaultdict(dict)
 	parents = defaultdict(set)
 	for item in inputv:
-		deps = set.union(*jobdeps(item).values())
+		deps = jobdeps(item)
 		children[item] = deps
-		for d in deps:
-			parents[d].add(item)
+		for dd in deps.values():
+			for d in dd:
+				parents[d].add(item)
 	joins = {key: sorted(val) for key, val in parents.items() if len(val) > 1}
 	starts = set(inputv) - set(parents)
 	dones = set()
@@ -71,10 +72,11 @@ def recurse_joblist(inputv):
 			else:
 				continue
 		levels[current] = level
-		for child in children[current]:
-			edges.add((current, child, None))
-			if child not in dones:
-				stack.insert(0, (current, child, level + 1))
+		for key, childs in children[current].items():
+			for child in childs:
+				edges.add((current, child, key))
+				if child not in dones:
+					stack.insert(0, (current, child, level + 1))
 		dones.add(current)
 	nodes = defaultdict(list)
 	for k, v in levels.items():
