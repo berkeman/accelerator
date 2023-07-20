@@ -9,18 +9,18 @@ MAXDEPTH = 1000
 
 def jobdeps(job):
 	""" Return all the job's dependencies """
-	res = set()
+	res = defaultdict(set)
 	# jobs
 	for key, value in job.params.jobs.items():
 		if not isinstance(value, (list, tuple)):
 			value = [value, ]
 		for val in value:
 			if val:
-				res.add(val)
+				res['jobs.' + key].add(val)
 	# options Jobwithfile
 	for key, value in job.params.options.items():
 		if isinstance(value, JobWithFile):
-			res.add(value.job)
+			res['jwf.' + key] = value.job
 		# @@ handle or sorts of nested options here
 	# datasets
 	for key, value in job.params.datasets.items():
@@ -28,7 +28,7 @@ def jobdeps(job):
 			value = [value, ]
 		for val in value:
 			if val:
-				res.add(val.job)
+				res['datasets.' + key].add(val.job)
 	return res
 
 
@@ -50,7 +50,7 @@ def recurse_joblist(inputv):
 	children = defaultdict(set)
 	parents = defaultdict(set)
 	for item in inputv:
-		deps = sorted(jobdeps(item))
+		deps = set.union(*jobdeps(item).values())
 		children[item] = deps
 		for d in deps:
 			parents[d].add(item)
@@ -88,7 +88,7 @@ def recurse_jobs(inputitem, maxdepth=MAXDEPTH):
 	# difference is added to the subgraph having the node as root.
 	edges = set()  # set of graph edges (i.e. node tuples)
 	atmaxdepth = set()  # set of nodes that are at max recursion depth
-	node2children = defaultdict(set)  # a "cache" for nodes' children
+	node2children = defaultdict(dict)  # a "cache" for nodes' children
 	mergeoffsets = dict()  # max difference in depth when arriving at node from different paths
 	dones = set()  # nodes we are done with
 	levels = dict()  # {node: recursionlevel}.  Level will be updated in second recursion.
@@ -112,10 +112,11 @@ def recurse_jobs(inputitem, maxdepth=MAXDEPTH):
 		else:
 			if current not in node2children:
 				# populate "cache".  Used by second recursion too!
-				node2children[current] = sorted(jobdeps(current))
-			for child in node2children[current]:
-				stack.append((child, level + 1))
-				edges.add((current, child, None))
+				node2children[current] = jobdeps(current)
+			for key, children in node2children[current].items():
+				for child in children:
+					stack.append((child, level + 1))
+					edges.add((current, child, key))
 		dones.add(current)
 	# Phase 2, recurse again and fix level differences
 	levels = dict()
@@ -127,8 +128,9 @@ def recurse_jobs(inputitem, maxdepth=MAXDEPTH):
 		levels[current] = level
 		if current in atmaxdepth:
 			continue
-		for child in node2children[current]:
-			stack.append((child, level + 1))
+		for children in node2children[current].values():
+			for child in children:
+				stack.append((child, level + 1))
 	nodes = defaultdict(list)
 	for k, v in levels.items():
 		nodes[v].append(k)

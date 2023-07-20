@@ -55,7 +55,7 @@
 	</text>
 % end
 % # Draw edges
-% for fromid, toid, _ in svgdata['edges']:
+% for fromid, toid, relation in svgdata['edges']:
 	% key = ''.join((fromid, toid))
 	<g id={{key}}>
 		% fromnode = svgdata['nodes'][fromid]
@@ -73,5 +73,11 @@
 		% x2 = tx - arrowlen * cos(a - arrowangle)
 		% y2 = ty - arrowlen * sin(a - arrowangle)
 		<polygon points="{{tx}},{{ty}} {{x1}},{{y1}} {{x2}},{{y2}}"/> stroke="black"/>
+		% mx = fx + 8*cos(a) + 8*sin(a)
+		% my = fy + 8*sin(a) - 8*cos(a)
+		<text x={{mx}} y={{my}}
+			transform="rotate({{a*180/pi}},{{mx}},{{my}})"
+			text-anchor="start" font-size="9" fill="#4040a0">
+			{{relation}}
 	</g>
 % end
