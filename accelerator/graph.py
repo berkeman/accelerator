@@ -166,7 +166,7 @@ def recurse_ds(inputitem, maxdepth=MAXDEPTH):
 	return nodes, edges, atmaxdepth
 
 
-def jlist(urdentry):
+def joblist(urdentry):
 	job2urddep = {Job(x[1]): str(k) + '/' + str(item.timestamp) for k, item in urdentry.deps.items() for x in item.joblist}
 	jlist = urdentry.joblist
 	jobsinurdlist = tuple(Job(item[1]) for item in reversed(jlist))
@@ -182,7 +182,7 @@ def job(inputjob, recursiondepth=100):
 	return creategraph(nodes, edges, atmaxdepth)
 
 
-def ds(ds, recursiondepth=100):
+def dataset(ds, recursiondepth=100):
 	nodes, edges, atmaxdepth = recurse_ds(ds, recursiondepth)
 	return creategraph(nodes, edges, atmaxdepth)
 

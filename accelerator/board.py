@@ -38,10 +38,7 @@ from accelerator.shell.parser import ArgumentParser, name2job, name2ds
 from accelerator.shell.workdir import job_data, workdir_jids
 from accelerator.compat import setproctitle, url_quote, urlencode
 from accelerator import __version__ as ax_version
-
-from accelerator.graph import jlist as graph_jlist
-from accelerator.graph import job as graph_job
-from accelerator.graph import ds as graph_ds
+from accelerator import graph
 
 # why wasn't Accept specified in a sane manner (like sending it in preference order)?
 def get_best_accept(*want):
@@ -457,7 +454,7 @@ def run(cfg, from_shell=False):
 			current = False
 			files = None
 			subjobs = None
-		svgdata = graph_job(job)
+		svgdata = graph.job(job)
 
 		try:
 			methods = call_s('methods')
@@ -496,7 +493,7 @@ def run(cfg, from_shell=False):
 			bottle.response.content_type = 'application/json; charset=UTF-8'
 			return json.dumps(res)
 		else:
-			svgdata = graph_ds(ds)
+			svgdata = graph.dataset(ds)
 			return dict(ds=ds, svgdata=svgdata)
 
 	def load_workdir(jobs, name):
@@ -561,7 +558,7 @@ def run(cfg, from_shell=False):
 	def urditem(user, build, ts):
 		key = user + '/' + build + '/' + ts
 		d = call_u(key)
-		svgdata = graph_jlist(d)
+		svgdata = graph.joblist(d)
 		return dict(key=key, entry=d, svgdata=svgdata)
 
 
