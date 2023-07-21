@@ -167,13 +167,11 @@ def recurse_ds(inputitem, maxdepth=MAXDEPTH):
 
 
 def joblist(urdentry):
-	job2urddep = {Job(x[1]): str(k) + '/' + str(item.timestamp) for k, item in urdentry.deps.items() for x in item.joblist}
+	job2urddep = {Job(x[1]): str(dep) + '/' + str(item.timestamp) for dep, item in urdentry.deps.items() for x in item.joblist}
 	jlist = urdentry.joblist
-	jobsinurdlist = tuple(Job(item[1]) for item in reversed(jlist))
+	jobsinurdlist = tuple(Job(item[1]) for item in jlist)
 	nodes, edges, atmaxdepth = recurse_joblist(jobsinurdlist)
-	names = {}
-	for name, jobid in jlist:
-		names[jobid] = name
+	names = {jobid: name for name, jobid in jlist}
 	return creategraph(nodes, edges, atmaxdepth, names, jobsinurdlist, job2urddep)
 
 
