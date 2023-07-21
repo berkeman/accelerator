@@ -357,6 +357,8 @@ def run(cfg, from_shell=False):
 			return('Install "sphinx" (pip install sphinx sphinx-rtd-theme sphinx-argparse), and run "make html"')
 		return bottle.static_file(filename, root=DOC_PATH)
 
+# hur tänker sphinx att funka med nya projekt
+
 
 	@bottle.get('/results')
 	@bottle.get('/results/')
@@ -561,6 +563,12 @@ def run(cfg, from_shell=False):
 		d = call_u(key)
 		svgdata = graph_jlist(d)
 		return dict(key=key, entry=d, svgdata=svgdata)
+
+
+	@bottle.get('/favicon.ico')
+	def get_favicon():
+		root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../doc/')
+		return bottle.static_file(filename='favicon.ico', root=root)
 
 
 	@bottle.get('/h/<name:path>')
