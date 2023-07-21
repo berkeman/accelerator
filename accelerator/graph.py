@@ -69,7 +69,7 @@ def recurse_joblist(inputv):
 			level = max(level, levels.get(current, level))
 			levels[current] = level
 			joinedparents[current].add(parent)
-			if joinedparents[current] != set(parents[current]):
+			if joinedparents[current] != parents[current]:
 				continue
 		for key, childs in children[current].items():
 			for child in childs:
