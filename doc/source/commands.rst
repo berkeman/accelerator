@@ -3,7 +3,7 @@ ax commands
 
 Mention C-t somewhere!
 
-
+job in {current, old, unfinished}
 
 history operators
 -----------------
