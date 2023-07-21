@@ -64,13 +64,13 @@ def recurse_joblist(inputv):
 	joinedparents = defaultdict(set)
 	while stack:
 		parent, current, level = stack.pop()
-		levels[current] = level
 		if current in joins:
 			level = max(level, levels.get(current, level))
 			levels[current] = level
 			joinedparents[current].add(parent)
 			if joinedparents[current] != parents[current]:
 				continue
+		levels[current] = level
 		for key, childs in children[current].items():
 			for child in childs:
 				edges.add((current, child, key))
