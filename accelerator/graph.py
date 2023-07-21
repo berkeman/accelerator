@@ -4,7 +4,8 @@ from datetime import datetime
 from accelerator import JobWithFile, Job
 from accelerator import DotDict
 
-MAXDEPTH = 1000
+MAXDEPTH = 100
+
 
 def expandtolist(res, name, what, fun=lambda x: x):
 	if what:
