@@ -5,8 +5,6 @@
 		<tr><td>{{ k }}</td><td>{{ ! ax_link(v) }}</td></tr>
 	% end
 % end
-		<h2>dataset graph</h2>
-		{{ ! template('graph.tpl', svgdata=svgdata, graphtype='dataset') }}
 	<h1>{{ ds.job }}/{{ ds.name }}</h1>
 	<table>
 		% tdif('job', ds.job)
@@ -16,6 +14,8 @@
 		% tdif('previous', ds.previous)
 		% tdif('hashlabel', ds.hashlabel)
 	</table>
+	<h2>dataset graph</h2>
+	{{ ! template('graph.tpl', svgdata=svgdata, graphtype='dataset') }}
 	<h2>columns:</h2>
 	<table id="columns" class="ds-table">
 	<thead>
