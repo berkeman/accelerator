@@ -34,7 +34,7 @@ def jobdeps(job):
 
 def dsdeps(ds):
 	""" return all the dataset's parents and previous """
-	ret = dict()
+	ret = {}
 	if ds.parent:
 		ret[ds.parent] = 'parent'
 	if ds.previous:
@@ -59,8 +59,8 @@ def recurse_joblist(inputv):
 	joins = {key: sorted(val) for key, val in parents.items() if len(val) > 1}
 	starts = set(inputv) - set(parents)
 	dones = set()
-	stack = list((None, x, 0) for x in starts)
-	levels = dict()
+	stack = [(None, x, 0) for x in starts]
+	levels = {}
 	joinedparents = defaultdict(set)
 	while stack:
 		parent, current, level = stack.pop()
@@ -91,9 +91,9 @@ def recurse_jobs(inputitem, maxdepth=MAXDEPTH):
 	edges = set()  # set of graph edges (i.e. node tuples)
 	atmaxdepth = set()  # set of nodes that are at max recursion depth
 	node2children = defaultdict(dict)  # a "cache" for nodes' children
-	mergeoffsets = dict()  # max difference in depth when arriving at node from different paths
+	mergeoffsets = {}  # max difference in depth when arriving at node from different paths
 	dones = set()  # nodes we are done with
-	levels = dict()  # {node: recursionlevel}.  Level will be updated in second recursion.
+	levels = {}  # {node: recursionlevel}.  Level will be updated in second recursion.
 	stack = [(inputitem, 0), ]  # list of (node, recursionlevel), start at level 0.
 	# Phase 1, recurse graph
 	while stack:
@@ -121,7 +121,7 @@ def recurse_jobs(inputitem, maxdepth=MAXDEPTH):
 					edges.add((current, child, key))
 		dones.add(current)
 	# Phase 2, recurse again and fix level differences
-	levels = dict()
+	levels = {}
 	stack = [(inputitem, 0), ]
 	while stack:
 		current, level = stack.pop()
@@ -144,7 +144,7 @@ def recurse_ds(inputitem, maxdepth=MAXDEPTH):
 	edges = set()
 	atmaxdepth = set()
 	dones = set()
-	levels = dict()
+	levels = {}
 	stack = [(inputitem, 0), ]
 	while stack:
 		current, level = stack.pop()
