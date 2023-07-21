@@ -66,7 +66,7 @@ def recurse_joblist(inputv):
 		parent, current, level = stack.pop()
 		levels[current] = level
 		if current in joins:
-			level = max(level, levels[current]) if current in levels else level
+			level = max(level, levels.get(current, level))
 			levels[current] = level
 			joinedparents[current].add(parent)
 			if joinedparents[current] != set(parents[current]):
