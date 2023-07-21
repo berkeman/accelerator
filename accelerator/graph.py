@@ -75,7 +75,7 @@ def recurse_joblist(inputv):
 			for child in childs:
 				edges.add((current, child, key))
 				if child not in dones:
-					stack.insert(0, (current, child, level + 1))
+					stack.append((current, child, level + 1))
 		dones.add(current)
 	nodes = defaultdict(list)
 	for k, v in levels.items():
