@@ -43,6 +43,7 @@ def dsdeps(ds):
 
 
 def recurse_joblist(inputv):
+	print("Test that out-of-urdlist items render properly (both in-other-urdlist and in-no-urdlist).")
 	# This is a breadth-first algo, that computes the level of each
 	# join node to be max of all its parent's levels.
 	edges = set()
@@ -85,6 +86,7 @@ def recurse_joblist(inputv):
 
 
 def recurse_jobs(inputitem, maxdepth=MAXDEPTH):
+	print("Test that maxdepth works and renders properly")
 	# Depth first algo, that stores max differences in level when two
 	# or more parents enter a node.  On a second recursion, this delta
 	# difference is added to the subgraph having the node as root.
@@ -140,6 +142,7 @@ def recurse_jobs(inputitem, maxdepth=MAXDEPTH):
 
 
 def recurse_ds(inputitem, maxdepth=MAXDEPTH):
+	print("Test that lists of datasets (and jobs?!) work too!")
 	edges = set()
 	atmaxdepth = set()
 	dones = set()
@@ -201,9 +204,18 @@ def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2
 				nodes = sorted(nodes, key=lambda x: self.order[x])
 				orders = tuple(int(self.order[n]) for n in nodes)
 				for n in nodes:
-					for ix, c in enumerate(sorted(children[n])):
-						if c not in self.order:
-							self.order[c] = self.order[n] + str(ix)
+					if 1:
+						for ix, c in enumerate(sorted(children[n])):
+							if c not in self.order:
+								self.order[c] = self.order[n] + str(ix)
+					if 0:
+						ix = 0
+						for (key, childs) in (sorted(jobdeps(n).items())):  # sort in depname order
+							for child in childs:
+								if child not in  self.order:
+									self.order[child] = self.order[n] + str(ix)
+									ix += 1
+					print('x', self.order)
 					self.order.pop(n)
 				for ix, (key, val) in enumerate(sorted(self.order.items(), key=lambda x: x[1])):
 					self.order[key] = str(ix)
@@ -217,8 +229,8 @@ def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2
 		for level, jobsatlevel in sorted(nodes.items()):
 			jobsatlevel, offset = order.update(jobsatlevel)
 			for ix, (j, ofs) in enumerate(zip(jobsatlevel, offset)):
-				x = 160 * (level + 0.3 * sin(ix))
-				y = 140 * ofs + 70 * sin(level / 3)
+				x = 160 * (level + 0.2 * sin(ix+ofs))
+				y = 140 * ofs + 50 * sin(level / 3)
 				# update bounding box
 				for i, (fun, var) in enumerate(((min, x), (min, y), (max, x), (max, y))):
 					bbox[i] = fun(bbox[i] if not bbox[i] is None else var, var)
