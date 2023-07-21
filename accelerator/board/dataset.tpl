@@ -16,7 +16,7 @@
 	</table>
 	<h2>dataset graph</h2>
 	{{ ! template('graph.tpl', svgdata=svgdata, graphtype='dataset') }}
-	<h2>columns:</h2>
+	<h2>columns</h2>
 	<table id="columns" class="ds-table">
 	<thead>
 		<tr><th>name</th><th>type</th><th>min</th><th>max</th></tr>
@@ -37,7 +37,7 @@
 	% cols, lines = ds.shape
 	{{ cols }} columns<br>
 	{{ lines }} lines {{ ds.lines }}<br>
-	<h2>contents:</h2>
+	<h2>contents</h2>
 	<script language="javascript">
 		const lines = {{ lines }};
 		const columns = {{! js_quote(sorted(ds.columns)) }};
