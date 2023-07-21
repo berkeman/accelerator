@@ -3,9 +3,6 @@
 % arrowangle = pi/8
 
 % for item in svgdata['nodes'].values():
-	<text x="{{item.x}}" y="{{item.y + 5}}" fill="blue4" text-anchor="middle" font-weight="bold">
-		{{ ''.join(('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else ''))}}
-	</text>
 	% if item.atmaxdepth:
 	%     color='node-atmaxdepth'
 	% elif item.notinurdlist is True:
@@ -21,6 +18,9 @@
 	% else:
 	%     name = '%s (%s)' % (item.method, item.name)
 	% end
+	<text x="{{item.x}}" y="{{item.y + 5}}" fill="blue4" text-anchor="middle" font-weight="bold">
+		{{ ''.join(('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else ''))}}
+	</text>
 	<circle
 		id="{{item.nodeid}}"
 		class="hovernode"
