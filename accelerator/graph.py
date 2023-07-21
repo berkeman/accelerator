@@ -12,7 +12,7 @@ def jobdeps(job):
 	res = defaultdict(set)
 	# jobs
 	for key, value in job.params.jobs.items():
-		if not isinstance(value, (list, tuple)):
+		if not isinstance(value, list):
 			value = [value, ]
 		for val in value:
 			if val:
@@ -24,7 +24,7 @@ def jobdeps(job):
 		# @@ handle or sorts of nested options here
 	# datasets
 	for key, value in job.params.datasets.items():
-		if not isinstance(value, (list, tuple)):
+		if not isinstance(value, list):
 			value = [value, ]
 		for val in value:
 			if val:
