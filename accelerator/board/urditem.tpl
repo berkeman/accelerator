@@ -1,8 +1,6 @@
 {{ ! template('head', title=key) }}
 
 	<h1>{{ key }}</h1>
-	<h2>urd item graph</h2>
-	% include('graph.tpl', graphtype='urditem')
 	<table class="urd-table">
 		% saved_caption = entry.caption
 		% for thing in ('timestamp', 'user', 'build', 'caption',):
@@ -13,6 +11,10 @@
 				<tr><td>{{ thing }}</td><td>{{ value }}</td></tr>
 			% end
 		% end
+	</table>
+	<h2>urd item graph</h2>
+	% include('graph.tpl', graphtype='urditem')
+	<table class="urd-table">
 		<tr><td>deps</td><td>
 			% for dep, depentry in sorted(entry.deps.items()):
 				<a href="/urd/{{ url_quote(dep) }}/{{ depentry.timestamp }}">

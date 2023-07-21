@@ -78,8 +78,8 @@ def recurse_joblist(inputv):
 					stack.append((current, child, level + 1))
 		dones.add(current)
 	nodes = defaultdict(list)
-	for k, v in levels.items():
-		nodes[v].append(k)
+	for n, lev in levels.items():
+		nodes[lev].append(n)
 	return nodes, edges, atmaxdepth
 
 
@@ -134,8 +134,8 @@ def recurse_jobs(inputitem, maxdepth=MAXDEPTH):
 			for child in children:
 				stack.append((child, level + 1))
 	nodes = defaultdict(list)
-	for k, v in levels.items():
-		nodes[v].append(k)
+	for n, lev in levels.items():
+		nodes[lev].append(n)
 	return nodes, edges, atmaxdepth
 
 
@@ -159,8 +159,8 @@ def recurse_ds(inputitem, maxdepth=MAXDEPTH):
 				edges.add((current, child, relation))
 		dones.add(current)
 	nodes = defaultdict(list)
-	for k, v in levels.items():
-		nodes[v].append(k)
+	for n, lev in levels.items():
+		nodes[lev].append(n)
 	return nodes, edges, atmaxdepth
 
 
