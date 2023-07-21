@@ -34,12 +34,21 @@ def jobdeps(job):
 
 def dsdeps(ds):
 	""" return all the dataset's parents and previous """
-	ret = {}
-	if ds.parent:
-		ret[ds.parent] = 'parent'
-	if ds.previous:
-		ret[ds.previous] = 'previous'
-	return ret
+	res = defaultdict(set)
+	parent = ds.parent
+	if parent:
+		print(type(parent))
+		if not isinstance(parent, (list, tuple)):
+			parent = [parent, ]
+		for item in parent:
+			res['parent'].add(item)
+	previous = ds.previous
+	if previous:
+		if not isinstance(previous, (list, tuple)):
+			previous = [previous, ]
+		for item in previous:
+			res['previous'].add(item)
+	return res
 
 
 def recurse_joblist(inputv):
@@ -83,7 +92,7 @@ def recurse_joblist(inputv):
 	return nodes, edges, atmaxdepth
 
 
-def recurse_jobs(inputitem, maxdepth=MAXDEPTH):
+def recurse_jobsords(inputitem, depsfun, maxdepth=MAXDEPTH):
 	print("Test that maxdepth works and renders properly")
 	# Depth first algo, that stores max differences in level when two
 	# or more parents enter a node.  On a second recursion, this delta
@@ -114,7 +123,7 @@ def recurse_jobs(inputitem, maxdepth=MAXDEPTH):
 		else:
 			if current not in node2children:
 				# populate "cache".  Used by second recursion too!
-				node2children[current] = jobdeps(current)
+				node2children[current] = depsfun(current)
 			for key, children in node2children[current].items():
 				for child in children:
 					stack.append((child, level + 1))
@@ -139,31 +148,6 @@ def recurse_jobs(inputitem, maxdepth=MAXDEPTH):
 	return nodes, edges, atmaxdepth
 
 
-def recurse_ds(inputitem, maxdepth=MAXDEPTH):
-	print("Test that lists of datasets (and jobs?!) work too!")
-	edges = set()
-	atmaxdepth = set()
-	dones = set()
-	levels = {}
-	stack = [(inputitem, 0), ]
-	while stack:
-		current, level = stack.pop()
-		if current in dones:
-			continue
-		levels[current] = level
-		if level >= maxdepth:
-			atmaxdepth.add(current)
-		else:
-			for child, relation in dsdeps(current).items():
-				stack.append((child, level + 1))
-				edges.add((current, child, relation))
-		dones.add(current)
-	nodes = defaultdict(list)
-	for n, lev in levels.items():
-		nodes[lev].append(n)
-	return nodes, edges, atmaxdepth
-
-
 def joblist(urdentry):
 	job2urddep = {Job(x[1]): str(dep) + '/' + str(item.timestamp) for dep, item in urdentry.deps.items() for x in item.joblist}
 	jlist = urdentry.joblist
@@ -174,12 +158,12 @@ def joblist(urdentry):
 
 
 def job(inputjob, recursiondepth=100):
-	nodes, edges, atmaxdepth = recurse_jobs(inputjob, recursiondepth)
+	nodes, edges, atmaxdepth = recurse_jobsords(inputjob, jobdeps, recursiondepth)
 	return creategraph(nodes, edges, atmaxdepth)
 
 
 def dataset(ds, recursiondepth=100):
-	nodes, edges, atmaxdepth = recurse_ds(ds, recursiondepth)
+	nodes, edges, atmaxdepth = recurse_jobsords(ds, dsdeps, recursiondepth)
 	return creategraph(nodes, edges, atmaxdepth)
 
 
