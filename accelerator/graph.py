@@ -43,7 +43,7 @@ def dsdeps(ds):
 	return res
 
 
-def recurse_joblist(inputv):
+def recurse_joblist(inputjoblist):
 	print("Test that out-of-urdlist items render properly (both in-other-urdlist and in-no-urdlist).")
 	# This is a breadth-first algo, that computes the level of each
 	# join node to be max of all its parent's levels.
@@ -51,21 +51,21 @@ def recurse_joblist(inputv):
 	atmaxdepth = set()  # @@@ currently not implemented, this algo recurses everything!
 	children = defaultdict(dict)
 	parents = defaultdict(set)
-	for item in inputv:
+	for item in inputjoblist:
 		deps = jobdeps(item)
 		children[item] = deps
-		for dd in deps.values():
-			for d in dd:
-				parents[d].add(item)
-	joins = {key: sorted(val) for key, val in parents.items() if len(val) > 1}
-	starts = set(inputv) - set(parents)
+		for d in deps.values():
+			for dd in d:
+				parents[dd].add(item)
+	joinnodes = {key: sorted(val) for key, val in parents.items() if len(val) > 1}
+	starts = set(inputjoblist) - set(parents)
 	dones = set()
-	stack = [(None, x, 0) for x in starts]
+	stack = [(None, x, 0) for x in starts]  # (parent, current, level)
 	levels = {}
 	joinedparents = defaultdict(set)
 	while stack:
 		parent, current, level = stack.pop()
-		if current in joins:
+		if current in joinnodes:
 			level = max(level, levels.get(current, level))
 			levels[current] = level
 			joinedparents[current].add(parent)
@@ -85,16 +85,16 @@ def recurse_joblist(inputv):
 
 
 def recurse_jobsords(inputitem, depsfun, maxdepth=MAXDEPTH):
-	print("Test that maxdepth works and renders properly")
-	# Depth first algo, that stores max differences in level when two
-	# or more parents enter a node.  On a second recursion, this delta
-	# difference is added to the subgraph having the node as root.
-	edges = set()  # set of graph edges (i.e. node tuples)
-	atmaxdepth = set()  # set of nodes that are at max recursion depth
+	# Depth first algo.  When multiple paths join in a node, the max
+	# difference in level between the paths is stored.  In a second
+	# recursion, this delta difference is added to the subgraph having
+	# the node as root.
+	edges = set()       # set of graph edges, each is tuple(source, dest, key)
+	atmaxdepth = set()  # set of nodes that touch max recursion depth
 	node2children = defaultdict(dict)  # a "cache" for nodes' children
-	mergeoffsets = {}  # max difference in depth when arriving at node from different paths
-	dones = set()  # nodes we are done with
-	levels = {}  # {node: recursionlevel}.  Level will be updated in second recursion.
+	joindeltas = {}     # max difference in depth when arriving at node from different paths
+	dones = set()       # nodes we are done with
+	levels = {}         # {node: recursionlevel}.  Level will be updated in second recursion.
 	stack = [(inputitem, 0), ]  # list of (node, recursionlevel), start at level 0.
 	# Phase 1, recurse graph
 	while stack:
@@ -106,7 +106,7 @@ def recurse_jobsords(inputitem, depsfun, maxdepth=MAXDEPTH):
 				# we need to increase level of this node and all nodes
 				# below it accordingly.  Save level difference for now
 				# and fix in next recursion below.
-				mergeoffsets[current] = max(mergeoffsets.get(current, 0), level - levels[current])
+				joindeltas[current] = max(joindeltas.get(current, 0), level - levels[current])
 			continue
 		levels[current] = level
 		if level >= maxdepth:
@@ -127,7 +127,7 @@ def recurse_jobsords(inputitem, depsfun, maxdepth=MAXDEPTH):
 	while stack:
 		current, level = stack.pop()
 		level = max(level, levels.get(current, 0))  # always use the max depth to get here
-		level += mergeoffsets.pop(current, 0)
+		level += joindeltas.pop(current, 0)
 		levels[current] = level
 		if current in atmaxdepth:
 			continue
