@@ -7,26 +7,27 @@ from accelerator import DotDict
 MAXDEPTH = 100
 
 
-def expandtolist(res, name, what, fun=lambda x: x):
+def expandtolist(what, fun=lambda x: x):
 	if what:
-		print(type(what))
 		if not isinstance(what, (list, tuple)):
 			what = [what, ]
-		for item in what:
-			res[name].add(fun(item))
+		return set(fun(item) for item in what)
+	return set()
 
 
 def jobdeps(job):
 	""" Return all the job's dependencies """
 	res = defaultdict(set)
 	for key, value in job.params.jobs.items():
-		expandtolist(res, 'jobs.' + key, value)
+		if value:
+			res['jobs.' + key].update(expandtolist(value))
 	for key, value in job.params.datasets.items():
-		expandtolist(res, 'datasets.' + key, value, lambda x: x.job)
+		if value:
+			res['datasets.' + key].update(expandtolist(value, lambda x: x.job))
 	# options Jobwithfile
 	for key, value in job.params.options.items():
 		if isinstance(value, JobWithFile):
-			res['jwf.' + key] = value.job
+			res['jwf.' + key].add(value.job)
 		# @@ handle or sorts of nested options here
 	return res
 
@@ -34,8 +35,11 @@ def jobdeps(job):
 def dsdeps(ds):
 	""" return all the dataset's parents and previous """
 	res = defaultdict(set)
-	expandtolist(res, 'parent', ds.parent)
-	expandtolist(res, 'previous', ds.previous)
+	if ds:
+		if ds.parent:
+			res['parent'].update(expandtolist(ds.parent))
+		if ds.previous:
+			res['previous'].add(ds.previous)
 	return res
 
 
