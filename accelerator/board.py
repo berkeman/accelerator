@@ -562,6 +562,13 @@ def run(cfg, from_shell=False):
 		return dict(key=key, entry=d, svgdata=svgdata)
 
 
+	@bottle.get('/urdgraph/<user>/<build>/<ts>')
+	def urdgraph(user, build, ts):
+		key = user + '/' + build + '/' + ts
+		d = call_u(key)
+		return graph.svg_joblist(d)
+
+
 	@bottle.get('/favicon.ico')
 	def get_favicon():
 		root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../doc/')

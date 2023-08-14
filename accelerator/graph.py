@@ -1,10 +1,11 @@
-from math import sin
+from math import sin, cos, atan2, pi
 from collections import defaultdict
 from datetime import datetime
+from json import dumps
 from accelerator import JobWithFile, Job
 from accelerator import DotDict
-
 MAXDEPTH = 100
+from accelerator.compat import url_quote
 
 
 def expandtolist(what, fun=lambda x: x):
@@ -269,3 +270,121 @@ def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2
 		neighbour_nodes=neighbour_nodes,
 		neighbour_edges=neighbour_edges
 	)
+
+
+circletemplate = """	<circle
+		id="{id}"
+		class="hovernode"
+		cx="{cx}"
+		cy="{cy}"
+		r="{r}"
+		stroke="black"
+		stroke_width="2"
+		fill="var(--{color}"
+		fill-opacity="50%"
+		data-origfill="var(--{color}"
+		data-neighbour_nodes="{neighbour_nodes}"
+		data-neighbour_edges="{neighbour_edges}"
+		onclick="popupmenu()"
+		onmouseover="highlight_nodes(this true)"
+		onmouseout="highlight_nodes(this false)"
+
+	/>
+"""
+
+
+texttemplate = """	<text x="{x}", y="{y}" font-weight="{weight}" font-size="12" text-anchor="middle" fill="black">
+		<a href={href}>{text}</a>
+	</text>
+"""
+
+
+centertemplate = """	<text x="{x}" y="{y}" fill="blue4" text-anchor="middle" font-weight="bold">
+		{text}
+	</text>
+"""
+
+
+def svg_joblist(urdentry, arrowlen=15, arrowangle=pi/8):
+	g = joblist(urdentry)
+	res = """<svg id="jobgraph2" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="-40 -150 580 271">\n"""
+	for name, item in g['nodes'].items():
+		item.size = 20 if item.notinurdlist else 30
+		if item.atmaxdepth:
+			color='node-atmaxdepth'
+		elif item.notinurdlist is True:
+			color='node-nourdlist'
+		elif isinstance(item.notinurdlist, str):
+			color='node-inanotherurdlist'
+		else:
+			color='node-job-default'
+		if item.name is None or item.name == item.method:
+			name = item.method
+		else:
+			name = '%s (%s)' % (item.method, item.name)
+		res += circletemplate.format(
+			id=item.nodeid,
+			cx=item.x,
+			cy=item.y,
+			r=item.size,
+			color=color,
+			neighbour_edges=dumps(list(g['neighbour_edges'][item.nodeid])),
+			neighbour_nodes=dumps(list(g['neighbour_nodes'][item.nodeid])),
+		)
+		res += centertemplate.format(
+			x=item.x,
+			y=item.y + 5,
+			text = ''.join(('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else '')),
+		)
+		res += texttemplate.format(
+			x=item.x,
+			y=item.y + item.size + 15,
+			weight='bold',
+			href='/job/' + url_quote(item.jobid),
+			text=item.jobid,
+		)
+		res += texttemplate.format(
+			x=item.x,
+			y=item.y + item.size + 30,
+			weight='normal',
+			href='/job/' + url_quote(item.jobid) + '/method.tar.gz' + '/',
+			text=name,
+		)
+	for fromid, toid, relation in g['edges']:
+		key = ''.join((fromid, toid))
+		res += """	<g id={key}>\n""".format(key=url_quote(key))
+		fromnode = g['nodes'][fromid]
+		tonode = g['nodes'][toid]
+		fx, fy = fromnode.x, fromnode.y
+		tx, ty = tonode.x, tonode.y
+		a = atan2(ty - fy, tx - fx)
+		fx = fx + fromnode.size * cos(a)
+		fy = fy + fromnode.size * sin(a)
+		tx = tx - tonode.size * cos(a)
+		ty = ty - tonode.size * sin(a)
+		res += """		<line x1="{x1}" x2="{x2}" y1="{y1}" y2="{y2}" stroke="black" stroke_width="2"/>\n""".format(
+			x1=fx,
+			x2=tx,
+			y1=fy,
+			y2=ty,
+		)
+		x1 = tx - arrowlen * cos(a + arrowangle)
+		y1 = ty - arrowlen * sin(a + arrowangle)
+		x2 = tx - arrowlen * cos(a - arrowangle)
+		y2 = ty - arrowlen * sin(a - arrowangle)
+		res += """		<polygon points="{x0},{y0} {x1},{y1} {x2},{y2}"/> stroke="black"/>\n""".format(
+			x0=tx, y0=ty,
+			x1=x1, y1=y1,
+			x2=x2, y2=y2,
+		)
+		mx = fx + 8*cos(a) + 6*sin(a)
+		my = fy + 8*sin(a) - 6*cos(a)
+		res += """		<text x={x} y={y} transform="rotate({angle},{x},{y})" text-anchor="start" font-size="9" fill="#4040a0">\n			{text}\n		</text1>\n""".format(
+			x=mx, y=my,
+			angle=a*180/pi,
+			text=relation,
+		)
+		res += """	</g>\n"""
+	res += "</svg>"
+	print(res)
+	return res

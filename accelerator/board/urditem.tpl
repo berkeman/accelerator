@@ -14,6 +14,11 @@
 	</table>
 	<h2>urd item graph</h2>
 	% include('graph.tpl', graphtype='urditem')
+
+	<div id="pellep" class="box">
+		<object type="image/svg+xml" data="/urdgraph/{{ url_quote(key) }}" width="100%" height="400px"></object>
+	</div>
+
 	<table class="urd-table">
 		<tr><td>deps</td><td>
 			% for dep, depentry in sorted(entry.deps.items()):
