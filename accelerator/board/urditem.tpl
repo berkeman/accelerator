@@ -13,11 +13,35 @@
 		% end
 	</table>
 	<h2>urd item graph</h2>
-	% include('graph.tpl', graphtype='urditem')
+<!--	% include('graph.tpl', graphtype='urditem') -->
 
-	<div id="pellep" class="box">
-		<object type="image/svg+xml" data="/urdgraph/{{ url_quote(key) }}" width="100%" height="400px"></object>
-	</div>
+	<script language="javascript" src="{{ name2hashed['svg.js'] }}"></script>
+	<div id="jobgraph" class="box">
+		<script>
+			(function () {
+				const e = document.querySelector('#jobgraph');
+				fetch("/urdgraph/{{ url_quote(key) }}")
+					.then(res => {
+						if (res.ok) return res.text();
+						throw new Error('error response');
+					})
+					.then(res => {
+						e.innerHTML = res;
+						setTimeout(gurk, 0);
+					})
+					.catch(error => {
+						console.log(error);
+						e.innerText = 'Failed to fetch graph';
+					});
+;			})();
+		</script>
+	<!--
+		<object id="graphobject" type="image/svg+xml" data="/urdgraph/{{ url_quote(key) }}" width="100%" height="400px"></object>
+		<script>
+			const e = document.querySelector('#graphobject');
+			e.parentElement.replaceChild(e.contentDocument.documentElement.cloneNode(true), e);
+		</script>
+-->	</div>
 
 	<table class="urd-table">
 		<tr><td>deps</td><td>

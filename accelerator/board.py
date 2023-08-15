@@ -138,6 +138,7 @@ def populate_hashed():
 	for filename, ctype in [
 		('style.css', 'text/css; charset=UTF-8'),
 		('script.js', 'text/javascript; charset=UTF-8'),
+		('svg.js', 'text/javascript; charset=UTF-8'),
 	]:
 		try:
 			with open(os.path.join(dirname, filename), 'rb') as fh:

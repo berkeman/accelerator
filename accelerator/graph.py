@@ -307,7 +307,7 @@ centertemplate = """	<text x="{x}" y="{y}" fill="blue4" text-anchor="middle" fon
 
 def svg_joblist(urdentry, arrowlen=15, arrowangle=pi/8):
 	g = joblist(urdentry)
-	res = """<svg id="jobgraph2" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="-40 -150 580 271">\n"""
+	res = """<svg id="jobgraph2" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="{bbox}" width="100%" height="400px">\n""".format(bbox=' '.join(map(str, g['bbox'])))
 	for name, item in g['nodes'].items():
 		item.size = 20 if item.notinurdlist else 30
 		if item.atmaxdepth:
