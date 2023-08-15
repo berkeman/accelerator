@@ -559,8 +559,7 @@ def run(cfg, from_shell=False):
 	def urditem(user, build, ts):
 		key = user + '/' + build + '/' + ts
 		d = call_u(key)
-		svgdata = graph.joblist(d)
-		return dict(key=key, entry=d, svgdata=svgdata)
+		return dict(key=key, entry=d)
 
 
 	@bottle.get('/urdgraph/<user>/<build>/<ts>')

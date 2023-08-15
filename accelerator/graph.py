@@ -280,14 +280,14 @@ circletemplate = """	<circle
 		r="{r}"
 		stroke="black"
 		stroke_width="2"
-		fill="var(--{color}"
+		fill="var(--{color})"
 		fill-opacity="50%"
-		data-origfill="var(--{color}"
+		data-origfill="var(--{color})"
 		data-neighbour_nodes="{neighbour_nodes}"
 		data-neighbour_edges="{neighbour_edges}"
 		onclick="popupmenu()"
-		onmouseover="highlight_nodes(this true)"
-		onmouseout="highlight_nodes(this false)"
+		onmouseover="highlight_nodes(this, true)"
+		onmouseout="highlight_nodes(this, false)"
 
 	/>
 """

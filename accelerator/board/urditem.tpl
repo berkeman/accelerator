@@ -13,8 +13,8 @@
 		% end
 	</table>
 	<h2>urd item graph</h2>
-<!--	% include('graph.tpl', graphtype='urditem') -->
 
+	% include('jobpopup')
 	<script language="javascript" src="{{ name2hashed['svg.js'] }}"></script>
 	<div id="jobgraph" class="box">
 		<script>
@@ -33,15 +33,9 @@
 						console.log(error);
 						e.innerText = 'Failed to fetch graph';
 					});
-;			})();
+			})();
 		</script>
-	<!--
-		<object id="graphobject" type="image/svg+xml" data="/urdgraph/{{ url_quote(key) }}" width="100%" height="400px"></object>
-		<script>
-			const e = document.querySelector('#graphobject');
-			e.parentElement.replaceChild(e.contentDocument.documentElement.cloneNode(true), e);
-		</script>
--->	</div>
+	</div>
 
 	<table class="urd-table">
 		<tr><td>deps</td><td>
