@@ -1,3 +1,34 @@
+function highlight_nodes(thisnode, onoff) {
+	if (onoff) {
+		thisnode.setAttribute('fill', 'var(--node-highlight)');
+		thisnode.setAttribute('stroke-width', '5');
+	} else {
+		thisnode.setAttribute('fill', thisnode.getAttribute('data-origfill'));
+		thisnode.setAttribute('stroke-width', '2');
+	}
+	const neighbour_nodes = JSON.parse(thisnode.getAttribute('data-neighbour_nodes'));
+	for (const jobid of neighbour_nodes) {
+		const n = document.querySelector('#' + jobid);
+		if (onoff) {
+			n.setAttribute('fill', 'var(--node-highlight2)');
+		} else {
+			n.setAttribute('fill', n.getAttribute('data-origfill'));
+		}
+	}
+	const neighbour_edges = JSON.parse(thisnode.getAttribute('data-neighbour_edges'));
+	for (const edge of neighbour_edges) {
+		const group = document.querySelector('#' + edge);
+		for (const n of Array.from(group.children)) {
+			if (onoff) {
+				n.setAttribute('stroke-width', 6);
+			} else {
+				n.setAttribute('stroke-width', 2);
+			}
+		}
+	}
+}
+
+
 function gurk () {
 
 	function getWidth(element) {
@@ -16,35 +47,6 @@ function gurk () {
 		popup.style.top = e.clientY + 'px';
 	}
 
-	function highlight_nodes(thisnode, onoff) {
-		if (onoff) {
-			thisnode.setAttribute('fill', 'var(--node-highlight)');
-			thisnode.setAttribute('stroke-width', '5');
-		} else {
-			thisnode.setAttribute('fill', thisnode.getAttribute('data-origfill'));
-			thisnode.setAttribute('stroke-width', '2');
-		}
-		const neighbour_nodes = JSON.parse(thisnode.getAttribute('data-neighbour_nodes'));
-		for (const jobid of neighbour_nodes) {
-			const n = document.querySelector('#' + jobid);
-			if (onoff) {
-				n.setAttribute('fill', 'var(--node-highlight2)');
-			} else {
-				n.setAttribute('fill', n.getAttribute('data-origfill'));
-			}
-		}
-		const neighbour_edges = JSON.parse(thisnode.getAttribute('data-neighbour_edges'));
-		for (const edge of neighbour_edges) {
-			const group = document.querySelector('#' + edge);
-			for (const n of Array.from(group.children)) {
-				if (onoff) {
-					n.setAttribute('stroke-width', 6);
-				} else {
-					n.setAttribute('stroke-width', 2);
-				}
-			}
-		}
-	}
 
 	let svg = document.querySelector('#jobgraph2');
 	console.log('pelle', svg)
