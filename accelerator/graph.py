@@ -305,19 +305,19 @@ centertemplate = """	<text x="{x}" y="{y}" fill="blue4" text-anchor="middle" fon
 """
 
 
-def svg_joblist(urdentry, arrowlen=15, arrowangle=pi/8):
+def svg_joblist(urdentry, arrowlen=15, arrowangle=pi / 8):
 	g = joblist(urdentry)
 	res = """<svg id="jobgraph2" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="{bbox}" width="100%" height="400px">\n""".format(bbox=' '.join(map(str, g['bbox'])))
 	for name, item in g['nodes'].items():
 		item.size = 20 if item.notinurdlist else 30
 		if item.atmaxdepth:
-			color='node-atmaxdepth'
+			color = 'node-atmaxdepth'
 		elif item.notinurdlist is True:
-			color='node-nourdlist'
+			color = 'node-nourdlist'
 		elif isinstance(item.notinurdlist, str):
-			color='node-inanotherurdlist'
+			color = 'node-inanotherurdlist'
 		else:
-			color='node-job-default'
+			color = 'node-job-default'
 		if item.name is None or item.name == item.method:
 			name = item.method
 		else:
@@ -334,7 +334,7 @@ def svg_joblist(urdentry, arrowlen=15, arrowangle=pi/8):
 		res += centertemplate.format(
 			x=item.x,
 			y=item.y + 5,
-			text = ''.join(('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else '')),
+			text=''.join(('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else '')),
 		)
 		res += texttemplate.format(
 			x=item.x,
@@ -377,11 +377,11 @@ def svg_joblist(urdentry, arrowlen=15, arrowangle=pi/8):
 			x1=x1, y1=y1,
 			x2=x2, y2=y2,
 		)
-		mx = fx + 8*cos(a) + 6*sin(a)
-		my = fy + 8*sin(a) - 6*cos(a)
+		mx = fx + 8 * cos(a) + 6 * sin(a)
+		my = fy + 8 * sin(a) - 6 * cos(a)
 		res += """		<text x={x} y={y} transform="rotate({angle},{x},{y})" text-anchor="start" font-size="9" fill="#4040a0">\n			{text}\n		</text1>\n""".format(
 			x=mx, y=my,
-			angle=a*180/pi,
+			angle=a * 180 / pi,
 			text=relation,
 		)
 		res += """	</g>\n"""
