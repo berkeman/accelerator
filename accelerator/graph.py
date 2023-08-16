@@ -346,7 +346,7 @@ def svg_joblist(urdentry, arrowlen=15, arrowangle=pi / 8):
 					item.files,
 					item.datasets,
 					item.subjobs,
-					item.method,
+					name,
 					item.atmaxdepth,
 					item.timestamp,
 					item.notinurdlist,
@@ -380,10 +380,8 @@ def svg_joblist(urdentry, arrowlen=15, arrowangle=pi / 8):
 		tx = tx - tonode.size * cos(a)
 		ty = ty - tonode.size * sin(a)
 		res += """		<line x1="{x1}" x2="{x2}" y1="{y1}" y2="{y2}" stroke="black" stroke_width="2"/>\n""".format(
-			x1=fx,
-			x2=tx,
-			y1=fy,
-			y2=ty,
+			x1=fx, y1=fy,
+			x2=tx, y2=ty,
 		)
 		x1 = tx - arrowlen * cos(a + arrowangle)
 		y1 = ty - arrowlen * sin(a + arrowangle)
