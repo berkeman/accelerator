@@ -39,6 +39,7 @@ from accelerator.shell.workdir import job_data, workdir_jids
 from accelerator.compat import setproctitle, url_quote, urlencode
 from accelerator import __version__ as ax_version
 from accelerator import graph
+from accelerator import svg
 
 # why wasn't Accept specified in a sane manner (like sending it in preference order)?
 def get_best_accept(*want):
@@ -566,7 +567,7 @@ def run(cfg, from_shell=False):
 	def urd_graph(user, build, ts):
 		key = user + '/' + build + '/' + ts
 		d = call_u(key)
-		return graph.svg_joblist(d)
+		return svg.svg_joblist(d)
 
 
 	@bottle.get('/favicon.ico')
