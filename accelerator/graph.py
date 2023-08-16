@@ -1,17 +1,10 @@
-from math import sin, cos, atan2, pi
+from math import sin
 from collections import defaultdict
 from datetime import datetime
-from html import escape
-from json import dumps
 from accelerator import JobWithFile, Job
 from accelerator import DotDict
-MAXDEPTH = 100
-from accelerator.compat import url_quote
+
 MAXDEPTH = 10
-
-
-def escdump(x):
-	return(escape(dumps(x), quote=True))
 
 
 def expandtolist(what, fun=lambda x: x):
@@ -161,7 +154,7 @@ def job_graph(inputjob, recursiondepth=MAXDEPTH):
 	return creategraph(nodes, edges, atmaxdepth)
 
 
-def dataset(ds, recursiondepth=MAXDEPTH):
+def dataset_graph(ds, recursiondepth=MAXDEPTH):
 	nodes, edges, atmaxdepth = recurse_jobsords(ds, dsdeps, recursiondepth)
 	return creategraph(nodes, edges, atmaxdepth)
 

@@ -38,7 +38,6 @@ from accelerator.shell.parser import ArgumentParser, name2job, name2ds
 from accelerator.shell.workdir import job_data, workdir_jids
 from accelerator.compat import setproctitle, url_quote, urlencode
 from accelerator import __version__ as ax_version
-from accelerator import graph
 from accelerator import svg
 
 # why wasn't Accept specified in a sane manner (like sending it in preference order)?
@@ -498,8 +497,12 @@ def run(cfg, from_shell=False):
 			bottle.response.content_type = 'application/json; charset=UTF-8'
 			return json.dumps(res)
 		else:
-			svgdata = graph.dataset(ds)
-			return dict(ds=ds, svgdata=svgdata)
+			return dict(ds=ds)
+
+	@bottle.get('/dataset_graph/<dsid>')
+	def dataset_graph(dsid):
+		ds = name2ds(cfg, dsid.rstrip('/'))
+		return svg.svg_dataset(ds)
 
 	def load_workdir(jobs, name):
 		known = call_s('workdir', name)

@@ -1,14 +1,21 @@
 from math import sin, cos, atan2, pi
-from html import escape
 from json import dumps
+from html import escape
 from accelerator.compat import url_quote
-from accelerator.graph import joblist_graph, job_graph
+from accelerator.graph import joblist_graph, job_graph, dataset_graph
 from accelerator import Job, DotDict
+
+
+arrowlen = 15
+arrowangle = pi / 8
+
 
 def escdump(x):
 	print('använd url_quote?')
 	return(escape(dumps(x), quote=True))
 
+
+svgheader = """<svg id="svg" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="{bbox}" width="100%" height="400px">\n"""
 
 circletemplate = """	<circle
 		id="{id}"
@@ -30,6 +37,11 @@ circletemplate = """	<circle
 """
 
 texttemplate = """	<text x="{x}", y="{y}" font-weight="{weight}" font-size="12" text-anchor="middle" fill="black">
+		{text}
+	</text>
+"""
+
+linktemplate = """	<text x="{x}", y="{y}" font-weight="{weight}" font-size="12" text-anchor="middle" fill="black">
 		<a href={href}>{text}</a>
 	</text>
 """
@@ -40,13 +52,65 @@ centertemplate = """	<text x="{x}" y="{y}" fill="blue4" text-anchor="middle" fon
 """
 
 
-def svg_joborurdlist(inputitem, arrowlen=15, arrowangle=pi / 8):
+def svg_dataset(inputitem):
+	graph = dataset_graph(inputitem)
+	res = svgheader.format(bbox=' '.join(map(str, graph['bbox'])))
+	for name, item in graph['nodes'].items():
+		item.size = 30
+		color = 'node-atmaxdepth' if item.atmaxdepth else 'node-ds-default'
+		res += circletemplate.format(
+			id=item.nodeid,
+			cx=item.x,
+			cy=item.y,
+			r=item.size,
+			color=color,
+			neighbour_edges=escdump(list(graph['neighbour_edges'][item.nodeid])),
+			neighbour_nodes=escdump(list(graph['neighbour_nodes'][item.nodeid])),
+			popuparglist="event, " + ', '.join(
+				map(lambda x: escdump(x), [
+					item.jobid,
+					item.method,
+					item.ds,
+					item.columns,
+					item.atmaxdepth,
+					item.timestamp,
+				])
+			)
+		)
+		res += linktemplate.format(
+			x=item.x,
+			y=item.y + item.size + 15,
+			weight='bold',
+			href='/dataset/' + url_quote(item.ds),
+			text=item.ds,
+		)
+		res += linktemplate.format(
+			x=item.x,
+			y=item.y + item.size + 30,
+			weight='normal',
+			href='/job/' + url_quote(item.jobid) + '/method.tar.gz/',
+			text=item.method,
+		)
+		res += texttemplate.format(
+			x=item.x,
+			y=item.y + item.size + 45,
+			weight='normal',
+			text=item.lines,
+		)
+	res = draw_edges(res, graph, '#a040a0')
+	res += "</svg>"
+	import time
+	time.sleep(1)
+	return res
+
+
+def svg_joborurdlist(inputitem):
 	if isinstance(inputitem, Job):
 		graph = job_graph(inputitem)
 	else:
 		assert isinstance(inputitem, DotDict)
 		graph = joblist_graph(inputitem)
-	res = """<svg id="svg" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="{bbox}" width="100%" height="400px">\n""".format(bbox=' '.join(map(str, graph['bbox'])))
+	res = svgheader.format(bbox=' '.join(map(str, graph['bbox'])))
 	for name, item in graph['nodes'].items():
 		item.size = 20 if item.notinurdlist else 30
 		if item.atmaxdepth:
@@ -87,20 +151,28 @@ def svg_joborurdlist(inputitem, arrowlen=15, arrowangle=pi / 8):
 				])
 			)
 		)
-		res += texttemplate.format(
+		res += linktemplate.format(
 			x=item.x,
 			y=item.y + item.size + 15,
 			weight='bold',
 			href='/job/' + url_quote(item.jobid),
 			text=item.jobid,
 		)
-		res += texttemplate.format(
+		res += linktemplate.format(
 			x=item.x,
 			y=item.y + item.size + 30,
 			weight='normal',
 			href='/job/' + url_quote(item.jobid) + '/method.tar.gz' + '/',
 			text=name,
 		)
+	res = draw_edges(res, graph, '#4040a0')
+	res += "</svg>"
+	import time
+	time.sleep(1)
+	return res
+
+
+def draw_edges(res, graph, color='#a040a0'):
 	for fromid, toid, relation in graph['edges']:
 		key = ''.join((fromid, toid))
 		res += """	<g id={key}>\n""".format(key=url_quote(key))
@@ -128,13 +200,11 @@ def svg_joborurdlist(inputitem, arrowlen=15, arrowangle=pi / 8):
 		)
 		mx = fx + 8 * cos(a) + 6 * sin(a)
 		my = fy + 8 * sin(a) - 6 * cos(a)
-		res += """		<text x={x} y={y} transform="rotate({angle},{x},{y})" text-anchor="start" font-size="9" fill="#4040a0">\n			{text}\n		</text1>\n""".format(
+		res += """		<text x={x} y={y} transform="rotate({angle},{x},{y})" text-anchor="start" font-size="9" fill="{color}">\n			{text}\n		</text1>\n""".format(
 			x=mx, y=my,
 			angle=a * 180 / pi,
 			text=relation,
+			color=color,
 		)
 		res += """	</g>\n"""
-	res += "</svg>"
-	import time
-	time.sleep(1)
 	return res

@@ -79,11 +79,9 @@ function panzoom () {
 			let mpos = mousetosvgcoords(e);
 			viewboxPosition.x = mpos.x * (1 - scale) + scale * viewboxPosition.x;
 			viewboxPosition.y = mpos.y * (1 - scale) + scale * viewboxPosition.y;
-			console.log('offset after', viewboxPosition);
 			viewboxScale *= scale;
 			actualscale *= scale;
 			setviewbox();
-			console.log(actualscale, viewboxScale);
 		}
 		e.preventDefault();
 	}
