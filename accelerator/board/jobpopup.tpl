@@ -26,6 +26,22 @@
 	<br>
 	<div id="timestamp"></div>
 	<script>
+		function getWidth(element) {
+			var styles = window.getComputedStyle(element);
+			var padding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
+			return element.clientWidth - padding;
+		}
+		function positionpopup(popup, e) {
+			if (e.clientX > getWidth(document.querySelector('#jobgraph2')) / 2) {
+				const x = Math.max(0, e.clientX - getWidth(popup));
+				popup.style.left = x + 'px'
+			} else {
+				popup.style.left = e.clientX + 'px';
+			}
+			console.log(e.clientX, e.clientY)
+			//if (e.clientY > getWidth(document.querySelector('#svgcontainer')) / 2)
+			popup.style.top = e.clientY + 'px';
+		}
 		function populatelist(jobid, items, location, maxitems=5) {
 			const thelist = document.querySelector(location);
 			thelist.style = 'display:none';

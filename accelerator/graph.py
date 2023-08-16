@@ -7,6 +7,11 @@ from accelerator import JobWithFile, Job
 from accelerator import DotDict
 MAXDEPTH = 100
 from accelerator.compat import url_quote
+MAXDEPTH = 10
+
+
+def escdump(x):
+	return(escape(dumps(x), quote=True))
 
 
 def expandtolist(what, fun=lambda x: x):
@@ -142,7 +147,7 @@ def recurse_jobsords(inputitem, depsfun, maxdepth=MAXDEPTH):
 	return nodes, edges, atmaxdepth
 
 
-def joblist(urdentry):
+def joblist_graph(urdentry):
 	job2urddep = {Job(x[1]): str(dep) + '/' + str(item.timestamp) for dep, item in urdentry.deps.items() for x in item.joblist}
 	jlist = urdentry.joblist
 	jobsinurdlist = tuple(Job(item[1]) for item in jlist)
@@ -286,10 +291,9 @@ circletemplate = """	<circle
 		data-origfill="var(--{color})"
 		data-neighbour_nodes="{neighbour_nodes}"
 		data-neighbour_edges="{neighbour_edges}"
-		onclick="popupmenu()"
+		onclick="popupmenu({popuparglist})"
 		onmouseover="highlight_nodes(this, true)"
 		onmouseout="highlight_nodes(this, false)"
-
 	/>
 """
 
@@ -307,9 +311,9 @@ centertemplate = """	<text x="{x}" y="{y}" fill="blue4" text-anchor="middle" fon
 
 
 def svg_joblist(urdentry, arrowlen=15, arrowangle=pi / 8):
-	g = joblist(urdentry)
-	res = """<svg id="jobgraph2" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="{bbox}" width="100%" height="400px">\n""".format(bbox=' '.join(map(str, g['bbox'])))
-	for name, item in g['nodes'].items():
+	graph = joblist_graph(urdentry)
+	res = """<svg id="jobgraph2" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="{bbox}" width="100%" height="400px">\n""".format(bbox=' '.join(map(str, graph['bbox'])))
+	for name, item in graph['nodes'].items():
 		item.size = 20 if item.notinurdlist else 30
 		if item.atmaxdepth:
 			color = 'node-atmaxdepth'
@@ -334,8 +338,20 @@ def svg_joblist(urdentry, arrowlen=15, arrowangle=pi / 8):
 			cy=item.y,
 			r=item.size,
 			color=color,
-			neighbour_edges=escape(dumps(list(g['neighbour_edges'][item.nodeid])), quote=True),
-			neighbour_nodes=escape(dumps(list(g['neighbour_nodes'][item.nodeid])), quote=True),
+			neighbour_edges=escdump(list(graph['neighbour_edges'][item.nodeid])),
+			neighbour_nodes=escdump(list(graph['neighbour_nodes'][item.nodeid])),
+			popuparglist="event, " + ', '.join(
+				map(lambda x: escdump(x), [
+					item.jobid,
+					item.files,
+					item.datasets,
+					item.subjobs,
+					item.method,
+					item.atmaxdepth,
+					item.timestamp,
+					item.notinurdlist,
+				])
+			)
 		)
 		res += texttemplate.format(
 			x=item.x,
@@ -351,11 +367,11 @@ def svg_joblist(urdentry, arrowlen=15, arrowangle=pi / 8):
 			href='/job/' + url_quote(item.jobid) + '/method.tar.gz' + '/',
 			text=name,
 		)
-	for fromid, toid, relation in g['edges']:
+	for fromid, toid, relation in graph['edges']:
 		key = ''.join((fromid, toid))
 		res += """	<g id={key}>\n""".format(key=url_quote(key))
-		fromnode = g['nodes'][fromid]
-		tonode = g['nodes'][toid]
+		fromnode = graph['nodes'][fromid]
+		tonode = graph['nodes'][toid]
 		fx, fy = fromnode.x, fromnode.y
 		tx, ty = tonode.x, tonode.y
 		a = atan2(ty - fy, tx - fx)
