@@ -39,7 +39,7 @@ centertemplate = """	<text x="{x}" y="{y}" fill="blue4" text-anchor="middle" fon
 	</text>
 """
 
-def svg_joblist(urdentry, arrowlen=15, arrowangle=pi / 8):
+def svg_urdlist(urdentry, arrowlen=15, arrowangle=pi / 8):
 	graph = joblist_graph(urdentry)
 	res = """<svg id="svg" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="{bbox}" width="100%" height="400px">\n""".format(bbox=' '.join(map(str, graph['bbox'])))
 	for name, item in graph['nodes'].items():

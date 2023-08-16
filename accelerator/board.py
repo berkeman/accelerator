@@ -567,7 +567,7 @@ def run(cfg, from_shell=False):
 	def urd_graph(user, build, ts):
 		key = user + '/' + build + '/' + ts
 		d = call_u(key)
-		return svg.svg_joblist(d)
+		return svg.svg_urdlist(d)
 
 
 	@bottle.get('/favicon.ico')
