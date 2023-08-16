@@ -32,7 +32,7 @@
 			return element.clientWidth - padding;
 		}
 		function positionpopup(popup, e) {
-			if (e.clientX > getWidth(document.querySelector('#jobgraph2')) / 2) {
+			if (e.clientX > getWidth(document.querySelector('#svg')) / 2) {
 				const x = Math.max(0, e.clientX - getWidth(popup));
 				popup.style.left = x + 'px'
 			} else {

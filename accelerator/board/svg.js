@@ -28,27 +28,8 @@ function highlight_nodes(thisnode, onoff) {
 	}
 }
 
-
-function gurk () {
-
-	function getWidth(element) {
-		var styles = window.getComputedStyle(element);
-		var padding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
-		return element.clientWidth - padding;
-	}
-	function positionpopup(popup, e) {
-		if (e.clientX > getWidth(document.querySelector('#svgcontainer')) / 2) {
-			const x = Math.max(0, e.clientX - getWidth(popup));
-			popup.style.left = x + 'px'
-		} else {
-			popup.style.left = e.clientX + 'px';
-		}
-		//if (e.clientY > getWidth(document.querySelector('#svgcontainer')) / 2)
-		popup.style.top = e.clientY + 'px';
-	}
-
-
-	let svg = document.querySelector('#jobgraph2');
+function panzoom () {
+	let svg = document.querySelector('#svg');
 	console.log('pelle', svg)
 	let move_init_epage = {x: NaN, y: NaN};
 	let move_init_viewboxposition = {x: NaN, y: NaN};
@@ -63,14 +44,12 @@ function gurk () {
 	svg.addEventListener("mousemove", mousemove);
 	svg.addEventListener("mousedown", mousedown);
 	svg.addEventListener("wheel", wheel);
-
 	function mousetosvgcoords(e) {
 		// mouse pointer in svg coordinate system
 		pt.x = e.pageX;
 		pt.y = e.pageY;
 		return pt.matrixTransform(svg.getScreenCTM().inverse());
 	}
-
 	function mousedown(e) {
 		move_init_epage.x = e.pageX;
 		move_init_epage.y = e.pageY;
@@ -81,13 +60,11 @@ function gurk () {
 		e.preventDefault();
 		popupmenu_off();
 	}
-
 	function mouseup(e) {
 		window.removeEventListener("mouseup", mouseup);
 		mouseDown = false;
 		e.preventDefault();
 	}
-
 	function mousemove(e) {
 		if (mouseDown) {
 			viewboxPosition.x = move_init_viewboxposition.x + (move_init_epage.x - e.pageX) * actualscale;
@@ -96,7 +73,6 @@ function gurk () {
 		}
 		e.preventDefault();
 	}
-
 	function wheel(e) {
 		let scale = (e.deltaY < 0) ? 0.90 : 1/0.90;
 		if ((viewboxScale * scale < 8.) && (viewboxScale * scale > 1./256.))
@@ -112,7 +88,6 @@ function gurk () {
 		}
 		e.preventDefault();
 	}
-
 	function setviewbox() {
 		let vp = {x: 0, y: 0};
 		let vs = {x: 0, y: 0};

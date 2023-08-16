@@ -562,8 +562,8 @@ def run(cfg, from_shell=False):
 		return dict(key=key, entry=d)
 
 
-	@bottle.get('/urdgraph/<user>/<build>/<ts>')
-	def urdgraph(user, build, ts):
+	@bottle.get('/urd_graph/<user>/<build>/<ts>')
+	def urd_graph(user, build, ts):
 		key = user + '/' + build + '/' + ts
 		d = call_u(key)
 		return graph.svg_joblist(d)
