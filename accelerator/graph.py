@@ -1,6 +1,7 @@
 from math import sin, cos, atan2, pi
 from collections import defaultdict
 from datetime import datetime
+from html import escape
 from json import dumps
 from accelerator import JobWithFile, Job
 from accelerator import DotDict
@@ -322,19 +323,19 @@ def svg_joblist(urdentry, arrowlen=15, arrowangle=pi / 8):
 			name = item.method
 		else:
 			name = '%s (%s)' % (item.method, item.name)
+		res += centertemplate.format(
+			x=item.x,
+			y=item.y + 5,
+			text=''.join(('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else '')),
+		)
 		res += circletemplate.format(
 			id=item.nodeid,
 			cx=item.x,
 			cy=item.y,
 			r=item.size,
 			color=color,
-			neighbour_edges=dumps(list(g['neighbour_edges'][item.nodeid])),
-			neighbour_nodes=dumps(list(g['neighbour_nodes'][item.nodeid])),
-		)
-		res += centertemplate.format(
-			x=item.x,
-			y=item.y + 5,
-			text=''.join(('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else '')),
+			neighbour_edges=escape(dumps(list(g['neighbour_edges'][item.nodeid])), quote=True),
+			neighbour_nodes=escape(dumps(list(g['neighbour_nodes'][item.nodeid])), quote=True),
 		)
 		res += texttemplate.format(
 			x=item.x,
