@@ -99,8 +99,6 @@ def svg_dataset(inputitem):
 		)
 	res = draw_edges(res, graph, '#a040a0')
 	res += "</svg>"
-	import time
-	time.sleep(1)
 	return res
 
 
@@ -167,8 +165,6 @@ def svg_joborurdlist(inputitem):
 		)
 	res = draw_edges(res, graph, '#4040a0')
 	res += "</svg>"
-	import time
-	time.sleep(1)
 	return res
 
 
