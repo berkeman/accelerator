@@ -16,7 +16,7 @@
 
 	% include('jobpopup')
 	<script language="javascript" src="{{ name2hashed['svg.js'] }}"></script>
-	<div id="jobgraph" class="box">
+	<div id="jobgraph" class="box" style="height: 400px;">
 		<script>
 			(function () {
 				const e = document.querySelector('#jobgraph');
