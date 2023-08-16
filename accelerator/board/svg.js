@@ -29,13 +29,12 @@ function highlight_nodes(thisnode, onoff) {
 }
 
 function panzoom () {
-	let svg = document.querySelector('#svg');
-	console.log('pelle', svg)
+	const svg = document.querySelector('#svg');
 	let move_init_epage = {x: NaN, y: NaN};
 	let move_init_viewboxposition = {x: NaN, y: NaN};
 	const svglib = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 	let pt = svglib.createSVGPoint();
-	let viewboxScale = 1;                              // at viewboxScale==1, everything fits perfectly.
+	let viewboxScale = 1;  // at viewboxScale==1, everything fits perfectly.
 	const init = svg.viewBox.baseVal;
 	let viewboxPosition = {x: init.x, y: init.y};
 	let viewboxSize = {x: init.width, y: init.height};

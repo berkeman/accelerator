@@ -38,7 +38,6 @@
 			} else {
 				popup.style.left = e.clientX + 'px';
 			}
-			console.log(e.clientX, e.clientY)
 			//if (e.clientY > getWidth(document.querySelector('#svgcontainer')) / 2)
 			popup.style.top = e.clientY + 'px';
 		}

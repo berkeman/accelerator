@@ -156,12 +156,12 @@ def joblist_graph(urdentry):
 	return creategraph(nodes, edges, atmaxdepth, names, jobsinurdlist, job2urddep)
 
 
-def job(inputjob, recursiondepth=100):
+def job(inputjob, recursiondepth=MAXDEPTH):
 	nodes, edges, atmaxdepth = recurse_jobsords(inputjob, jobdeps, recursiondepth)
 	return creategraph(nodes, edges, atmaxdepth)
 
 
-def dataset(ds, recursiondepth=100):
+def dataset(ds, recursiondepth=MAXDEPTH):
 	nodes, edges, atmaxdepth = recurse_jobsords(ds, dsdeps, recursiondepth)
 	return creategraph(nodes, edges, atmaxdepth)
 
