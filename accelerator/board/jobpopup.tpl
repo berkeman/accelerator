@@ -1,13 +1,13 @@
 <div id="popupmenu" class="box">
 	<div id="method" style="font-style:italic;font-weight:bold;text-align:center"></div><br>
-	Job: <a id="jobid" href=""></a><br><br>
-	<a id="source">Source</a>  <a id="help">Help</a>
 	<div id="atmaxdepth" style="display:none"><font color="var(--popup-atmaxdepth)">
-		<b>Reached recursion limit - no dependencies drawn!</b>
+		<b>Reached recursion limit - no dependencies drawn!<br>&nbsp;</b>
 	</font></div>
 	<div id="notinurdlist" style="display:none">
-		<br>Job not in this urdlist or any of its dependencies.
+		Job not in this urdlist or any of its dependencies.<br>&nbsp;
 	</div>
+	Job: <a id="jobid" href=""></a><br><br>
+	<a id="source">Source</a>  <a id="help">Help</a>
 	<div id="inthisurdlist" style="display:none">
 		<br>Job in depurdlist <a href="".></a>
 	</div>
@@ -85,7 +85,7 @@
 			popup.children["help"].href =  "/method/" + method;
 			popup.children["source"].href ='/job/' + encodeURI(jobid) + "/method.tar.gz" + '/';
 			popup.children["timestamp"].textContent = '[' + timestamp + ']';
-			if (atmaxdepth === 'True') {
+			if (atmaxdepth === true) {
 				popup.children["atmaxdepth"].style.display = 'block';
 			} else {
 				popup.children["atmaxdepth"].style.display = 'none';

@@ -456,7 +456,6 @@ def run(cfg, from_shell=False):
 			current = False
 			files = None
 			subjobs = None
-		svgdata = graph.job(job)
 
 		try:
 			methods = call_s('methods')
@@ -473,9 +472,13 @@ def run(cfg, from_shell=False):
 			params=job.params,
 			subjobs=subjobs,
 			files=files,
-			svgdata=svgdata,
 			description=description,
 		)
+
+	@bottle.get('/job_graph/<jobid>')
+	def job_graph(jobid):
+		job = name2job(cfg, jobid)
+		return svg.svg_joborurdlist(job)
 
 	@bottle.get('/dataset/<dsid:path>')
 	@view('dataset', ds_json)
@@ -567,7 +570,7 @@ def run(cfg, from_shell=False):
 	def urd_graph(user, build, ts):
 		key = user + '/' + build + '/' + ts
 		d = call_u(key)
-		return svg.svg_urdlist(d)
+		return svg.svg_joborurdlist(d)
 
 
 	@bottle.get('/favicon.ico')
