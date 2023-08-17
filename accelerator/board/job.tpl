@@ -40,28 +40,7 @@
 	</i>
 
 	<h2>job graph</h2>
-	% include('jobpopup')
-	<script language="javascript" src="{{ name2hashed['svg.js'] }}"></script>
-	<div id="graph" class="box" style="height: 400px;">
-		<script>
-			(function () {
-				const e = document.querySelector('#graph');
-				fetch("/job_graph/{{ url_quote(job) }}")
-					.then(res => {
-						if (res.ok) return res.text();
-						throw new Error('error response');
-					})
-					.then(res => {
-						e.innerHTML = res;
-						setTimeout(panzoom, 0);
-					})
-					.catch(error => {
-						console.log(error);
-						e.innerText = 'Failed to fetch graph';
-					});
-			})();
-		</script>
-	</div>
+	% include('graph', mode='job', key=job)
 
 	<h2>setup</h2>
 	<div class="box">

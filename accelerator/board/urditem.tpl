@@ -13,30 +13,7 @@
 		% end
 	</table>
 	<h2>urd item graph</h2>
-
-	% include('jobpopup')
-	<script language="javascript" src="{{ name2hashed['svg.js'] }}"></script>
-	<div id="graph" class="box" style="height: 400px;">
-		<script>
-			(function () {
-				const e = document.querySelector('#graph');
-				fetch("/urd_graph/{{ url_quote(key) }}")
-					.then(res => {
-						if (res.ok) return res.text();
-						throw new Error('error response');
-					})
-					.then(res => {
-						e.innerHTML = res;
-						setTimeout(panzoom, 0);
-					})
-					.catch(error => {
-						console.log(error);
-						e.innerText = 'Failed to fetch graph';
-					});
-			})();
-		</script>
-	</div>
-
+	% include('graph', mode='urd', key=key)
 	<table class="urd-table">
 		<tr><td>deps</td><td>
 			% for dep, depentry in sorted(entry.deps.items()):

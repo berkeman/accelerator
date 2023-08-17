@@ -499,7 +499,7 @@ def run(cfg, from_shell=False):
 		else:
 			return dict(ds=ds)
 
-	@bottle.get('/dataset_graph/<dsid>')
+	@bottle.get('/dataset_graph/<dsid:path>')
 	def dataset_graph(dsid):
 		ds = name2ds(cfg, dsid.rstrip('/'))
 		return svg.svg_dataset(ds)
