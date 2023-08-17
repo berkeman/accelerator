@@ -142,6 +142,7 @@ def svg_joborurdlist(inputitem):
 					item.files,
 					item.datasets,
 					item.subjobs,
+					item.method,
 					name,
 					item.atmaxdepth,
 					item.timestamp,

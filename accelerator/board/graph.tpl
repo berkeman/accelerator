@@ -54,7 +54,7 @@
 	</font></div>
 	% if mode in ('job', 'urd'):
 		<div id="notinurdlist" style="display:none">
-			Job not in this urdlist or any of its dependencies.<br>&nbsp;
+			Job not in this urdlist or<br>any of its dependencies.<br>&nbsp;
 		</div>
 		Job: <a id="jobid" href=""></a><br>
 		<div id="inthisurdlist" style="display:none">
@@ -81,7 +81,8 @@
 		</div>
 	% end
 	<br>
-	<a id="source">Source</a>  <a id="help">Help</a><br>&nbsp;
+	<hr>
+	<a id="source">Source</a>  <a id="help">Documentation</a>
 	<div id="timestamp"></div>
 </div>
 
@@ -139,12 +140,12 @@
 	}
 
 	% if mode in ('job', 'urd'):
-		function popupmenu(e, jobid, files, datasets, subjobs, method, atmaxdepth, timestamp, notinurdlist) {
+		function popupmenu(e, jobid, files, datasets, subjobs, method, name, atmaxdepth, timestamp, notinurdlist) {
 			const popup = document.querySelector("#popupmenu");
 			popup.style.display = 'block';
 			popup.children["jobid"].textContent = jobid;
 			popup.children["jobid"].href =  "/job/" + encodeURI(jobid);
-			popup.children["method"].textContent = method;
+			popup.children["method"].textContent = name;
 			popup.children["help"].href =  "/method/" + method;
 			popup.children["source"].href ='/job/' + encodeURI(jobid) + "/method.tar.gz" + '/';
 			popup.children["timestamp"].textContent = '[' + timestamp + ']';

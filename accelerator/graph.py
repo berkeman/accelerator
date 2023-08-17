@@ -210,7 +210,7 @@ def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2
 				nodeix = nodeids[j]
 				outnodes[nodeix] = DotDict(
 					nodeid=nodeids[j],
-					jobid=str(j), x=x, y=y,
+					jobid=str(jj), x=x, y=y,
 					atmaxdepth=j in atmaxdepth,
 					timestamp=datetime.fromtimestamp(jj.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
 					method=jj.method,
