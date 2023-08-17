@@ -165,6 +165,8 @@
 			populatelist(jobid, files, '#files');
 			populatelist(jobid, datasets, '#datasets');
 			populatelist(jobid, subjobs, '#subjobs');
+			positionpopup(popup, e);
+		}
 	% else:
 		function popupmenu(e, jobid, method, ds, columns, atmaxdepth, timestamp) {
 			const popup = document.querySelector("#popupmenu");
@@ -183,9 +185,9 @@
 				popup.children["atmaxdepth"].style.display = 'none';
 			}
 			populatelist(jobid, columns, '#columns');
+			positionpopup(popup, e);
+		}
 	% end
-		positionpopup(popup, e);
-	}
 
 	function popupmenu_off() {
 		const popup = document.querySelector("#popupmenu");

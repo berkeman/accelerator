@@ -50,14 +50,16 @@ function panzoom () {
 		return pt.matrixTransform(svg.getScreenCTM().inverse());
 	}
 	function mousedown(e) {
-		move_init_epage.x = e.pageX;
-		move_init_epage.y = e.pageY;
-		move_init_viewboxposition.x = viewboxPosition.x;
-		move_init_viewboxposition.y = viewboxPosition.y;
-		window.addEventListener("mouseup", mouseup);
-		mouseDown = true;
-		e.preventDefault();
-		popupmenu_off();
+		if (e.which === 1) {
+			move_init_epage.x = e.pageX;
+			move_init_epage.y = e.pageY;
+			move_init_viewboxposition.x = viewboxPosition.x;
+			move_init_viewboxposition.y = viewboxPosition.y;
+			window.addEventListener("mouseup", mouseup);
+			mouseDown = true;
+			e.preventDefault();
+			popupmenu_off();
+		}
 	}
 	function mouseup(e) {
 		window.removeEventListener("mouseup", mouseup);
