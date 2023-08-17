@@ -47,41 +47,41 @@
 
 
 <div id="popupmenu" class="box">
-	<div id="method" style="font-style:italic;font-weight:bold;text-align:center"></div><br>
+	<div id="method" style="font-style:italic;font-weight:bold;text-align:center"></div>
+	<hr><br>
 	<div id="atmaxdepth" style="display:none"><font color="var(--popup-atmaxdepth)">
-		<b>Reached recursion limit - no dependencies drawn!<br>&nbsp</b>
+		<b>Reached recursion limit,<br>no dependencies drawn!<br>&nbsp</b>
 	</font></div>
 	% if mode in ('job', 'urd'):
 		<div id="notinurdlist" style="display:none">
 			Job not in this urdlist or any of its dependencies.<br>&nbsp;
 		</div>
-		Job: <a id="jobid" href=""></a><br><br>
-		<a id="source">Source</a>  <a id="help">Help</a>
+		Job: <a id="jobid" href=""></a><br>
 		<div id="inthisurdlist" style="display:none">
 			<br>Job in depurdlist <a href="".></a>
 		</div>
 		<div id="files" style="display:none">
 			<br><h1>Files:</h1>
-				<ul id="filestable"></ul>
+				<table id="filestable"></table>
 		</div>
 		<div id="datasets" style="display:none">
 			<br><h1>Datasets:</h1>
-				<ul id="datasetstable"></ul>
+				<table id="datasetstable"></table>
 		</div>
 		<div id="subjobs" style="display:none">
 			<br><h1>Subjobs:</h1>
-				<ul id="subjobstable"></ul>
+				<table id="subjobstable"></table>
 		</div>
 	% else:
 		Dataset: <a id="dataset" href="pelle">kalle</a><br>
-		Job: <a id="jobid" href=""></a><br><br>
-		<a id="source">Source</a>  <a id="help">Help</a>
+		Job: <a id="jobid" href=""></a><br>
 		<div id="columns" style="display:none">
 			<br><h1>Columns:</h1>
-			<ul id="columnstable"></ul>
+			<table id="columnstable"></table>
 		</div>
 	% end
 	<br>
+	<a id="source">Source</a>  <a id="help">Help</a><br>&nbsp;
 	<div id="timestamp"></div>
 </div>
 
@@ -108,15 +108,17 @@
 						x.href = '/job/' + encodeURI(item[0]);
 						x.textContent = item[0] + '    (' + item[1] + ')';
 					}
-					const li = document.createElement("li");
-					li.appendChild(x);
-					thetable.appendChild(li);
+					const tr = document.createElement("tr");
+					const td = document.createElement("td");
+					thetable.appendChild(tr);
+					tr.appendChild(td);
+					td.appendChild(x);
 				% else:
 					const x = document.createElement("tr");
 					thetable.appendChild(x);
-					const t1 = document.createElement("th");
+					const t1 = document.createElement("td");
 					x.appendChild(t1);
-					const t2 = document.createElement("th");
+					const t2 = document.createElement("td");
 					x.appendChild(t2);
 					t1.textContent = item[0];
 					t2.textContent = item[1];
@@ -125,9 +127,11 @@
 				if (items.length > maxitems && ix === maxitems) {
 					const sublen = items.length - maxitems;
 					const x = document.createTextNode("... and " +sublen.toString() + " more.");
-					const li = document.createElement("li");
-					li.appendChild(x);
-					thetable.appendChild(li);
+					const tr = document.createElement("tr");
+					const td = document.createElement("td");
+					td.appendChild(x);
+					tr.appendChild(td);
+					thetable.appendChild(tr);
 					break;
 				}
 			}

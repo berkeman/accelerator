@@ -65,10 +65,11 @@
     display: none;
     border: 2px solid black;
 }
-#popupmenu ul {
+#popupmenu td {
     list-style-type:none;
     margin: 0;
     padding: 10px;
+    padding-bottom: 0.1em;
 }
 #popupmenu h1 {
     font-size: 1.05em;
