@@ -25,10 +25,20 @@ def jobdeps(job):
 		if value:
 			res['datasets.' + key].update(expandtolist(value, lambda x: x.job))
 	# options Jobwithfile
-	for key, value in job.params.options.items():
-		if isinstance(value, JobWithFile):
-			res['jwf.' + key].add(value.job)
-		# @@ handle or sorts of nested options here
+	namespace = set()
+	def recurseforjwf(options, name=''):
+		if isinstance(options, JobWithFile):  # must happen before tuple
+			while name in namespace:
+				name += '+'
+			res['jwf' + name].add(options.job)
+			namespace.add(name)
+		elif isinstance(options, dict):
+			for key, val in options.items():
+				recurseforjwf(val, '.'.join((name, key)))
+		elif isinstance(options, (list, tuple, set)):
+			for item in options:
+				recurseforjwf(item, name)
+	recurseforjwf(job.params.options)
 	return res
 
 
