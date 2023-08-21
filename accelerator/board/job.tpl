@@ -34,9 +34,7 @@
 	% end
 
 	<i>
-	% for line in description.split('\n'):
-		{{ line }}<br>
-	% end
+	{{ description.split('\n').pop(0) }}<br>
 	</i>
 
 	<h2>job graph</h2>

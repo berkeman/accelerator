@@ -58,7 +58,7 @@
 		</div>
 		Job: <a id="jobid" href=""></a><br>
 		<div id="inthisurdlist" style="display:none">
-			<br>Job in depurdlist <a href="".></a>
+			<br>Job in dependency urdlist:<br> <a href="".></a>
 		</div>
 		<div id="files" style="display:none">
 			<br><h1>Files:</h1>
