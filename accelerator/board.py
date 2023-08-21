@@ -38,7 +38,7 @@ from accelerator.shell.parser import ArgumentParser, name2job, name2ds
 from accelerator.shell.workdir import job_data, workdir_jids
 from accelerator.compat import setproctitle, url_quote, urlencode
 from accelerator import __version__ as ax_version
-from accelerator import svg
+from accelerator import graph
 
 # why wasn't Accept specified in a sane manner (like sending it in preference order)?
 def get_best_accept(*want):
@@ -138,7 +138,7 @@ def populate_hashed():
 	for filename, ctype in [
 		('style.css', 'text/css; charset=UTF-8'),
 		('script.js', 'text/javascript; charset=UTF-8'),
-		('svg.js', 'text/javascript; charset=UTF-8'),
+		('graph.js', 'text/javascript; charset=UTF-8'),
 	]:
 		try:
 			with open(os.path.join(dirname, filename), 'rb') as fh:
@@ -477,7 +477,7 @@ def run(cfg, from_shell=False):
 	@bottle.get('/job_graph/<jobid>')
 	def job_graph(jobid):
 		job = name2job(cfg, jobid)
-		return svg.svg_joborurdlist(job)
+		return graph.svg_joborurdlist(job)
 
 	@bottle.get('/dataset/<dsid:path>')
 	@view('dataset', ds_json)
@@ -502,7 +502,7 @@ def run(cfg, from_shell=False):
 	@bottle.get('/dataset_graph/<dsid:path>')
 	def dataset_graph(dsid):
 		ds = name2ds(cfg, dsid.rstrip('/'))
-		return svg.svg_dataset(ds)
+		return graph.svg_dataset(ds)
 
 	def load_workdir(jobs, name):
 		known = call_s('workdir', name)
@@ -573,7 +573,7 @@ def run(cfg, from_shell=False):
 	def urd_graph(user, build, ts):
 		key = user + '/' + build + '/' + ts
 		d = call_u(key)
-		return svg.svg_joborurdlist(d)
+		return graph.svg_joborurdlist(d)
 
 
 	@bottle.get('/favicon.ico')

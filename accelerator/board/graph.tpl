@@ -1,4 +1,4 @@
-<script language="javascript" src="{{ name2hashed['svg.js'] }}"></script>
+<script language="javascript" src="{{ name2hashed['graph.js'] }}"></script>
 <div id="graph" class="box" style="height: 400px;">
 	<script>
 		(function () {
