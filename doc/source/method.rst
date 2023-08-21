@@ -1,5 +1,5 @@
-Methods - The Admin
-===================
+Methods - Introduction
+======================
 
 All source code in a project is separated into one or more files
 called *methods*.

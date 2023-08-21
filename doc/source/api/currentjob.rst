@@ -9,14 +9,14 @@ The CurrentJob Class
 --------------------
 
 The ``CurrentJob`` class is similar to (and inherits) the ``Job``
-class, and is used in *running* jobs.  (The ``Job`` class is used with
-completed jobs.)  An object of type ``CurrentJob`` is provided as an
-optional input argument named "``job``" to ``prepare``, ``analysis``, and
-``synthesis``.
+class, and is used in *running* jobs (while the ``Job`` class is used
+with completed jobs.)  An object of type ``CurrentJob`` is provided as
+an optional input argument named "``job``" to ``prepare()``,
+``analysis()``, and ``synthesis()``.
 
-NOTE: This chapter only covers the parts unique to ``CurrentJob``, but
-many class methods from the ``Job`` class are also available to
-``CurrentJob``. (@)
+.. note:: Most class methods from the ``Job`` class available to
+   ``CurrentJob`` too. (@) This chapter only covers the parts unique
+   to ``CurrentJob``.
 
 -----
 
