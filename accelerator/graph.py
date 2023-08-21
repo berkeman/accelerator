@@ -59,7 +59,6 @@ def dsdeps(ds):
 
 
 def recurse_joblist(inputjoblist):
-	print("Test that out-of-urdlist items render properly (both in-other-urdlist and in-no-urdlist).")
 	# This is a breadth-first algo, that computes the level of each
 	# join node to be max of all its parent's levels.
 	edges = set()
