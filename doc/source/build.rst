@@ -69,7 +69,7 @@ The ``.build()`` function is just one of several class methods
 provided by the ``urd`` object.  See the :ref:`Urd class documentation
 <api:The Urd Class>` for full information.
 
-	       
+
 
 
 Use JobList to find references to jobs
@@ -81,39 +81,49 @@ collects references to and information about every built job inside a
 build script.  It is used to find references to jobs build previously
 in the script.
 
-Here's an example of how it can be used to retrieve a reference to an
-earlier built job:
+A specific job in a joblist can be found by searching for the
+corresponding method using the joblist's ``.get()`` function, like
+this
 
 .. code-block::
-    :caption: The last line uses ``urd.joblist.find()`` to locate a specific job using the method's name.
+    :caption: The last line uses ``urd.joblist.get()`` to locate a specific job using the method's name.
 
     def main(urd):
         urd.build('csvimport', data='file.txt')
-	...
-	urd.build('dosomething', source=urd.joblist.find('csvimport')
+        ...
+        urd.build('dosomething', source=urd.joblist.get('csvimport')
 
-The job is located using ``urd.joblist.find()`` based on the method's
-name.  The ``find()`` function will return the *last* job created
-based on the ``csvimport`` method, so if there are several builds
-based on this metho, they cannot be uniquely identified using this
-approach.  One solution is to assigning a unique *name* to each build,
-since the ``find()``-call can also lookup methods based on the
-assigned names, like in this example:
-	
+The ``get()`` function will return the *last* job created based on the
+input method (``csvimport`` in this case).  If there are several
+builds based on this method, they cannot be uniquely identified using
+this approach.  If this turns out to be a problem, one solution is to
+assigning a unique *name* to each build, since the ``find()``-call can
+also lookup methods based on the assigned names, like in this example:
+
 .. code-block::
-    :caption: The last line uses ``urd.joblist.find()`` to locate a specific job using assigned names.
+    :caption: Use ``urd.joblist.get()`` to locate a specific job using an assigned name.
 
     def main(urd):
         urd.build('csvimport', data='file1.txt', name='firstfile')
         urd.build('csvimport', data='file2.txt', name='otherfile')
-	...
-	urd.build('dosomething', source=urd.joblist.find('firstfile')
+        ...
+        urd.build('dosomething', source=urd.joblist.get('firstfile')
 
-.. tip :: The ``urd.joblist`` object itself is also a reference to the
-   *last* built job in the joblist.  Accessing the last job in a list
-   is a very common pattern.
+.. tip :: ``get`` also takes a ``default`` argument that is returned
+   if the search fails.
 
-Joblists are created and only exists while executing the build script,
+The joblist is actually a list, so it is also possible to get specific
+indices in the list.
+
+.. tip :: Accessing the last job in a list is a common pattern.  Use
+    ``urd.joblist.get(-1)`` to achieve this.
+
+In addition to ``get()`` that returns a job, the ``find()`` function
+returns a new JobList of matching items.
+
+See the :ref:`JobList <api:The JobList Class>` for full information.
+
+Joblists are created and exists only while executing the build script,
 but it is possible to make them persistent for future use and for
 sharing jobs with others.  See next section on urd sessions and the
 urd database for more information.

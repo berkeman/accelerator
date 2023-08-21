@@ -41,22 +41,13 @@
 	--ansi-invert-fg: #f5f8ef;
 	--ansi-invert-bg: #245;
 
-
         --node-job-default: #46a;
         --node-ds-default: #c8c;
         --node-highlight: #ef8;
         --node-highlight2: #cf8;
         --node-nourdlist: #3c8;
         --node-inanotherurdlist: #ccc;
-
-          --node-atmaxdepth: #c52;
-          --popup-jobinanotherurdlist: #ccc;
-          --popup-nourdlist: #3c8;
-          --popup-atmaxdepth: #c52;
-          --graph-branch-font-size-HELP: 22;
-
-
-
+        --node-atmaxdepth: #c52;
 }
 
 #popupmenu {
@@ -75,12 +66,8 @@
     font-size: 1.05em;
     margin-bottom:  0em;
 }
-#popupmenu #notinurdlist  {
-    color: #c64;
-}
-#popupmenu #inthisurdlist  {
-    color: #c64;
-}
+#popupmenu #notinurdlist  {color: #c64;}
+#popupmenu #inthisurdlist {color: #c64;}
 
 
 
