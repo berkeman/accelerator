@@ -68,7 +68,9 @@ class Main:
 		WORKDIRS.clear()
 		WORKDIRS.update({k: v.path for k, v in self.workspaces.items()})
 		self.DataBase = database.DataBase(self)
+		print('Scanning all workdirs...', end='')
 		self.update_database()
+		print('done.')
 		self.broken = False
 
 	def _update_methods(self):
