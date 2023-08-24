@@ -5,9 +5,9 @@ The Job Class
 -------------
 
 The ``Job`` class is used in build scripts and methods to get
-information about and data from a completed job.  Note that there is
+information about and data from a *completed job*.  Note that there is
 also a ``CurrentJob`` class which inherits the ``Job`` class and is
-used for file writing and job control during execution of a job.
+used for file writing and job control *during execution* of a job.
 
 -----
 
@@ -15,6 +15,7 @@ used for file writing and job control during execution of a job.
    :members:
    :undoc-members:
    :exclude-members: version,number,workdir
+
 -----
 
 
