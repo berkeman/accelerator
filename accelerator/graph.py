@@ -214,7 +214,7 @@ def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2
 		for level, jobsatlevel in sorted(nodes.items()):
 			jobsatlevel, offset = order.update(jobsatlevel)
 			for ix, (j, ofs) in enumerate(zip(jobsatlevel, offset)):
-				x = 160 * (level + 0.2 * sin(ix + ofs))
+				x = - 160 * (level + 0.2 * sin(ix + ofs))
 				y = 140 * ofs + 50 * sin(level / 3)
 				# update bounding box
 				for i, (fun, var) in enumerate(((min, x), (min, y), (max, x), (max, y))):
@@ -469,11 +469,11 @@ def draw_edges(res, graph, color='#a040a0'):
 			x1=x1, y1=y1,
 			x2=x2, y2=y2,
 		)
-		mx = fx + 8 * cos(a) + 6 * sin(a)
-		my = fy + 8 * sin(a) - 6 * cos(a)
-		res += """		<text x={x} y={y} transform="rotate({angle},{x},{y})" text-anchor="start" font-size="9" fill="{color}">\n			{text}\n		</text1>\n""".format(
+		mx = fx + 4 * cos(a) - 6 * sin(a)
+		my = fy + 4 * sin(a) + 6 * cos(a)
+		res += """		<text x={x} y={y} transform="rotate({angle},{x},{y})" text-anchor="end" font-size="9" fill="{color}">\n			{text}\n		</text1>\n""".format(
 			x=mx, y=my,
-			angle=a * 180 / pi,
+			angle=a * 180 / pi + 180,
 			text=relation,
 			color=color,
 		)
