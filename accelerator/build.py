@@ -304,11 +304,6 @@ def fmttime(t, short=False):
 class JobList(_ListTypePreserver):
 	"""
 	A list of Jobs with some convenience methods.
-	.find(method) a new JobList with only jobs with that method in it.
-	.get(method, default=None) latest Job with that method.
-	[method] Same as .get but error if no job with that method is in the list.
-	.as_tuples The same list but as (method, jid) tuples.
-	.pretty a pretty-printed version (string).
 	"""
 
 	__slots__ = ()
@@ -323,7 +318,7 @@ class JobList(_ListTypePreserver):
 
 	@property
 	def pretty(self):
-		"""Formated for printing"""
+		"""Return the JobList as a string formated for printing."""
 		if not self: return 'JobList([])'
 		template = '   [%%3d] %%%ds : %%s' % (max(len(i.method) for i in self),)
 		return 'JobList(\n' + \
@@ -332,15 +327,20 @@ class JobList(_ListTypePreserver):
 
 	@property
 	def as_tuples(self):
+		"""Return the JobList as a list of tuples."""
 		return [(e.method, e) for e in self]
 
 	def find(self, method):
-		"""Matching elements returned as new Joblist."""
+		"""Matching elements returned as new JobList."""
 		return self.__class__(e for e in self if e.method == method)
 
-	def get(self, item, default=None):
+	def get(self, method, default=None):
+		"""
+		Return (the most recent) matching job.  Input could be either a
+		method or a list index.
+		"""
 		try:
-			return self[item]
+			return self[method]
 		except IndexError:
 			return default
 
@@ -358,6 +358,7 @@ class JobList(_ListTypePreserver):
 		return total, per_method
 
 	def print_exectimes(self, verbose=True):
+		"""Print execution times for all jobs in the JobList to stdout."""
 		total, per_method = self.exectime
 		if verbose and per_method:
 			print("Time per method:")
