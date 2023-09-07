@@ -282,26 +282,56 @@ class CurrentJob(Job):
 		return obj
 
 	def finish_early(self, result=None):
-		"""Finish job (successfully) without running later stages"""
+		"""Finish job (successfully) without running later stages."""
 		from accelerator.launch import _FinishJob
 		raise _FinishJob(result)
 
 	def save(self, obj, filename='result.pickle', sliceno=None, temp=None, background=False):
+		"""
+		Save obj as a Python pickle file in the current job's directory.
+
+		If called in ``analysis()``, data from all slices could be
+		saved to the same "filename" by setting ``sliceno``.
+
+		If ``temp`` is set, the saved file will be removed upon job
+		completion.
+
+		Set ``background`` to move the actual save operation to a
+		separate process.
+		"""
 		from accelerator.extras import pickle_save
 		return pickle_save(obj, filename, sliceno, temp=temp, background=background)
 
 	def json_save(self, obj, filename='result.json', sliceno=None, sort_keys=True, temp=None, background=False):
+		"""
+		Save obj as a JSON file in the current job's directory.
+
+		In addition to the arguments it shares with ``save()``, it is
+		possible to sort the keys in the JSON output for
+		reproducibility using the ``sort_keys`` argument.
+		"""
 		from accelerator.extras import json_save
 		return json_save(obj, filename, sliceno, sort_keys=sort_keys, temp=temp, background=background)
 
 	def datasetwriter(self, columns={}, filename=None, hashlabel=None, hashlabel_override=False, caption=None, previous=None, name='default', parent=None, meta_only=False, for_single_slice=None, copy_mode=False, allow_missing_slices=False):
+		"""
+		Use this to create a dataset.
+
+		:param dict columns: Dictionary from column names to data types.
+		:param str filename: Name of dataset.
+		:param str hashlabel: set to a colum's name if hash partitioned.
+
+		"""
 		from accelerator.dataset import DatasetWriter
 		return DatasetWriter(columns=columns, filename=filename, hashlabel=hashlabel, hashlabel_override=hashlabel_override, caption=caption, previous=previous, name=name, parent=parent, meta_only=meta_only, for_single_slice=for_single_slice, copy_mode=copy_mode, allow_missing_slices=allow_missing_slices)
 
 	def open(self, filename, mode='r', sliceno=None, encoding=None, errors=None, temp=None):
-		"""Mostly like standard open with sliceno and temp,
-		but you must use it as context manager
-		with job.open(...) as fh:
+		"""
+		"Mostly like standard open, but with ``sliceno`` and ``temp`` just like ``save()``.
+		It must be used as context manager
+
+		    with job.open(...) as fh:
+
 		and the file will have a temp name until the with block ends.
 		"""
 		if 'r' in mode:
@@ -319,19 +349,29 @@ class CurrentJob(Job):
 		return fwm
 
 	def register_file(self, filename):
-		"""Record a file produced by this job. Normally you would use
-		job.open to have this happen automatically, but if the file was
-		produced in a way where that is not practical you can use this
-		to register it."""
+		"""
+		Record a file produced by this job.  Normally you would use
+		``job.open()`` to have this happen automatically, but if the
+		file was produced in a way where that is not practical you can
+		use this to register it.
+		"""
 		filename = self.filename(filename)
 		assert os.path.exists(filename)
 		from accelerator.extras import saved_files
 		saved_files[filename] = 0
 
 	def input_filename(self, *parts):
+		"""
+		Return a full filename to a file stored in the
+		``input_directory``.
+		"""
 		return os.path.join(self.input_directory, *parts)
 
 	def open_input(self, filename, mode='r', encoding=None, errors=None):
+		"""
+		Like standard ``open()``, but opens files stored in the
+		``input_directory``.
+		"""
 		assert 'r' in mode, "Don't write to input files"
 		if 'b' not in mode and encoding is None:
 			encoding = 'utf-8'
