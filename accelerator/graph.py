@@ -12,7 +12,7 @@ arrowlen = 15
 arrowangle = pi / 8
 
 
-def expandtolist(what, fun=lambda x: x):
+def expandtoset(what, fun=lambda x: x):
 	if what:
 		if not isinstance(what, (list, tuple)):
 			what = [what, ]
@@ -25,10 +25,10 @@ def jobdeps(job):
 	res = defaultdict(set)
 	for key, value in job.params.jobs.items():
 		if value:
-			res['jobs.' + key].update(expandtolist(value))
+			res['jobs.' + key].update(expandtoset(value))
 	for key, value in job.params.datasets.items():
 		if value:
-			res['datasets.' + key].update(expandtolist(value, lambda x: x.job))
+			res['datasets.' + key].update(expandtoset(value, lambda x: x.job))
 	# options Jobwithfile
 	namespace = set()
 	def recurseforjwf(options, name=''):
@@ -52,7 +52,7 @@ def dsdeps(ds):
 	res = defaultdict(set)
 	if ds:
 		if ds.parent:
-			res['parent'].update(expandtolist(ds.parent))
+			res['parent'].update(expandtoset(ds.parent))
 		if ds.previous:
 			res['previous'].add(ds.previous)
 	return res
