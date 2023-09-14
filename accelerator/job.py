@@ -56,7 +56,11 @@ def _cachedprop(meth):
 	return wrapper
 
 _cache = {}
-_nodefault = object()
+class NoDefault:
+	def __repr__(self):
+		return 'NO DEFAULT'
+
+_nodefault = NoDefault()
 
 class Job(unicode):
 	"""
@@ -90,16 +94,14 @@ class Job(unicode):
 	@_cachedprop
 	def method(self):
 		"""
-		Name of the method that created the job.  When used in a build script, the
-		build()-call "name" parameter overrides this.
+		Name of the method that created the job.  When used in a build
+		script, the build()-call "name" parameter overrides this.
 		"""
-
 		return self.params.method
 
 	@_cachedprop
 	def input_directory(self):
-		"""Return the name of the input directory where project input files
-		are stored."""
+		"""Path to the input directory when the job was built."""
 		return self.params.get('input_directory', None)
 
 	@property
@@ -116,8 +118,10 @@ class Job(unicode):
 		return os.path.join(self.path, filename)
 
 	def open(self, filename, mode='r', sliceno=None, encoding=None, errors=None):
-		"""Wrapper around open() that can read files from other jobs.  Note
-		that it will not permit writes."""
+		"""
+		Wrapper around open() that can read files from other jobs.
+		Note that it will not permit writes.
+		"""
 		assert 'r' in mode, "Don't write to other jobs"
 		if 'b' not in mode and encoding is None:
 			encoding = 'utf-8'
@@ -134,7 +138,9 @@ class Job(unicode):
 
 	@_cachedprop
 	def params(self):
-		"""All parameters for this job.  (Basically a dump of the job's ``setup.json``)"""
+		"""All parameters for this job.  (Basically the job's
+		``setup.json``)
+		"""
 		from accelerator.extras import job_params
 		return job_params(self)
 
@@ -149,7 +155,10 @@ class Job(unicode):
 
 	@_cachedprop
 	def post(self):
-		"""Post build information for this job.  (Basically a dump of the job's ``post.json``.)"""
+		"""
+		Post build information for this job.  (Basically a dump of the
+		job's ``post.json``.)
+		"""
 		from accelerator.extras import job_post
 		return job_post(self)
 
@@ -186,9 +195,9 @@ class Job(unicode):
 
 	def output(self, what=None):
 		"""
-		Return what the job printed to stdout and stderr.
-		The parameter "what" could be an integer specifying a specific slice,
-		or one of 'prepare', 'analysis', 'synthesis', or None
+		Return what the job printed to stdout and stderr.  The
+		parameter "what" could be an integer specifying a specific
+		slice, or one of 'prepare', 'analysis', 'synthesis', or None
 		"""
 		if what == 'parts':
 			as_parts = True
@@ -217,8 +226,10 @@ class Job(unicode):
 			return ''.join(res.values())
 
 	def link_result(self, filename='result.pickle', linkname=None):
-		"""Put a symlink in result_directory pointing to a file in this job.
-		Only use this in a build script."""
+		"""
+		Put a symlink in result_directory pointing to a file in this
+		job.  Only use this in a build script.
+		"""
 		from accelerator.g import running
 		assert running == 'build', "Only link_result from a build script"
 		from accelerator.shell import cfg
@@ -270,9 +281,10 @@ class Job(unicode):
 
 
 class CurrentJob(Job):
-	"""The currently running job (as passed to the method),
-	with extra functions for writing data."""
-
+	"""
+	The currently running job (as passed to the method),
+	with extra functions for writing data.
+	"""
 	__slots__ = ('input_directory',)
 
 	def __new__(cls, jobid, params):
