@@ -31,19 +31,17 @@ def jobdeps(job):
 			res['datasets.' + key].update(expandtoset(value, lambda x: x.job))
 	# options Jobwithfile
 	namespace = set()
-	def recurseforjwf(options, name=''):
+	def recurse(options, name=''):
 		if isinstance(options, JobWithFile):  # must happen before tuple
-			while name in namespace:
-				name += '+'
 			res['jwf' + name].add(options.job)
 			namespace.add(name)
 		elif isinstance(options, dict):
 			for key, val in options.items():
-				recurseforjwf(val, '.'.join((name, key)))
+				recurse(val, '.'.join((name, key)))
 		elif isinstance(options, (list, tuple, set)):
 			for item in options:
-				recurseforjwf(item, name)
-	recurseforjwf(job.params.options)
+				recurse(item, name)
+	recurse(job.params.options)
 	return res
 
 
