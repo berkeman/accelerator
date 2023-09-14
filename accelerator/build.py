@@ -27,7 +27,7 @@ import json
 import traceback
 from operator import itemgetter
 from collections import defaultdict
-from datetime import date
+from datetime import date, datetime
 from base64 import b64encode
 from importlib import import_module
 from argparse import RawTextHelpFormatter
@@ -437,7 +437,7 @@ def _tsfix(ts):
 		return '%s+%d' % (ts, integer,)
 
 class Urd(object):
-	def __init__(self, a, info, user, password, horizon=None, default_workdir=None):
+	def __init__(self, a, info, user, password, horizon=None, default_workdir=None, auto=True):
 		self._a = a
 		if info.urd:
 			assert '://' in str(info.urd), 'Bad urd URL: %s' % (info.urd,)
@@ -458,6 +458,8 @@ class Urd(object):
 		self._headers = {'Content-Type': 'application/json', 'Authorization': 'Basic ' + auth}
 		self._auth_tested = False
 		self._warnings = []
+		self._begin_called = False
+		self._auto = auto
 
 	def _path(self, path):
 		if '/' not in path:
@@ -532,6 +534,7 @@ class Urd(object):
 		self._a.clear_record()
 		self.joblist = self._a.jobs
 		self._latest_joblist = None
+		self._begin_called = True
 
 	def abort(self):
 		self._current = None
@@ -697,6 +700,13 @@ def run_automata(options, cfg):
 		a.update_methods()
 	res = module_ref.main(urd)
 	urd._show_warnings()
+	if urd._url and not urd._begin_called and urd._auto:
+		if urd.joblist:  # @@@ Maybe allow empty urdlist when recording build source code?
+			path = '_auto'
+			urd._current = urd._path(path)
+			urd._deps = {}
+			urd._update = False
+			urd.finish(path, datetime.now(), caption='Auto generated.')
 	return res
 
 
