@@ -50,15 +50,15 @@ Files in a job can be accessed directly using the
   - ``job.open()`` (for any kind of file).
 
 .. code-block::
-   :caption: Get the contents of a pickle file stored in a job.
+   :caption: Get the contents of files stored in a job.
 
     job = urd.build('something')
     # load the contents of the file named "result.picke",
-    # where return value from ``synthesis()`` is stored
+    # where return value from synthesis() is stored
     data1 = job.load()
     # load the contents from another (json) file in the job
     data2 = job.json_load("thefilename")
-    with job.open("anotherfile", rb") as fh:
+    with job.open("anotherfile", "rb") as fh:
         data3 = fh.load()
 
 It is also possible to get the absolute path to a file in a job is
