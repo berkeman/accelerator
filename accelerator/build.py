@@ -437,7 +437,7 @@ def _tsfix(ts):
 		return '%s+%d' % (ts, integer,)
 
 class Urd(object):
-	def __init__(self, a, info, user, password, horizon=None, default_workdir=None, auto=True):
+	def __init__(self, a, info, user, password, horizon=None, default_workdir=None):
 		self._a = a
 		if info.urd:
 			assert '://' in str(info.urd), 'Bad urd URL: %s' % (info.urd,)
@@ -459,7 +459,7 @@ class Urd(object):
 		self._auth_tested = False
 		self._warnings = []
 		self._begin_called = False
-		self._auto = auto
+		self.auto = True
 
 	def _path(self, path):
 		if '/' not in path:
@@ -700,7 +700,7 @@ def run_automata(options, cfg):
 		a.update_methods()
 	res = module_ref.main(urd)
 	urd._show_warnings()
-	if urd._url and not urd._begin_called and urd._auto:
+	if urd._url and not urd._begin_called and urd.auto:
 		if urd.joblist:  # @@@ Maybe allow empty urdlist when recording build source code?
 			path = '_auto'
 			urd._current = urd._path(path)
