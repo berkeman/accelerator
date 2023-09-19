@@ -29,6 +29,8 @@ from accelerator.shell.parser import ArgumentParser
 from accelerator.shell.parser import split_tildes, urd_call_w_tildes
 from accelerator.error import UrdError
 from accelerator.compat import url_quote
+from datetime import datetime
+from accelerator.colour import bold, blue, red
 
 
 def createparser(user='user', prog=None):
@@ -62,6 +64,7 @@ def createparser(user='user', prog=None):
 		description=description,
 	)
 	parser.add_argument('path', nargs='*', default=['/'])
+	parser.add_argument('-f', '--files', action='append', nargs='?', metavar="PATTERN", help="Show files.  Can be specified multiple times.")
 	return parser
 
 
@@ -123,7 +126,35 @@ def main(argv, cfg):
 		res, entry = urd_get(path)
 		if not res:
 			continue
-		print(fmt(res, entry))
+		if not args.files or (args.files and isinstance(res, list)):
+			# no files flag or show list of timestamps
+			print(fmt(res, entry))
+		else:
+			def printjob(job, ml=0):
+				if job:
+					job = Job(job)
+					files = job.files()
+					if None in args.files:
+						pass
+					else:
+						files = tuple(f for f in files if any(key in f for key in args.files))
+					if files:
+						s = bold(job.method)
+						s += ' ' * (ml - len(job.method))
+						s += blue(' [' + datetime.strftime(datetime.fromtimestamp(job.params.starttime), "%Y-%m-%d %H:%M:%S") + '] ')
+						s += bold(red(job))
+						print(s)
+						for f in files:
+							print('    ' + job.filename(f))
+			joblist = JobList(Job(j, m) for m, j in res['joblist'])
+			if entry is not None:
+				job = joblist.get(entry, '')
+				if job:
+					printjob(job)
+			else:
+				ml = max(len(j.method) for j in joblist)
+				for j in joblist:
+					printjob(j, ml)
 
 def fmt(res, entry):
 	if not res:
