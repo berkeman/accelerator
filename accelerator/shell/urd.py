@@ -40,12 +40,14 @@ def createparser(user='user', prog=None):
 		one element is a list name, two elements are list and timestamp.
 		(and three elements are the whole thing, user/list/timestamp.)
 
+		specifying path only will show the latest list in the path.
+
 		use "path/since/ts" or just "path/" to list timestamps
 		use "/" (or nothing) to list all lists
 
 		you can also use :urdlist:[entry] job specifiers. urdlist follows the same
 		path rules as above, entry is an optional argument to joblist.get() printing
-		just the resultant jobid.
+		just the resultant jobid (so entry could be for example "-1" or "csvimport").
 
 		in job specifiers you can use ~ to move to forwards (later, down) along a
 		list of timestamps and ^ to move backwards (earlier, up).
@@ -64,7 +66,7 @@ def createparser(user='user', prog=None):
 		description=description,
 	)
 	parser.add_argument('path', nargs='*', default=['/'])
-	parser.add_argument('-f', '--files', action='append', nargs='?', metavar="PATTERN", help="Show files.  Can be specified multiple times.")
+	parser.add_argument('-f', '--files', action='append', nargs='?', metavar="PATTERN", help="Show files. Can be specified multiple times with patterns.")
 	return parser
 
 
