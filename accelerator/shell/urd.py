@@ -131,21 +131,17 @@ def main(argv, cfg):
 			print(fmt(res, entry))
 		else:
 			def printjob(job, ml=0):
-				if job:
-					job = Job(job)
-					files = job.files()
-					if None in args.files:
-						pass
-					else:
-						files = tuple(f for f in files if any(key in f for key in args.files))
-					if files:
-						s = bold(job.method)
-						s += ' ' * (ml - len(job.method))
-						s += blue(' [' + datetime.strftime(datetime.fromtimestamp(job.params.starttime), "%Y-%m-%d %H:%M:%S") + '] ')
-						s += bold(red(job))
-						print(s)
-						for f in files:
-							print('    ' + job.filename(f))
+				files = job.files()
+				if None not in args.files:
+					files = tuple(f for f in files if any(pattern in f for pattern in args.files))
+				if files:
+					s = bold(job.method)
+					s += ' ' * (ml - len(job.method))
+					s += blue(' [' + datetime.strftime(datetime.fromtimestamp(job.params.starttime), "%Y-%m-%d %H:%M:%S") + '] ')
+					s += bold(red(job))
+					print(s)
+					for f in files:
+						print('    ' + job.filename(f))
 			joblist = JobList(Job(j, m) for m, j in res['joblist'])
 			if entry is not None:
 				job = joblist.get(entry, '')
