@@ -172,14 +172,14 @@ def template(tpl_name, **kw):
 	)
 
 
-def view(name, subkey=None):
+def view(name, subkey=None, ignore_accept_hdr=False):
 	def view_decorator(func):
 		@functools.wraps(func)
 		def view_wrapper(**kw):
 			res = func(**kw)
 			if isinstance(res, dict):
 				accept = get_best_accept('application/json', 'text/json', 'text/html')
-				if accept == 'text/html':
+				if ignore_accept_hdr or accept == 'text/html':
 					return template(name, **res)
 				else:
 					bottle.response.content_type = accept + '; charset=UTF-8'
@@ -475,9 +475,13 @@ def run(cfg, from_shell=False):
 		)
 
 	@bottle.get('/job_graph/<jobid>')
+	@view('rendergraph', ignore_accept_hdr=True)
 	def job_graph(jobid):
+		bottle.response.content_type = 'image/svg+xml; charset=UTF-8'
 		job = name2job(cfg, jobid)
-		return graph.svg_joborurdlist(job)
+		ret = graph.job_graph(job)
+		ret['type'] = 'job'
+		return ret
 
 	@bottle.get('/dataset/<dsid:path>')
 	@view('dataset', ds_json)

@@ -276,10 +276,10 @@ def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2
 	bbox = [x1 - 50, y1 - 50, dx + 100, dy + 100]
 	return dict(
 		nodes=outnodes,
-		edges=outedges,
+		edges=list(outedges),
 		bbox=bbox,
-		neighbour_nodes=neighbour_nodes,
-		neighbour_edges=neighbour_edges
+		neighbour_nodes={x: list(y) for x, y in neighbour_nodes.items()},
+		neighbour_edges={x: list(y) for x, y in neighbour_edges.items()}
 	)
 
 
