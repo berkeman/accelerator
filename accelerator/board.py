@@ -504,9 +504,13 @@ def run(cfg, from_shell=False):
 			return dict(ds=ds)
 
 	@bottle.get('/dataset_graph/<dsid:path>')
+	@view('rendergraph', ignore_accept_hdr=True)
 	def dataset_graph(dsid):
+		bottle.response.content_type = 'image/svg+xml; charset=UTF-8'
 		ds = name2ds(cfg, dsid.rstrip('/'))
-		return graph.svg_dataset(ds)
+		ret = graph.dataset_graph(ds)
+		ret['type'] = 'ds'
+		return ret
 
 	def load_workdir(jobs, name):
 		known = call_s('workdir', name)
@@ -574,10 +578,14 @@ def run(cfg, from_shell=False):
 
 
 	@bottle.get('/urd_graph/<user>/<build>/<ts>')
+	@view('rendergraph', ignore_accept_hdr=True)
 	def urd_graph(user, build, ts):
+		bottle.response.content_type = 'image/svg+xml; charset=UTF-8'
 		key = user + '/' + build + '/' + ts
 		d = call_u(key)
-		return graph.svg_joborurdlist(d)
+		ret = graph.joblist_graph(d)
+		ret['type'] = 'job'
+		return ret
 
 
 	@bottle.get('/favicon.ico')
