@@ -1,4 +1,4 @@
-from math import sin, cos, atan2, pi
+from math import sin, cos, atan, pi, tan
 from collections import defaultdict
 from datetime import datetime
 from html import escape
@@ -247,20 +247,47 @@ def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2
 					lines="%d x % s" % (len(j.columns), '{:,}'.format(sum(j.lines)).replace(',', ' ')),
 				))
 
-	def limit_angles(nodes, edges):
-		pass
-
 	# create set of edges and find all node's neighbours
 	outedges = set()
 	for s, d, rel in edges:
-		s = nodeids[s]
-		d = nodeids[d]
+		s, d = nodeids[s], nodeids[d]
 		edgekey = ''.join((s, d))
 		outnodes[s].neighbour_nodes.add(d)
 		outnodes[d].neighbour_nodes.add(s)
 		outnodes[s].neighbour_edges.add(edgekey)
 		outnodes[d].neighbour_edges.add(edgekey)
 		outedges.add((s, d, rel))
+
+	# limit angles
+	seen = set()
+	MAXANGLE = 60 * pi / 180
+	offset = {}
+	for level, jobsatlevel in sorted(nodes.items(), reverse=True):
+		for n in jobsatlevel:
+			n = outnodes[nodeids[n]]
+		xoffset = 0
+		maxangle = MAXANGLE
+		for n in (outnodes[nodeids[x]] for x in jobsatlevel):
+			for m in sorted((outnodes[x] for x in n.neighbour_nodes), key=lambda x: x.jobid):
+				if m.jobid in seen:
+					continue
+				dx = abs(n.x - m.x)
+				dy = abs(n.y - m.y)
+				angle = abs(atan(dy / dx))
+				if angle > maxangle:
+					maxangle = angle
+					xoffs = dy / tan(MAXANGLE)
+					xoffset = max(xoffset, xoffs - dx)
+			seen.add(n.jobid)
+		offset[level] = xoffset
+	totoffs = 0
+	for level, offs in sorted(offset.items(), reverse=True):
+		if level > 0:
+			totoffs += offs
+			for n in nodes[level-1]:
+				n = outnodes[nodeids[n]]
+				n.x += totoffs
+
 	return dict(
 		nodes=outnodes,
 		edges=list(outedges),
