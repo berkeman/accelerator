@@ -37,8 +37,8 @@
 			fill="var(--{{ color }})"
 			fill-opacity="50%"
 			data-origfill="var(--{{ color }})"
-			data-neighbour_nodes="{{ dumps(neighbour_nodes[item.nodeid]) }}"
-			data-neighbour_edges="{{ dumps(neighbour_edges[item.nodeid]) }}"
+			data-neighbour_nodes="{{ dumps(list(item.neighbour_nodes)) }}"
+			data-neighbour_edges="{{ dumps(list(item.neighbour_edges)) }}"
 			onclick="popupmenu(
 				event,
 				{{ dumps(item.jobid) }},
@@ -77,8 +77,8 @@
 			fill="var(--{{ color }})"
 			fill-opacity="50%"
 			data-origfill="var(--{{ color }})"
-			data-neighbour_nodes="{{ dumps(neighbour_nodes.get(item.nodeid)) }}"
-			data-neighbour_edges="{{ dumps(neighbour_edges.get(item.nodeid)) }}"
+			data-neighbour_nodes="{{ dumps(list(item.neighbour_nodes)) }}"
+			data-neighbour_edges="{{ dumps(list(item.neighbour_edges)) }}"
 			onclick="popupmenu(
 				event,
 				{{ dumps(item.jobid) }},

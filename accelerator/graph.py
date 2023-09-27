@@ -226,6 +226,8 @@ def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2
 					atmaxdepth=j in atmaxdepth,
 					timestamp=datetime.fromtimestamp(jj.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
 					method=jj.method,
+					neighbour_nodes=set(),
+					neighbour_edges=set(),
 				)
 				if isinstance(j, Job):
 					notinjoblist = False
@@ -249,26 +251,29 @@ def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2
 						lines="%d x % s" % (len(j.columns), '{:,}'.format(sum(j.lines)).replace(',', ' ')),
 					))
 		return outnodes, bbox
-	def create_edges(edges):
-		neighbour_nodes = defaultdict(set)
-		neighbour_edges = defaultdict(set)
+	def create_edges(edges, nodes):
 		outedges = set()
 		for s, d, rel in edges:
 			s = nodeids[s]
 			d = nodeids[d]
 			edgekey = ''.join((s, d))
-			neighbour_nodes[s].add(d)
-			neighbour_nodes[d].add(s)
-			neighbour_edges[s].add(edgekey)
-			neighbour_edges[d].add(edgekey)
+			nodes[s].neighbour_nodes.add(d)
+			nodes[d].neighbour_nodes.add(s)
+			nodes[s].neighbour_edges.add(edgekey)
+			nodes[d].neighbour_edges.add(edgekey)
 			outedges.add((s, d, rel))
-		return outedges, neighbour_nodes, neighbour_edges
+		return outedges
+
+	def limit_angles(nodes, edges):
+		pass
 
 	# create unique string node ids
 	nodeids = {n: 'node' + str(ix) for ix, n in enumerate(sorted(set.union(*(set(nn) for nn in nodes.values()))))}
 	# create nodes (with geometrical locations) and a bounding box
 	outnodes, bbox = nodes_with_attributes(nodes, edges, atmaxdepth, jobnames, jobsinurdlist, job2urddep)
-	outedges, neighbour_nodes, neighbour_edges = create_edges(edges)
+	outedges = create_edges(edges, outnodes)
+
+
 	# do some adjustments to the bounding box
 	x1, y1, x2, y2 = bbox
 	dy = max(100, y2 - y1)
@@ -278,6 +283,4 @@ def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2
 		nodes=outnodes,
 		edges=list(outedges),
 		bbox=bbox,
-		neighbour_nodes={x: list(y) for x, y in neighbour_nodes.items()},
-		neighbour_edges={x: list(y) for x, y in neighbour_edges.items()}
 	)
