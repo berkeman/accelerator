@@ -204,7 +204,6 @@ def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2
 				self.order[key] = str(ix)
 			return nodes, orders
 	outnodes = {}
-	bbox = [None, None, None, None]
 	order = Ordering(nodes[0])
 	children = defaultdict(set)
 	for s, d, _ in edges:
@@ -214,9 +213,6 @@ def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2
 		for ix, (j, ofs) in enumerate(zip(jobsatlevel, offset)):
 			x = - 160 * (level + 0.2 * sin(ix + ofs))
 			y = 140 * ofs + 50 * sin(level / 3)
-			# update bounding box
-			for i, (fun, var) in enumerate(((min, x), (min, y), (max, x), (max, y))):
-				bbox[i] = fun(bbox[i] if not bbox[i] is None else var, var)
 			# remains to create a node with attributes
 			jj = j if isinstance(j, Job) else j.job
 			nodeix = nodeids[j]
@@ -265,14 +261,7 @@ def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2
 		outnodes[s].neighbour_edges.add(edgekey)
 		outnodes[d].neighbour_edges.add(edgekey)
 		outedges.add((s, d, rel))
-
-	# do some adjustments to the bounding box
-	x1, y1, x2, y2 = bbox
-	dy = max(100, y2 - y1)
-	dx = max(100, x2 - x1)
-	bbox = [x1 - 50, y1 - 50, dx + 100, dy + 100]
 	return dict(
 		nodes=outnodes,
 		edges=list(outedges),
-		bbox=bbox,
 	)

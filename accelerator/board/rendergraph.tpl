@@ -10,6 +10,16 @@
 % edgetextcolor = '#224488'
 % edgefontsize = 9
 
+% it = iter(nodes.values())
+% n = next(it)
+% bbox = [n.x, n.y, n.x, n.y]
+% for n in it:
+%	for i, (fun, var) in enumerate(((min, n.x), (min, n.y), (max, n.x), (max, n.y))):
+%		bbox[i] = fun(bbox[i], var)
+%	end
+% end
+% bbox = [bbox[0] - 50, bbox[1] - 50, max(bbox[2] - bbox[0] + 100, 200), max(bbox[3] - bbox[1] + 100, 200)]
+
 <svg id="svg" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="{{' '.join(map(str, bbox))}}" width="100%" height="400px">
 %	# nodes
 %	if type == 'job':
