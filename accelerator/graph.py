@@ -172,107 +172,99 @@ def dataset_graph(ds, recursiondepth=MAXDEPTH):
 
 
 def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2urddep={}):
-	def nodes_with_attributes(nodes, edges, atmaxdepth, jobnames, validjobset, job2urddep):
-		class Ordering:
-			"""
-			The init function takes the first level of nodes as
-			input.  The update function takes each consecutive level
-			of nodes as input.  It returns two lists, the first
-			contains the nodes in sorted order, and the second is a
-			positive integer offset (starting at zero) indicating in
-			which order the nodes should be drawn.
-			"""
-			def __init__(self, nodes):
-				self.order = {x: str(ix) for ix, x in enumerate(sorted(nodes))}
-			def update(self, nodes):
-				nodes = sorted(nodes, key=lambda x: self.order[x])
-				orders = tuple(int(self.order[n]) for n in nodes)
-				for n in nodes:
-					if 1:
-						for ix, c in enumerate(sorted(children[n])):
-							if c not in self.order:
-								self.order[c] = self.order[n] + str(ix)
-					if 0:
-						ix = 0
-						for (key, childs) in (sorted(jobdeps(n).items())):  # sort in depname order
-							for child in childs:
-								if child not in self.order:
-									self.order[child] = self.order[n] + str(ix)
-									ix += 1
-					self.order.pop(n)
-				for ix, (key, val) in enumerate(sorted(self.order.items(), key=lambda x: x[1])):
-					self.order[key] = str(ix)
-				return nodes, orders
-		outnodes = {}
-		bbox = [None, None, None, None]
-		order = Ordering(nodes[0])
-		children = defaultdict(set)
-		for s, d, _ in edges:
-			children[s].add(d)
-		for level, jobsatlevel in sorted(nodes.items()):
-			jobsatlevel, offset = order.update(jobsatlevel)
-			for ix, (j, ofs) in enumerate(zip(jobsatlevel, offset)):
-				x = - 160 * (level + 0.2 * sin(ix + ofs))
-				y = 140 * ofs + 50 * sin(level / 3)
-				# update bounding box
-				for i, (fun, var) in enumerate(((min, x), (min, y), (max, x), (max, y))):
-					bbox[i] = fun(bbox[i] if not bbox[i] is None else var, var)
-				# remains to create a node with attributes
-				jj = j if isinstance(j, Job) else j.job
-				nodeix = nodeids[j]
-				outnodes[nodeix] = DotDict(
-					nodeid=nodeids[j],
-					jobid=str(jj), x=x, y=y,
-					atmaxdepth=j in atmaxdepth,
-					timestamp=datetime.fromtimestamp(jj.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
-					method=jj.method,
-					neighbour_nodes=set(),
-					neighbour_edges=set(),
-				)
-				if isinstance(j, Job):
-					notinjoblist = False
-					if validjobset and j not in validjobset:  # i.e. job is not in this urdlist
-						if job2urddep and j in job2urddep:
-							notinjoblist = job2urddep[j]  # but in a dependency urdlist
-						else:
-							notinjoblist = True
-					outnodes[nodeix].update(dict(
-						files=sorted(j.files()),
-						datasets=j.datasets,
-						subjobs=tuple((x, Job(x).method) for x in j.post.subjobs),
-						name=jobnames.get(j) if jobnames else None,
-						notinurdlist=notinjoblist,
-					))
-				else:
-					# j is Dataset
-					outnodes[nodeix].update(dict(
-						ds=str(j),
-						columns=tuple((key, val.type) for key, val in j.columns.items()),
-						lines="%d x % s" % (len(j.columns), '{:,}'.format(sum(j.lines)).replace(',', ' ')),
-					))
-		return outnodes, bbox
-	def create_edges(edges, nodes):
-		outedges = set()
-		for s, d, rel in edges:
-			s = nodeids[s]
-			d = nodeids[d]
-			edgekey = ''.join((s, d))
-			nodes[s].neighbour_nodes.add(d)
-			nodes[d].neighbour_nodes.add(s)
-			nodes[s].neighbour_edges.add(edgekey)
-			nodes[d].neighbour_edges.add(edgekey)
-			outedges.add((s, d, rel))
-		return outedges
+	# create unique string node ids
+	nodeids = {n: 'node' + str(ix) for ix, n in enumerate(sorted(set.union(*(set(nn) for nn in nodes.values()))))}
+	class Ordering:
+		"""The init function takes the first level of nodes as input.
+		The update function takes each consecutive level of nodes as
+		input.  It returns two lists, the first contains the nodes in
+		sorted order, and the second is a positive integer offset
+		(starting at zero) indicating in which order the nodes should
+		be drawn.
+		"""
+		def __init__(self, nodes):
+			self.order = {x: str(ix) for ix, x in enumerate(sorted(nodes))}
+		def update(self, nodes):
+			nodes = sorted(nodes, key=lambda x: self.order[x])
+			orders = tuple(int(self.order[n]) for n in nodes)
+			for n in nodes:
+				if 1:
+					for ix, c in enumerate(sorted(children[n])):
+						if c not in self.order:
+							self.order[c] = self.order[n] + str(ix)
+				if 0:
+					ix = 0
+					for (key, childs) in (sorted(jobdeps(n).items())):  # sort in depname order
+						for child in childs:
+							if child not in self.order:
+								self.order[child] = self.order[n] + str(ix)
+								ix += 1
+				self.order.pop(n)
+			for ix, (key, val) in enumerate(sorted(self.order.items(), key=lambda x: x[1])):
+				self.order[key] = str(ix)
+			return nodes, orders
+	outnodes = {}
+	bbox = [None, None, None, None]
+	order = Ordering(nodes[0])
+	children = defaultdict(set)
+	for s, d, _ in edges:
+		children[s].add(d)
+	for level, jobsatlevel in sorted(nodes.items()):
+		jobsatlevel, offset = order.update(jobsatlevel)
+		for ix, (j, ofs) in enumerate(zip(jobsatlevel, offset)):
+			x = - 160 * (level + 0.2 * sin(ix + ofs))
+			y = 140 * ofs + 50 * sin(level / 3)
+			# update bounding box
+			for i, (fun, var) in enumerate(((min, x), (min, y), (max, x), (max, y))):
+				bbox[i] = fun(bbox[i] if not bbox[i] is None else var, var)
+			# remains to create a node with attributes
+			jj = j if isinstance(j, Job) else j.job
+			nodeix = nodeids[j]
+			outnodes[nodeix] = DotDict(
+				nodeid=nodeids[j],
+				jobid=str(jj), x=x, y=y,
+				atmaxdepth=j in atmaxdepth,
+				timestamp=datetime.fromtimestamp(jj.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
+				method=jj.method,
+				neighbour_nodes=set(),
+				neighbour_edges=set(),
+			)
+			if isinstance(j, Job):
+				notinjoblist = False
+				if jobsinurdlist and j not in jobsinurdlist:  # i.e. job is not in this urdlist
+					if job2urddep and j in job2urddep:
+						notinjoblist = job2urddep[j]  # but in a dependency urdlist
+					else:
+						notinjoblist = True
+				outnodes[nodeix].update(dict(
+					files=sorted(j.files()),
+					datasets=j.datasets,
+					subjobs=tuple((x, Job(x).method) for x in j.post.subjobs),
+					name=jobnames.get(j) if jobnames else None,
+					notinurdlist=notinjoblist,
+				))
+			else:
+				# j is Dataset
+				outnodes[nodeix].update(dict(
+					ds=str(j),
+					columns=tuple((key, val.type) for key, val in j.columns.items()),
+					lines="%d x % s" % (len(j.columns), '{:,}'.format(sum(j.lines)).replace(',', ' ')),
+				))
 
 	def limit_angles(nodes, edges):
 		pass
 
-	# create unique string node ids
-	nodeids = {n: 'node' + str(ix) for ix, n in enumerate(sorted(set.union(*(set(nn) for nn in nodes.values()))))}
-	# create nodes (with geometrical locations) and a bounding box
-	outnodes, bbox = nodes_with_attributes(nodes, edges, atmaxdepth, jobnames, jobsinurdlist, job2urddep)
-	outedges = create_edges(edges, outnodes)
-
+	# create set of edges and find all node's neighbours
+	outedges = set()
+	for s, d, rel in edges:
+		s = nodeids[s]
+		d = nodeids[d]
+		edgekey = ''.join((s, d))
+		outnodes[s].neighbour_nodes.add(d)
+		outnodes[d].neighbour_nodes.add(s)
+		outnodes[s].neighbour_edges.add(edgekey)
+		outnodes[d].neighbour_edges.add(edgekey)
+		outedges.add((s, d, rel))
 
 	# do some adjustments to the bounding box
 	x1, y1, x2, y2 = bbox
