@@ -1,15 +1,10 @@
-from math import sin, cos, atan, pi, tan
+from math import sin, pi, tan, atan
 from collections import defaultdict
 from datetime import datetime
-from html import escape
-from json import dumps
 from accelerator import JobWithFile, Job
 from accelerator import DotDict
-from accelerator.compat import url_quote
 
 MAXDEPTH = 10
-arrowlen = 15
-arrowangle = pi / 8
 
 
 def expandtoset(what, fun=lambda x: x):
