@@ -174,6 +174,9 @@ def dataset_graph(ds, recursiondepth=MAXDEPTH):
 def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2urddep={}):
 	# create unique string node ids
 	nodeids = {n: 'node' + str(ix) for ix, n in enumerate(sorted(set.union(*(set(nn) for nn in nodes.values()))))}
+	children = defaultdict(set)
+	for s, d, _ in edges:
+		children[s].add(d)
 	class Ordering:
 		"""The init function takes the first level of nodes as input.
 		The update function takes each consecutive level of nodes as
@@ -186,65 +189,53 @@ def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2
 			self.order = {x: str(ix) for ix, x in enumerate(sorted(nodes))}
 		def update(self, nodes):
 			nodes = sorted(nodes, key=lambda x: self.order[x])
-			orders = tuple(int(self.order[n]) for n in nodes)
 			for n in nodes:
-				if 1:
-					for ix, c in enumerate(sorted(children[n])):
-						if c not in self.order:
-							self.order[c] = self.order[n] + str(ix)
-				if 0:
-					ix = 0
-					for (key, childs) in (sorted(jobdeps(n).items())):  # sort in depname order
-						for child in childs:
-							if child not in self.order:
-								self.order[child] = self.order[n] + str(ix)
-								ix += 1
+				for ix, c in enumerate(sorted(children[n])):
+					if c not in self.order:
+						self.order[c] = self.order[n] + str(ix)
 				self.order.pop(n)
 			for ix, (key, val) in enumerate(sorted(self.order.items(), key=lambda x: x[1])):
 				self.order[key] = str(ix)
-			return nodes, orders
+			return nodes
 	outnodes = {}
 	order = Ordering(nodes[0])
-	children = defaultdict(set)
-	for s, d, _ in edges:
-		children[s].add(d)
-	for level, jobsatlevel in sorted(nodes.items()):
-		jobsatlevel, offset = order.update(jobsatlevel)
-		for ix, (j, ofs) in enumerate(zip(jobsatlevel, offset)):
-			x = - 160 * (level + 0.2 * sin(ix + ofs))
-			y = 140 * ofs + 50 * sin(level / 3)
+	for level, nodesatlevel in sorted(nodes.items()):
+		nodesatlevel = order.update(nodesatlevel)
+		for ix, n in enumerate(nodesatlevel):
+			x = - 160 * (level + 0.2 * sin(ix))
+			y = 140 * ix + 50 * sin(level / 3)
 			# remains to create a node with attributes
-			jj = j if isinstance(j, Job) else j.job
-			nodeix = nodeids[j]
+			nn = n if isinstance(n, Job) else n.job
+			nodeix = nodeids[n]
 			outnodes[nodeix] = DotDict(
-				nodeid=nodeids[j],
-				jobid=str(jj), x=x, y=y,
-				atmaxdepth=j in atmaxdepth,
-				timestamp=datetime.fromtimestamp(jj.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
-				method=jj.method,
+				nodeid=nodeids[n],
+				jobid=str(nn), x=x, y=y,
+				atmaxdepth=n in atmaxdepth,
+				timestamp=datetime.fromtimestamp(nn.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
+				method=nn.method,
 				neighbour_nodes=set(),
 				neighbour_edges=set(),
 			)
-			if isinstance(j, Job):
+			if isinstance(n, Job):
 				notinjoblist = False
-				if jobsinurdlist and j not in jobsinurdlist:  # i.e. job is not in this urdlist
-					if job2urddep and j in job2urddep:
-						notinjoblist = job2urddep[j]  # but in a dependency urdlist
+				if jobsinurdlist and n not in jobsinurdlist:  # i.e. job is not in this urdlist
+					if job2urddep and n in job2urddep:
+						notinjoblist = job2urddep[n]  # but in a dependency urdlist
 					else:
 						notinjoblist = True
 				outnodes[nodeix].update(dict(
-					files=sorted(j.files()),
-					datasets=j.datasets,
-					subjobs=tuple((x, Job(x).method) for x in j.post.subjobs),
-					name=jobnames.get(j) if jobnames else None,
+					files=sorted(n.files()),
+					datasets=n.datasets,
+					subjobs=tuple((x, Job(x).method) for x in n.post.subjobs),
+					name=jobnames.get(n) if jobnames else None,
 					notinurdlist=notinjoblist,
 				))
 			else:
-				# j is Dataset
+				# n is Dataset
 				outnodes[nodeix].update(dict(
-					ds=str(j),
-					columns=tuple((key, val.type) for key, val in j.columns.items()),
-					lines="%d x % s" % (len(j.columns), '{:,}'.format(sum(j.lines)).replace(',', ' ')),
+					ds=str(n),
+					columns=tuple((key, val.type) for key, val in n.columns.items()),
+					lines="%d x % s" % (len(n.columns), '{:,}'.format(sum(n.lines)).replace(',', ' ')),
 				))
 
 	# create set of edges and find all node's neighbours
@@ -262,10 +253,10 @@ def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2
 	seen = set()
 	MAXANGLE = 45 * pi / 180
 	offset = {}
-	for level, jobsatlevel in sorted(nodes.items()):
+	for level, nodesatlevel in sorted(nodes.items()):
 		maxangle = MAXANGLE
 		xoffs = 0
-		for n in (outnodes[nodeids[x]] for x in jobsatlevel):
+		for n in (outnodes[nodeids[x]] for x in nodesatlevel):
 			for m in sorted((outnodes[x] for x in n.neighbour_nodes), key=lambda x: x.jobid):
 				if m.jobid not in seen:
 					dx = abs(n.x - m.x)
@@ -274,7 +265,6 @@ def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2
 					if angle > maxangle:
 						maxangle = angle
 						xoffs = max(dy / tan(MAXANGLE), xoffs - dx)
-						print(xoffs)
 			seen.add(n.jobid)
 		offset[level + 1] = xoffs
 	totoffs = 0
