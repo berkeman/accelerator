@@ -260,33 +260,29 @@ def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2
 
 	# limit angles
 	seen = set()
-	MAXANGLE = 60 * pi / 180
+	MAXANGLE = 45 * pi / 180
 	offset = {}
-	for level, jobsatlevel in sorted(nodes.items(), reverse=True):
-		for n in jobsatlevel:
-			n = outnodes[nodeids[n]]
-		xoffset = 0
+	for level, jobsatlevel in sorted(nodes.items()):
 		maxangle = MAXANGLE
+		xoffs = 0
 		for n in (outnodes[nodeids[x]] for x in jobsatlevel):
 			for m in sorted((outnodes[x] for x in n.neighbour_nodes), key=lambda x: x.jobid):
-				if m.jobid in seen:
-					continue
-				dx = abs(n.x - m.x)
-				dy = abs(n.y - m.y)
-				angle = abs(atan(dy / dx))
-				if angle > maxangle:
-					maxangle = angle
-					xoffs = dy / tan(MAXANGLE)
-					xoffset = max(xoffset, xoffs - dx)
+				if m.jobid not in seen:
+					dx = abs(n.x - m.x)
+					dy = abs(n.y - m.y)
+					angle = abs(atan(dy / dx))
+					if angle > maxangle:
+						maxangle = angle
+						xoffs = max(dy / tan(MAXANGLE), xoffs - dx)
+						print(xoffs)
 			seen.add(n.jobid)
-		offset[level] = xoffset
+		offset[level + 1] = xoffs
 	totoffs = 0
-	for level, offs in sorted(offset.items(), reverse=True):
-		if level > 0:
-			totoffs += offs
-			for n in nodes[level-1]:
-				n = outnodes[nodeids[n]]
-				n.x += totoffs
+	for level, offs in sorted(offset.items()):
+		totoffs += offs
+		for n in nodes[level]:
+			n = outnodes[nodeids[n]]
+			n.x -= totoffs
 
 	return dict(
 		nodes=outnodes,
