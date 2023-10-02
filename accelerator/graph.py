@@ -2,9 +2,9 @@ from math import sin, pi, tan, atan
 from collections import defaultdict
 from datetime import datetime
 from accelerator import JobWithFile, Job
-from accelerator import DotDict
+from accelerator.dataset import Dataset
 
-MAXDEPTH = 10
+MAXDEPTH = 20
 
 
 def expandtoset(what, fun=lambda x: x):
@@ -91,60 +91,145 @@ def recurse_joblist(inputjoblist):
 	return nodes, edges, atmaxdepth
 
 
-def recurse_jobsords(inputitem, depsfun, maxdepth=MAXDEPTH):
-	# Depth first algo.  When multiple paths join in a node, the max
-	# difference in level between the paths is stored.  In a second
-	# recursion, this delta difference is added to the subgraph having
-	# the node as root.
-	edges = set()       # set of graph edges, each is tuple(source, dest, key)
-	atmaxdepth = set()  # set of nodes that touch max recursion depth
-	node2children = defaultdict(dict)  # a "cache" for nodes' children
-	joindeltas = {}     # max difference in depth when arriving at node from different paths
-	dones = set()       # nodes we are done with
-	levels = {}         # {node: recursionlevel}.  Level will be updated in second recursion.
-	stack = [(inputitem, 0), ]  # list of (node, recursionlevel), start at level 0.
-	# Phase 1, recurse graph
-	while stack:
-		current, level = stack.pop()
-		if current in dones:
-			# We've been here before
-			if level > levels[current]:
-				# This time the recursion level is deeper.  Therefore,
-				# we need to increase level of this node and all nodes
-				# below it accordingly.  Save level difference for now
-				# and fix in next recursion below.
-				joindeltas[current] = max(joindeltas.get(current, 0), level - levels[current])
-			continue
-		levels[current] = level
-		if level >= maxdepth:
-			# add to set of maxdepth nodes, and don't recurse further
-			atmaxdepth.add(current)
+class Graffe:
+	class WrapperNode:
+		def __init__(self, payload):
+			self.nodeid = str(payload)
+			self.payload = payload
+			self.level = 0
+			self.atmaxdepth = False
+			self.children = []
+			self.depdict = {}
+			self.done = False
+			self.entries = 0
+			self.notinurdlist = False
+
+	def __init__(self):
+		self.count = 0
+		self.nodes = {}
+		self.edges = set()
+		self.keepnodes = set()
+
+	def getorcreate(self, name):
+		assert isinstance(name, str)
+		if name in self.nodes:
+			return self.nodes[name]
 		else:
-			if current not in node2children:
-				# populate "cache".  Used by second recursion too!
-				node2children[current] = depsfun(current)
-			for key, children in node2children[current].items():
-				for child in children:
-					stack.append((child, level + 1))
-					edges.add((current, child, key))
-		dones.add(current)
-	# Phase 2, recurse again and fix level differences
-	levels = {}
-	stack = [(inputitem, 0), ]
+			n = self.WrapperNode(name)
+			self.nodes[name] = n
+			self.safename = 'node' + str(self.count)
+			self.count += 1
+			return n
+
+	def _populatenode(self, n):
+		assert n in self.nodes.values()
+		njob = n.payload if isinstance(n.payload, Job) else n.payload.job
+		n.jobid = str(njob)
+		n.method = njob.method
+		n.name = n.method  # @@@
+		n.timestamp = datetime.fromtimestamp(njob.params.starttime).strftime("%Y-%m-%d %H:%M:%S")
+		if isinstance(n.payload, Job):
+			n.files = sorted(n.payload.files())
+			n.datasets = sorted(n.payload.datasets)
+			n.subjobs= tuple((x, Job(x).method) for x in n.payload.post.subjobs)
+		else:
+			n.columns=tuple((key, val.type) for key, val in n.payload.columns.items()),
+			n.lines="%d x % s" % (len(n.payload.columns), '{:,}'.format(sum(n.payload.lines)).replace(',', ' ')),
+		n.neighbour_nodes = set()
+		n.neighbour_edges = set()
+
+	def newedge(self, current, child, relation):
+		assert isinstance(current, self.WrapperNode)
+		assert isinstance(child, self.WrapperNode)
+		self.edges.add((current, child, relation))
+
+	def _neighbours(self):
+		for s, d, rel in self.edges:
+			edgekey = ''.join([s.nodeid, d.nodeid])
+			s.neighbour_nodes.add(d)
+			d.neighbour_nodes.add(s)
+			s.neighbour_edges.add(edgekey)
+			d.neighbour_edges.add(edgekey)
+
+	def level2nodes(self):
+		ret = defaultdict(set)
+		for n in self.nodes.values():
+			ret[n.level].add(n)
+		return ret
+
+	def undone(self):
+		for n in self.nodes.values():
+			n.done = False
+
+	def addkeeper(self, n):
+		self.keepnodes.add(n)
+
+	def cleankeepers(self):
+		self.nodes = {key: val for key, val in self.nodes.items() if val in self.keepnodes}
+		self.edges = set(x for x in self.edges if x[0] in self.keepnodes and x[1] in self.keepnodes)
+		for n in self.nodes.values():
+			self._populatenode(n)
+		self._neighbours()
+		for n in self.nodes.values():
+			n.neighbour_nodes = tuple(n.neighbour_nodes)
+			n.neighbour_edges = tuple(n.neighbour_edges)
+
+def recurse_jobsords(inputitem, depsfun, maxdepth=MAXDEPTH):
+	# Phase 1: depth first to find all nodes with multiple entries.
+	# Flagging of atmaxdepth is pessimistic in depth first.
+	graffe = Graffe()
+
+	inputitem = graffe.getorcreate(inputitem)
+	inputitem.entries = 1
+
+	stack = [inputitem, ]
 	while stack:
-		current, level = stack.pop()
-		level = max(level, levels.get(current, 0))  # always use the max depth to get here
-		level += joindeltas.pop(current, 0)
-		levels[current] = level
-		if current in atmaxdepth:
+		current = stack.pop()
+		if current.done:
 			continue
-		for children in node2children[current].values():
+		if current.level >= maxdepth:
+			current.atmaxdepth = True
+			continue
+		childset = set()
+		current.depdict = depsfun(current.payload)
+		for relation, children in current.depdict.items():
 			for child in children:
-				stack.append((child, level + 1))
-	nodes = defaultdict(list)
-	for n, lev in levels.items():
-		nodes[lev].append(n)
-	return nodes, edges, atmaxdepth
+				child = graffe.getorcreate(child)
+				graffe.newedge(current, child, relation)
+				childset.add(child)
+		current.children = tuple(sorted(childset, key=lambda x: x.nodeid))
+		for child in current.children:
+			child.level = max(child.level, current.level + 1)
+			child.entries += 1
+			stack.append(child)
+		current.done = True
+
+
+	# Phase 2: breadth first, find levels and atmaxdepth
+
+	graffe.undone()
+
+	stack = [inputitem, ]
+	while stack:
+		current = stack.pop()
+		current.entries -= 1
+		graffe.addkeeper(current)
+		if current.done or current.atmaxdepth:
+			continue
+		if current.level >= maxdepth:
+			current.atmaxdepth = True
+			current.done = True
+			continue
+		if current.entries == 0:
+			for child in current.children:
+				child.level = current.level + 1
+				stack.append(child)
+		graffe.addkeeper(child)
+		current.done = True
+
+	graffe.cleankeepers()
+
+	return graffe
 
 
 def joblist_graph(urdentry):
@@ -153,25 +238,21 @@ def joblist_graph(urdentry):
 	jobsinurdlist = tuple(Job(item[1]) for item in jlist)
 	nodes, edges, atmaxdepth = recurse_joblist(jobsinurdlist)
 	names = {jobid: name for name, jobid in jlist}
-	return creategraph(nodes, edges, atmaxdepth, names, jobsinurdlist, job2urddep)
+	return placement(graffe, atmaxdepth, names, jobsinurdlist, job2urddep)
 
 
 def job_graph(inputjob, recursiondepth=MAXDEPTH):
-	nodes, edges, atmaxdepth = recurse_jobsords(inputjob, jobdeps, recursiondepth)
-	return creategraph(nodes, edges, atmaxdepth)
+	graffe = recurse_jobsords(inputjob, jobdeps, recursiondepth)
+	return placement(graffe)
 
 
 def dataset_graph(ds, recursiondepth=MAXDEPTH):
-	nodes, edges, atmaxdepth = recurse_jobsords(ds, dsdeps, recursiondepth)
-	return creategraph(nodes, edges, atmaxdepth)
+	nodes, edges = recurse_jobsords(ds, dsdeps, recursiondepth)
+	return placement(nodes, edges)
 
 
-def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2urddep={}):
-	# create unique string node ids
-	nodeids = {n: 'node' + str(ix) for ix, n in enumerate(sorted(set.union(*(set(nn) for nn in nodes.values()))))}
-	children = defaultdict(set)
-	for s, d, _ in edges:
-		children[s].add(d)
+def placement(graffe, jobnames={}, jobsinurdlist=set(), job2urddep={}):
+
 	class Ordering:
 		"""The init function takes the first level of nodes as input.
 		The update function takes each consecutive level of nodes as
@@ -185,91 +266,94 @@ def creategraph(nodes, edges, atmaxdepth, jobnames={}, jobsinurdlist=set(), job2
 		def update(self, nodes):
 			nodes = sorted(nodes, key=lambda x: self.order[x])
 			for n in nodes:
-				for ix, c in enumerate(sorted(children[n])):
+				for ix, c in enumerate(sorted(n.children, key=lambda x: x.nodeid)):
 					if c not in self.order:
 						self.order[c] = self.order[n] + str(ix)
 				self.order.pop(n)
 			for ix, (key, val) in enumerate(sorted(self.order.items(), key=lambda x: x[1])):
 				self.order[key] = str(ix)
 			return nodes
-	outnodes = {}
-	order = Ordering(nodes[0])
-	for level, nodesatlevel in sorted(nodes.items()):
+
+	# determine x and y coordinates
+	level2nodes = graffe.level2nodes()
+	order = Ordering(level2nodes[0])
+	for level, nodesatlevel in sorted(level2nodes.items()):
 		nodesatlevel = order.update(nodesatlevel)
 		for ix, n in enumerate(nodesatlevel):
-			x = - 160 * (level + 0.2 * sin(ix))
-			y = 140 * ix + 50 * sin(level / 3)
-			# remains to create a node with attributes
-			nn = n if isinstance(n, Job) else n.job
-			nodeix = nodeids[n]
-			outnodes[nodeix] = DotDict(
-				nodeid=nodeids[n],
-				jobid=str(nn), x=x, y=y,
-				atmaxdepth=n in atmaxdepth,
-				timestamp=datetime.fromtimestamp(nn.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
-				method=nn.method,
-				neighbour_nodes=set(),
-				neighbour_edges=set(),
-			)
-			if isinstance(n, Job):
-				notinjoblist = False
-				if jobsinurdlist and n not in jobsinurdlist:  # i.e. job is not in this urdlist
-					if job2urddep and n in job2urddep:
-						notinjoblist = job2urddep[n]  # but in a dependency urdlist
-					else:
-						notinjoblist = True
-				outnodes[nodeix].update(dict(
-					files=sorted(n.files()),
-					datasets=n.datasets,
-					subjobs=tuple((x, Job(x).method) for x in n.post.subjobs),
-					name=jobnames.get(n) if jobnames else None,
-					notinurdlist=notinjoblist,
-				))
-			else:
-				# n is Dataset
-				outnodes[nodeix].update(dict(
-					ds=str(n),
-					columns=tuple((key, val.type) for key, val in n.columns.items()),
-					lines="%d x % s" % (len(n.columns), '{:,}'.format(sum(n.lines)).replace(',', ' ')),
-				))
+			n.x = - 160 * (level + 0.2 * sin(ix))
+			n.y = 140 * ix + 50 * sin(level / 3)
 
-	# create set of edges and find all node's neighbours
-	outedges = set()
-	for s, d, rel in edges:
-		s, d = nodeids[s], nodeids[d]
-		edgekey = ''.join((s, d))
-		outnodes[s].neighbour_nodes.add(d)
-		outnodes[d].neighbour_nodes.add(s)
-		outnodes[s].neighbour_edges.add(edgekey)
-		outnodes[d].neighbour_edges.add(edgekey)
-		outedges.add((s, d, rel))
-
-	# limit angles
-	seen = set()
+	# limit angles by adjusting x positions
 	MAXANGLE = 45 * pi / 180
 	offset = {}
-	for level, nodesatlevel in sorted(nodes.items()):
+	for level, nodesatlevel in sorted(level2nodes.items()):
 		maxangle = MAXANGLE
 		xoffs = 0
-		for n in (outnodes[nodeids[x]] for x in nodesatlevel):
-			for m in sorted((outnodes[x] for x in n.neighbour_nodes), key=lambda x: x.jobid):
-				if m.jobid not in seen:
-					dx = abs(n.x - m.x)
-					dy = abs(n.y - m.y)
-					angle = abs(atan(dy / dx))
-					if angle > maxangle:
-						maxangle = angle
-						xoffs = max(dy / tan(MAXANGLE), xoffs - dx)
-			seen.add(n.jobid)
+		for n in nodesatlevel:
+			for m in n.children:
+				dx = abs(n.x - m.x)
+				dy = abs(n.y - m.y)
+				angle = abs(atan(dy / dx))
+				if angle > maxangle:
+					maxangle = angle
+					xoffs = max(dy / tan(MAXANGLE), xoffs - dx)
 		offset[level + 1] = xoffs
 	totoffs = 0
 	for level, offs in sorted(offset.items()):
 		totoffs += offs
-		for n in nodes[level]:
-			n = outnodes[nodeids[n]]
+		for n in level2nodes[level]:
 			n.x -= totoffs
 
+	# serialisation-fixing
+	for n in graffe.nodes.values():
+		n.neighbour_nodes = tuple(x.nodeid for x in n.neighbour_nodes)
+	graffe.edges = tuple((x[0].nodeid, x[1].nodeid, x[2]) for x in graffe.edges)
+
 	return dict(
-		nodes=outnodes,
-		edges=list(outedges),
+		nodes=graffe.nodes,
+		edges=list(graffe.edges),
 	)
+
+
+
+			# # remains to create a node with attributes
+			# # outnodes[nodeix] = DotDict(
+			# # 	nodeid=nodeids[n],
+			# # 	jobid=str(nn), x=x, y=y,
+			# # 	atmaxdepth=n in atmaxdepth,
+			# # 	timestamp=datetime.fromtimestamp(nn.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
+			# # 	method=nn.method,
+			# # 	neighbour_nodes=set(),
+			# # 	neighbour_edges=set(),
+			# # )
+			# if isinstance(n, Job):
+		# 	notinjoblist = False
+			# 	if jobsinurdlist and n not in jobsinurdlist:  # i.e. job is not in this urdlist
+			# 		if job2urddep and n in job2urddep:
+			# 			notinjoblist = job2urddep[n]  # but in a dependency urdlist
+			# 		else:
+			# 			notinjoblist = True
+			# 	outnodes[nodeix].update(dict(
+			# 		files=sorted(n.files()),
+			# 		datasets=n.datasets,
+			# 		subjobs=tuple((x, Job(x).method) for x in n.post.subjobs),
+			# 		name=jobnames.get(n) if jobnames else None,
+			# 		notinurdlist=notinjoblist,
+			# 	))
+			# else:
+			# 	# n is Dataset
+			# 	outnodes[nodeix].update(dict(
+			# 		ds=str(n),
+			# 		columns=tuple((key, val.type) for key, val in n.columns.items()),
+			# 		lines="%d x % s" % (len(n.columns), '{:,}'.format(sum(n.lines)).replace(',', ' ')),
+			# 	))
+
+	# # create set of edges and find all node's neighbours
+	# outedges = set()
+	# for s, d, rel in graffe.edges:
+	# 	edgekey = ''.join((s.simple, d.simple))
+	# 	s.neighbour_nodes.add(d.simple)
+	# 	d.neighbour_nodes.add(s.simple)
+	# 	s.neighbour_edges.add(edgekey)
+	# 	d.neighbour_edges.add(edgekey)
+	# 	outedges.add((s, d, rel))
