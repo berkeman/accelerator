@@ -98,11 +98,11 @@ class Graffe:
 			self.payload = payload
 			self.level = 0
 			self.atmaxdepth = False
+			self.notinurdlist = False
 			self.children = []
 			self.depdict = {}
 			self.done = False
-			self.entries = 0
-			self.notinurdlist = False
+			self.num_entries = 0
 
 	def __init__(self):
 		self.count = 0
@@ -110,18 +110,38 @@ class Graffe:
 		self.edges = set()
 		self.keepnodes = set()
 
-	def getorcreate(self, name):
+	def getorcreatenode(self, name, num_entries=0):
+		""" get existing from name or create a new WrapperNode """
 		assert isinstance(name, str)
 		if name in self.nodes:
 			return self.nodes[name]
 		else:
 			n = self.WrapperNode(name)
+			n.num_entries = num_entries
 			self.nodes[name] = n
 			self.safename = 'node' + str(self.count)
 			self.count += 1
 			return n
 
-	def _populatenode(self, n):
+	def createedge(self, current, child, relation):
+		""" create a new edge (from WrapperNode to WrapperNode """
+		assert isinstance(current, self.WrapperNode)
+		assert isinstance(child, self.WrapperNode)
+		self.edges.add((current, child, relation))
+
+	def level2nodes(self):
+		""" return {level: set_of_WrapperNodes_at_level} """
+		ret = defaultdict(set)
+		for n in self.nodes.values():
+			ret[n.level].add(n)
+		return ret
+
+	def clear_done(self):
+		""" set done to False in all WrapperNodes """
+		for n in self.nodes.values():
+			n.done = False
+
+	def _populatenodefrompayload(self, n):
 		assert n in self.nodes.values()
 		njob = n.payload if isinstance(n.payload, Job) else n.payload.job
 		n.jobid = str(njob)
@@ -138,11 +158,6 @@ class Graffe:
 		n.neighbour_nodes = set()
 		n.neighbour_edges = set()
 
-	def newedge(self, current, child, relation):
-		assert isinstance(current, self.WrapperNode)
-		assert isinstance(child, self.WrapperNode)
-		self.edges.add((current, child, relation))
-
 	def _neighbours(self):
 		for s, d, rel in self.edges:
 			edgekey = ''.join([s.nodeid, d.nodeid])
@@ -151,16 +166,6 @@ class Graffe:
 			s.neighbour_edges.add(edgekey)
 			d.neighbour_edges.add(edgekey)
 
-	def level2nodes(self):
-		ret = defaultdict(set)
-		for n in self.nodes.values():
-			ret[n.level].add(n)
-		return ret
-
-	def undone(self):
-		for n in self.nodes.values():
-			n.done = False
-
 	def addkeeper(self, n):
 		self.keepnodes.add(n)
 
@@ -168,20 +173,19 @@ class Graffe:
 		self.nodes = {key: val for key, val in self.nodes.items() if val in self.keepnodes}
 		self.edges = set(x for x in self.edges if x[0] in self.keepnodes and x[1] in self.keepnodes)
 		for n in self.nodes.values():
-			self._populatenode(n)
+			self._populatenodefrompayload(n)
 		self._neighbours()
 		for n in self.nodes.values():
 			n.neighbour_nodes = tuple(n.neighbour_nodes)
 			n.neighbour_edges = tuple(n.neighbour_edges)
+
 
 def recurse_jobsords(inputitem, depsfun, maxdepth=MAXDEPTH):
 	# Phase 1: depth first to find all nodes with multiple entries.
 	# Flagging of atmaxdepth is pessimistic in depth first.
 	graffe = Graffe()
 
-	inputitem = graffe.getorcreate(inputitem)
-	inputitem.entries = 1
-
+	inputitem = graffe.getorcreatenode(inputitem, num_entries=1)
 	stack = [inputitem, ]
 	while stack:
 		current = stack.pop()
@@ -190,29 +194,29 @@ def recurse_jobsords(inputitem, depsfun, maxdepth=MAXDEPTH):
 		if current.level >= maxdepth:
 			current.atmaxdepth = True
 			continue
-		childset = set()
 		current.depdict = depsfun(current.payload)
+		childset = set()
 		for relation, children in current.depdict.items():
 			for child in children:
-				child = graffe.getorcreate(child)
-				graffe.newedge(current, child, relation)
+				child = graffe.getorcreatenode(child)
+				graffe.createedge(current, child, relation)
 				childset.add(child)
 		current.children = tuple(sorted(childset, key=lambda x: x.nodeid))
 		for child in current.children:
 			child.level = max(child.level, current.level + 1)
-			child.entries += 1
+			child.num_entries += 1
 			stack.append(child)
 		current.done = True
 
 
 	# Phase 2: breadth first, find levels and atmaxdepth
 
-	graffe.undone()
+	graffe.clear_done()
 
 	stack = [inputitem, ]
 	while stack:
 		current = stack.pop()
-		current.entries -= 1
+		current.num_entries -= 1
 		graffe.addkeeper(current)
 		if current.done or current.atmaxdepth:
 			continue
@@ -220,7 +224,7 @@ def recurse_jobsords(inputitem, depsfun, maxdepth=MAXDEPTH):
 			current.atmaxdepth = True
 			current.done = True
 			continue
-		if current.entries == 0:
+		if current.num_entries == 0:
 			for child in current.children:
 				child.level = current.level + 1
 				stack.append(child)
