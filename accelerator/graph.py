@@ -108,7 +108,6 @@ class Graffe:
 		self.count = 0
 		self.nodes = {}
 		self.edges = set()
-		self.keepnodes = set()
 
 	def getorcreatenode(self, name, num_entries=0):
 		""" get existing from name or create a new WrapperNode """
@@ -141,45 +140,47 @@ class Graffe:
 		for n in self.nodes.values():
 			n.done = False
 
-	def _populatenodefrompayload(self, n):
-		assert n in self.nodes.values()
-		njob = n.payload if isinstance(n.payload, Job) else n.payload.job
-		n.jobid = str(njob)
-		n.method = njob.method
-		n.name = n.method  # @@@
-		n.timestamp = datetime.fromtimestamp(njob.params.starttime).strftime("%Y-%m-%d %H:%M:%S")
-		if isinstance(n.payload, Job):
-			n.files = sorted(n.payload.files())
-			n.datasets = sorted(n.payload.datasets)
-			n.subjobs= tuple((x, Job(x).method) for x in n.payload.post.subjobs)
-		else:
-			n.columns=tuple((key, val.type) for key, val in n.payload.columns.items()),
-			n.lines="%d x % s" % (len(n.payload.columns), '{:,}'.format(sum(n.payload.lines)).replace(',', ' ')),
-		n.neighbour_nodes = set()
-		n.neighbour_edges = set()
+	def populatenodefrompayload(self):
+		for n in self.nodes.values():
+			njob = n.payload if isinstance(n.payload, Job) else n.payload.job
+			n.jobid = str(njob)
+			n.method = njob.method
+			n.name = n.method  # @@@
+			n.timestamp = datetime.fromtimestamp(njob.params.starttime).strftime("%Y-%m-%d %H:%M:%S")
+			if isinstance(n.payload, Job):
+				n.files = sorted(n.payload.files())
+				n.datasets = sorted(n.payload.datasets)
+				n.subjobs= tuple((x, Job(x).method) for x in n.payload.post.subjobs)
+			else:
+				n.columns=tuple((key, val.type) for key, val in n.payload.columns.items()),
+				n.lines="%d x % s" % (len(n.payload.columns), '{:,}'.format(sum(n.payload.lines)).replace(',', ' ')),
+			n.neighbour_nodes = set()
+			n.neighbour_edges = set()
 
-	def _neighbours(self):
+	def populatewithneighbours(self):
 		for s, d, rel in self.edges:
 			edgekey = ''.join([s.nodeid, d.nodeid])
 			s.neighbour_nodes.add(d)
 			d.neighbour_nodes.add(s)
 			s.neighbour_edges.add(edgekey)
 			d.neighbour_edges.add(edgekey)
-
-	def addkeeper(self, n):
-		self.keepnodes.add(n)
-
-	def cleankeepers(self):
-		self.nodes = {key: val for key, val in self.nodes.items() if val in self.keepnodes}
-		self.edges = set(x for x in self.edges if x[0] in self.keepnodes and x[1] in self.keepnodes)
-		for n in self.nodes.values():
-			self._populatenodefrompayload(n)
-		self._neighbours()
 		for n in self.nodes.values():
 			n.neighbour_nodes = tuple(n.neighbour_nodes)
 			n.neighbour_edges = tuple(n.neighbour_edges)
 
+	def cleankeepers(self, keepers):
+		""" keep only those nodes (and edges relating to) nodes in keepers set """
+		self.nodes = {key: val for key, val in self.nodes.items() if val in keepers}
+		self.edges = set(x for x in self.edges if x[0] in keepers and x[1] in keepers)
 
+	def serialise(self):
+		for n in self.nodes.values():
+			n.neighbour_nodes = tuple(x.nodeid for x in n.neighbour_nodes)
+		self.edges = tuple((x[0].nodeid, x[1].nodeid, x[2]) for x in self.edges)
+
+
+
+	
 def recurse_jobsords(inputitem, depsfun, maxdepth=MAXDEPTH):
 	# Phase 1: depth first to find all nodes with multiple entries.
 	# Flagging of atmaxdepth is pessimistic in depth first.
@@ -213,11 +214,12 @@ def recurse_jobsords(inputitem, depsfun, maxdepth=MAXDEPTH):
 
 	graffe.clear_done()
 
+	keepers = set()
 	stack = [inputitem, ]
 	while stack:
 		current = stack.pop()
 		current.num_entries -= 1
-		graffe.addkeeper(current)
+		keepers.add(current)
 		if current.done or current.atmaxdepth:
 			continue
 		if current.level >= maxdepth:
@@ -228,11 +230,11 @@ def recurse_jobsords(inputitem, depsfun, maxdepth=MAXDEPTH):
 			for child in current.children:
 				child.level = current.level + 1
 				stack.append(child)
-		graffe.addkeeper(child)
 		current.done = True
 
-	graffe.cleankeepers()
-
+	graffe.cleankeepers(keepers)
+	graffe.populatenodefrompayload()
+	graffe.populatewithneighbours()
 	return graffe
 
 
@@ -308,14 +310,11 @@ def placement(graffe, jobnames={}, jobsinurdlist=set(), job2urddep={}):
 		for n in level2nodes[level]:
 			n.x -= totoffs
 
-	# serialisation-fixing
-	for n in graffe.nodes.values():
-		n.neighbour_nodes = tuple(x.nodeid for x in n.neighbour_nodes)
-	graffe.edges = tuple((x[0].nodeid, x[1].nodeid, x[2]) for x in graffe.edges)
+	graffe.serialise()
 
 	return dict(
 		nodes=graffe.nodes,
-		edges=list(graffe.edges),
+		edges=graffe.edges,
 	)
 
 
