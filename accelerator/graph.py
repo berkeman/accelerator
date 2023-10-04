@@ -141,6 +141,7 @@ class Graffe:
 			n.done = False
 
 	def populatenodefrompayload(self):
+		""" add parameters from payload (job/ds) to all WrapperNodes when called only, for performance """
 		for n in self.nodes.values():
 			njob = n.payload if isinstance(n.payload, Job) else n.payload.job
 			n.jobid = str(njob)
@@ -158,6 +159,7 @@ class Graffe:
 			n.neighbour_edges = set()
 
 	def populatewithneighbours(self):
+		""" add neighbour information to all WrapperNodes """
 		for s, d, rel in self.edges:
 			edgekey = ''.join([s.nodeid, d.nodeid])
 			s.neighbour_nodes.add(d)
@@ -174,6 +176,7 @@ class Graffe:
 		self.edges = set(x for x in self.edges if x[0] in keepers and x[1] in keepers)
 
 	def serialise(self):
+		""" collapse neighbour_nodes and edges to strings, for later JSON output """
 		for n in self.nodes.values():
 			n.neighbour_nodes = tuple(x.nodeid for x in n.neighbour_nodes)
 		self.edges = tuple((x[0].nodeid, x[1].nodeid, x[2]) for x in self.edges)
