@@ -120,9 +120,6 @@ def create_graph(inputitem, maxdepth=MAXDEPTH):
 	return graffe
 
 
-
-
-
 class Graffe:
 	class WrapperNode:
 		def __init__(self, payload):
@@ -182,10 +179,10 @@ class Graffe:
 			if isinstance(n.payload, Job):
 				n.files = sorted(n.payload.files())
 				n.datasets = sorted(n.payload.datasets)
-				n.subjobs= tuple((x, Job(x).method) for x in n.payload.post.subjobs)
+				n.subjobs = tuple((x, Job(x).method) for x in n.payload.post.subjobs)
 			else:
-				n.columns=tuple((key, val.type) for key, val in n.payload.columns.items()),
-				n.lines="%d x % s" % (len(n.payload.columns), '{:,}'.format(sum(n.payload.lines)).replace(',', ' ')),
+				n.columns = tuple((key, val.type) for key, val in n.payload.columns.items()),
+				n.lines = "%d x % s" % (len(n.payload.columns), '{:,}'.format(sum(n.payload.lines)).replace(',', ' ')),
 				n.ds = str(n.payload)
 			n.neighbour_nodes = set()
 			n.neighbour_edges = set()
