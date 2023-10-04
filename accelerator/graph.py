@@ -1,8 +1,8 @@
 from math import sin, pi, tan, atan
 from collections import defaultdict
 from datetime import datetime
-from accelerator import JobWithFile, Job
-MAXDEPTH = 20
+from accelerator import JobWithFile, Job, DotDict
+MAXDEPTH = 200
 
 
 def expandtoset(what, fun=lambda x: x):
@@ -73,48 +73,10 @@ def create_graph(inputitem, maxdepth=MAXDEPTH):
 		inputitem = graffe.getorcreatenode(inputitem)
 		inputitem.num_entries = 1
 		stack = [inputitem, ]
-		while stack:
-			current = stack.pop()
-			if current.done:
-				continue
-			if current.level >= maxdepth:
-				current.atmaxdepth = True
-				continue
-			current.depdict = depsfun(current.payload)
-			childset = set()
-			for relation, children in current.depdict.items():
-				for child in children:
-					child = graffe.getorcreatenode(child)
-					graffe.createedge(current, child, relation)
-					childset.add(child)
-			current.children = tuple(sorted(childset, key=lambda x: x.nodeid))
-			for child in current.children:
-				child.level = max(child.level, current.level + 1)
-				child.num_entries += 1
-				stack.append(child)
-			current.done = True
+		graffe.depth_first(stack, depsfun, maxdepth)
 		graffe.reset_done()
 		stack = [inputitem, ]
-	# breadth-first
-	keepers = set()
-	while stack:
-		current = stack.pop()
-		current.num_entries -= 1
-		keepers.add(current)
-		if current.done or current.atmaxdepth:
-			continue
-		if current.level >= maxdepth:
-			assert current.level == maxdepth
-			current.atmaxdepth = True
-			current.children = set()  # remove children from edge-node
-			current.done = True
-			continue
-		if current.num_entries == 0:
-			for child in current.children:
-				child.level = current.level + 1
-				stack.append(child)
-		current.done = True
-	graffe.cleankeepers(keepers)
+	graffe.breadth_first(stack, maxdepth)
 	graffe.populatenodefrompayload()
 	graffe.populatewithneighbours()
 	return graffe
@@ -196,7 +158,7 @@ class Graffe:
 			s.neighbour_edges.add(edgekey)
 			d.neighbour_edges.add(edgekey)
 
-	def cleankeepers(self, keepers):
+	def prune(self, keepers):
 		""" keep only those nodes (and edges relating to) nodes in keepers set """
 		self.nodes = {key: val for key, val in self.nodes.items() if val in keepers}
 		self.edges = set(x for x in self.edges if x[0] in keepers and x[1] in keepers)
@@ -207,24 +169,66 @@ class Graffe:
 			n.neighbour_nodes = tuple(x.nodeid for x in n.neighbour_nodes)
 		self.edges = tuple((x[0].nodeid, x[1].nodeid, x[2]) for x in self.edges)
 
+	def depth_first(self, stack, depsfun, maxdepth):
+		while stack:
+			current = stack.pop()
+			if current.done:
+				continue
+			if current.level >= maxdepth:
+				current.atmaxdepth = True
+				continue
+			current.depdict = depsfun(current.payload)
+			childset = set()
+			for relation, children in current.depdict.items():
+				for child in children:
+					child = self.getorcreatenode(child)
+					self.createedge(current, child, relation)
+					childset.add(child)
+			current.children = tuple(sorted(childset, key=lambda x: x.nodeid))
+			for child in current.children:
+				child.level = max(child.level, current.level + 1)
+				child.num_entries += 1
+				stack.append(child)
+			current.done = True
 
-def joblist_graph(urdentry):
-	job2urddep = {Job(x[1]): str(dep) + '/' + str(item.timestamp) for dep, item in urdentry.deps.items() for x in item.joblist}
-	jlist = urdentry.joblist
-	jobsinurdlist = tuple(Job(item[1]) for item in jlist)
-	graffe = create_graph(jobsinurdlist)
-	names = {jobid: name for name, jobid in jlist}
+	def breadth_first(self, stack, maxdepth):
+		""" also prune all nodes that are not visited because they are outside of MAXDEPTH """
+		keepers = set()
+		while stack:
+			current = stack.pop()
+			current.num_entries -= 1
+			keepers.add(current)
+			if current.done or current.atmaxdepth:
+				continue
+			if current.level >= maxdepth:
+				assert current.level == maxdepth
+				current.atmaxdepth = True
+				current.children = set()  # remove children from edge-node
+				current.done = True
+				continue
+			if current.num_entries == 0:
+				for child in current.children:
+					child.level = current.level + 1
+					stack.append(child)
+				current.done = True
+		self.prune(keepers)
+
+
+
+def do_graph(inp, recursiondepth=MAXDEPTH):
+	if isinstance(inp, DotDict):
+		# is joblist
+		job2urddep = {Job(x[1]): str(dep) + '/' + str(item.timestamp) for dep, item in inp.deps.items() for x in item.joblist}
+		jlist = inp.joblist
+		jobsinurdlist = tuple(Job(item[1]) for item in jlist)
+		names = {jobid: name for name, jobid in jlist}
+		inp = tuple(jobsinurdlist)
+	else:
+		job2urddep = {}
+		jobsinurdlist = ()
+		names = {}
+	graffe = create_graph(inp, maxdepth=recursiondepth)
 	return placement(graffe, names, jobsinurdlist, job2urddep)
-
-
-def job_graph(inputjob, recursiondepth=MAXDEPTH):
-	graffe = create_graph(inputjob, recursiondepth)
-	return placement(graffe)
-
-
-def dataset_graph(ds, recursiondepth=MAXDEPTH):
-	graffe = create_graph(ds, recursiondepth)
-	return placement(graffe)
 
 
 def placement(graffe, jobnames={}, jobsinurdlist=set(), job2urddep={}):
@@ -252,10 +256,6 @@ def placement(graffe, jobnames={}, jobsinurdlist=set(), job2urddep={}):
 
 	# determine x and y coordinates
 	level2nodes = graffe.level2nodes()
-	for key, val in level2nodes.items():
-		print(key)
-		for v in val:
-			print(v.nodeid, list(x.nodeid for x in v.children))
 	order = Ordering(level2nodes[0])
 	for level, nodesatlevel in sorted(level2nodes.items()):
 		nodesatlevel = order.update(nodesatlevel)
@@ -473,3 +473,21 @@ def placement(graffe, jobnames={}, jobsinurdlist=set(), job2urddep={}):
 # 	graffe.populatenodefrompayload()
 # 	graffe.populatewithneighbours()
 # 	return graffe
+
+# def joblist_graph(urdentry, recursiondepth=MAXDEPTH):
+# 	job2urddep = {Job(x[1]): str(dep) + '/' + str(item.timestamp) for dep, item in urdentry.deps.items() for x in item.joblist}
+# 	jlist = urdentry.joblist
+# 	jobsinurdlist = tuple(Job(item[1]) for item in jlist)
+# 	graffe = create_graph(jobsinurdlist, maxdepth=recursiondepth)
+# 	names = {jobid: name for name, jobid in jlist}
+# 	return placement(graffe, names, jobsinurdlist, job2urddep)
+
+
+# def job_graph(inputjob, recursiondepth=MAXDEPTH):
+# 	graffe = create_graph(inputjob, maxdepth=recursiondepth)
+# 	return placement(graffe)
+
+
+# def dataset_graph(ds, recursiondepth=MAXDEPTH):
+# 	graffe = create_graph(ds, maxdepth=recursiondepth)
+# 	return placement(graffe)

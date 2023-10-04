@@ -477,9 +477,10 @@ def run(cfg, from_shell=False):
 	@bottle.get('/job_graph/<jobid>')
 	@view('rendergraph', ignore_accept_hdr=True)
 	def job_graph(jobid):
+
 		bottle.response.content_type = 'image/svg+xml; charset=UTF-8'
 		job = name2job(cfg, jobid)
-		ret = graph.job_graph(job)
+		ret = graph.do_graph(job)
 		ret['type'] = 'job'
 		return ret
 
@@ -508,7 +509,7 @@ def run(cfg, from_shell=False):
 	def dataset_graph(dsid):
 		bottle.response.content_type = 'image/svg+xml; charset=UTF-8'
 		ds = name2ds(cfg, dsid.rstrip('/'))
-		ret = graph.dataset_graph(ds)
+		ret = graph.do_graph(ds)
 		ret['type'] = 'ds'
 		return ret
 
@@ -583,7 +584,7 @@ def run(cfg, from_shell=False):
 		bottle.response.content_type = 'image/svg+xml; charset=UTF-8'
 		key = user + '/' + build + '/' + ts
 		d = call_u(key)
-		ret = graph.joblist_graph(d)
+		ret = graph.do_graph(d)
 		ret['type'] = 'job'
 		return ret
 
