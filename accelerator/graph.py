@@ -73,9 +73,8 @@ class Graffe:
 			return self.nodes[item]
 		else:
 			n = self.WrapperNode(item)
-			n.num_entries = 0
+			n.safeitem = 'node' + str(self.count)
 			self.nodes[str(item)] = n
-			self.safeitem = 'node' + str(self.count)
 			self.count += 1
 			return n
 
