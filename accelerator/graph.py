@@ -49,39 +49,6 @@ def dsdeps(ds):
 	return res
 
 
-def create_graph(inputitem, maxdepth=MAXDEPTH):
-	graffe = Graffe()
-	if isinstance(inputitem, tuple):
-		# is joblist, create and populate WrapperNodes from input
-		inputitem = tuple(graffe.getorcreatenode(x) for x in inputitem)
-		for n in inputitem:
-			childset = set()
-			depdict = jobdeps(n.payload)
-			for relation, children in depdict.items():
-				for c in children:
-					c = graffe.getorcreatenode(c)
-					graffe.createedge(n, c, relation)
-					c.num_entries += 1
-					childset.add(c)
-			n.children = tuple(sorted(childset, key=lambda x: x.nodeid))
-		stack = list(n for n in inputitem if n.num_entries == 0)
-		for n in stack:
-			n.num_entries = 1
-	else:
-		# is job or dataset, need to do depth-first to find num_entries for all WrapperNodes
-		depsfun = jobdeps if isinstance(inputitem, Job) else dsdeps
-		inputitem = graffe.getorcreatenode(inputitem)
-		inputitem.num_entries = 1
-		stack = [inputitem, ]
-		graffe.depth_first(stack, depsfun, maxdepth)
-		graffe.reset_done()
-		stack = [inputitem, ]
-	graffe.breadth_first(stack, maxdepth)
-	graffe.populatenodefrompayload()
-	graffe.populatewithneighbours()
-	return graffe
-
-
 class Graffe:
 	class WrapperNode:
 		def __init__(self, payload):
@@ -214,24 +181,40 @@ class Graffe:
 		self.prune(keepers)
 
 
-def do_graph(inp, recursiondepth=MAXDEPTH):
-	if isinstance(inp, DotDict):
-		# is joblist
-		job2urddep = {Job(x[1]): str(dep) + '/' + str(item.timestamp) for dep, item in inp.deps.items() for x in item.joblist}
-		jlist = inp.joblist
-		jobsinurdlist = tuple(Job(item[1]) for item in jlist)
-		names = {jobid: name for name, jobid in jlist}
-		inp = tuple(jobsinurdlist)
+def create_graph(inputitem, maxdepth=MAXDEPTH):
+	graffe = Graffe()
+	if isinstance(inputitem, tuple):
+		# is joblist, create and populate WrapperNodes from input
+		inputitem = tuple(graffe.getorcreatenode(x) for x in inputitem)
+		for n in inputitem:
+			childset = set()
+			depdict = jobdeps(n.payload)
+			for relation, children in depdict.items():
+				for c in children:
+					c = graffe.getorcreatenode(c)
+					graffe.createedge(n, c, relation)
+					c.num_entries += 1
+					childset.add(c)
+			n.children = tuple(sorted(childset, key=lambda x: x.nodeid))
+		stack = list(n for n in inputitem if n.num_entries == 0)
+		for n in stack:
+			n.num_entries = 1
 	else:
-		job2urddep = {}
-		jobsinurdlist = ()
-		names = {}
-	graffe = create_graph(inp, maxdepth=recursiondepth)
-	return placement(graffe, names, jobsinurdlist, job2urddep)
+		# is job or dataset, need to do depth-first to find num_entries for all WrapperNodes
+		depsfun = jobdeps if isinstance(inputitem, Job) else dsdeps
+		inputitem = graffe.getorcreatenode(inputitem)
+		inputitem.num_entries = 1
+		stack = [inputitem, ]
+		graffe.depth_first(stack, depsfun, maxdepth)
+		graffe.reset_done()
+		stack = [inputitem, ]
+	graffe.breadth_first(stack, maxdepth)
+	graffe.populatenodefrompayload()
+	graffe.populatewithneighbours()
+	return graffe
 
 
 def placement(graffe, jobnames={}, jobsinurdlist=set(), job2urddep={}):
-
 	class Ordering:
 		"""The init function takes the first level of nodes as input.
 		The update function takes each consecutive level of nodes as
@@ -252,7 +235,6 @@ def placement(graffe, jobnames={}, jobsinurdlist=set(), job2urddep={}):
 			for ix, (key, val) in enumerate(sorted(self.order.items(), key=lambda x: x[1])):
 				self.order[key] = str(ix)
 			return nodes
-
 	# determine x and y coordinates
 	level2nodes = graffe.level2nodes()
 	order = Ordering(level2nodes[0])
@@ -261,7 +243,6 @@ def placement(graffe, jobnames={}, jobsinurdlist=set(), job2urddep={}):
 		for ix, n in enumerate(nodesatlevel):
 			n.x = - 160 * (level + 0.2 * sin(ix))
 			n.y = 140 * ix + 50 * sin(level / 3)
-
 	# limit angles by adjusting x positions
 	MAXANGLE = 45 * pi / 180
 	offset = {}
@@ -282,13 +263,27 @@ def placement(graffe, jobnames={}, jobsinurdlist=set(), job2urddep={}):
 		totoffs += offs
 		for n in level2nodes[level]:
 			n.x -= totoffs
-
 	graffe.serialise()
-
 	return dict(
 		nodes=graffe.nodes,
 		edges=graffe.edges,
 	)
+
+
+def do_graph(inp, recursiondepth=MAXDEPTH):
+	if isinstance(inp, DotDict):
+		# is joblist
+		job2urddep = {Job(x[1]): str(dep) + '/' + str(item.timestamp) for dep, item in inp.deps.items() for x in item.joblist}
+		jlist = inp.joblist
+		jobsinurdlist = tuple(Job(item[1]) for item in jlist)
+		names = {jobid: name for name, jobid in jlist}
+		inp = tuple(jobsinurdlist)
+	else:
+		job2urddep = {}
+		jobsinurdlist = ()
+		names = {}
+	graffe = create_graph(inp, maxdepth=recursiondepth)
+	return placement(graffe, names, jobsinurdlist, job2urddep)
 
 
 
