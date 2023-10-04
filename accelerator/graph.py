@@ -208,11 +208,10 @@ class Graffe:
 				continue
 			if current.num_entries == 0:
 				for child in current.children:
-					child.level = current.level + 1
+					child.level = max(child.level, current.level + 1)
 					stack.append(child)
 				current.done = True
 		self.prune(keepers)
-
 
 
 def do_graph(inp, recursiondepth=MAXDEPTH):
