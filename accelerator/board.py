@@ -455,13 +455,11 @@ def run(cfg, from_shell=False):
 			current = False
 			files = None
 			subjobs = None
-
 		try:
 			methods = call_s('methods')
 			description = methods.get(job.method).description.text
 		except Exception:
 			description = ''
-
 		return dict(
 			job=job,
 			aborted=aborted,
@@ -477,7 +475,6 @@ def run(cfg, from_shell=False):
 	@bottle.get('/job_graph/<jobid>')
 	@view('rendergraph', ignore_accept_hdr=True)
 	def job_graph(jobid):
-
 		bottle.response.content_type = 'image/svg+xml; charset=UTF-8'
 		job = name2job(cfg, jobid)
 		ret = graph.do_graph(job)

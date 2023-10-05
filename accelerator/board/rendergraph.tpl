@@ -9,7 +9,6 @@
 % fontsize = 12
 % edgetextcolor = '#224488'
 % edgefontsize = 9
-
 % it = iter(nodes.values())
 % n = next(it)
 % bbox = [n.x, n.y, n.x, n.y]
@@ -43,7 +42,7 @@
 			{{''.join(('D' if item.datasets else '', 'F' if item.files else '', 'S' if item.subjobs else ''))}}
 		</text>
 		<circle
-			id="{{ item.nodeid }}"
+			id="{{ item.safename }}"
 			class="hovernode"
 			cx="{{ item.x }}"
 			cy="{{ item.y }}"
@@ -83,7 +82,7 @@
 %			item.size = defaultnodesize
 %			color = 'node-atmaxdepth' if item.atmaxdepth else 'node-ds-default'
 		<circle
-			id="{{ item.nodeid }}"
+			id="{{ item.safename }}"
 			class="hovernode"
 			cx="{{ item.x }}"
 			cy="{{ item.y }}"
