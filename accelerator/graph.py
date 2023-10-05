@@ -73,7 +73,7 @@ class Graffe:
 			return self.nodes[item]
 		else:
 			n = self.WrapperNode(item)
-			n.safeitem = 'node' + str(self.count)
+			n.safename = 'node' + str(self.count)
 			self.nodes[str(item)] = n
 			self.count += 1
 			return n
@@ -96,7 +96,7 @@ class Graffe:
 		for n in self.nodes.values():
 			n.done = False
 
-	def populatenodefrompayload(self, urdinfo):
+	def populatenode(self, urdinfo):
 		""" add parameters from payload (job/ds) to all WrapperNodes when called only, for performance """
 		for n in self.nodes.values():
 			njob = n.payload if isinstance(n.payload, Job) else n.payload.job
@@ -126,7 +126,7 @@ class Graffe:
 	def populatewithneighbours(self):
 		""" add neighbour information to all WrapperNodes """
 		for s, d, rel in self.edges:
-			edgekey = ''.join([s.nodeid, d.nodeid])
+			edgekey = ''.join([s.safename, d.safename])
 			s.neighbour_nodes.add(d)
 			d.neighbour_nodes.add(s)
 			s.neighbour_edges.add(edgekey)
@@ -140,8 +140,9 @@ class Graffe:
 	def serialise(self):
 		""" collapse neighbour_nodes and edges to strings, for later JSON output """
 		for n in self.nodes.values():
-			n.neighbour_nodes = tuple(x.nodeid for x in n.neighbour_nodes)
-		self.edges = tuple((x[0].nodeid, x[1].nodeid, x[2]) for x in self.edges)
+			n.neighbour_nodes = tuple(x.safename for x in n.neighbour_nodes)
+		self.edges = tuple((x[0].safename, x[1].safename, x[2]) for x in self.edges)
+		self.nodes = {item.safename: item for item in self.nodes.values()}
 
 	def depth_first(self, stack, depsfun, maxdepth):
 		while stack:
@@ -216,7 +217,7 @@ def create_graph(inputitem, urdinfo=(), maxdepth=MAXDEPTH):
 		graffe.reset_done()
 		stack = [inputitem, ]
 	graffe.breadth_first(stack, maxdepth)
-	graffe.populatenodefrompayload(urdinfo)
+	graffe.populatenode(urdinfo)
 	graffe.populatewithneighbours()
 	return graffe
 
@@ -289,204 +290,3 @@ def do_graph(inp, recursiondepth=MAXDEPTH):
 	else:
 		graffe = create_graph(inp, maxdepth=recursiondepth)
 	return placement(graffe)
-
-
-
-			# # remains to create a node with attributes
-			# # outnodes[nodeix] = DotDict(
-			# # 	nodeid=nodeids[n],
-			# # 	jobid=str(nn), x=x, y=y,
-			# # 	atmaxdepth=n in atmaxdepth,
-			# # 	timestamp=datetime.fromtimestamp(nn.params.starttime).strftime("%Y-%m-%d %H:%M:%S"),
-			# # 	method=nn.method,
-			# # 	neighbour_nodes=set(),
-			# # 	neighbour_edges=set(),
-			# # )
-			# if isinstance(n, Job):
-		# 	notinjoblist = False
-			# 	if jobsinurdlist and n not in jobsinurdlist:  # i.e. job is not in this urdlist
-			# 		if job2urddep and n in job2urddep:
-			# 			notinjoblist = job2urddep[n]  # but in a dependency urdlist
-			# 		else:
-			# 			notinjoblist = True
-			# 	outnodes[nodeix].update(dict(
-			# 		files=sorted(n.files()),
-			# 		datasets=n.datasets,
-			# 		subjobs=tuple((x, Job(x).method) for x in n.post.subjobs),
-			# 		name=jobnames.get(n) if jobnames else None,
-			# 		notinurdlist=notinjoblist,
-			# 	))
-			# else:
-			# 	# n is Dataset
-			# 	outnodes[nodeix].update(dict(
-			# 		ds=str(n),
-			# 		columns=tuple((key, val.type) for key, val in n.columns.items()),
-			# 		lines="%d x % s" % (len(n.columns), '{:,}'.format(sum(n.lines)).replace(',', ' ')),
-			# 	))
-
-	# # create set of edges and find all node's neighbours
-	# outedges = set()
-	# for s, d, rel in graffe.edges:
-	# 	edgekey = ''.join((s.simple, d.simple))
-	# 	s.neighbour_nodes.add(d.simple)
-	# 	d.neighbour_nodes.add(s.simple)
-	# 	s.neighbour_edges.add(edgekey)
-	# 	d.neighbour_edges.add(edgekey)
-	# 	outedges.add((s, d, rel))
-
-# def recurse_joblist(inputjoblist, depsfun, maxdepth=MAXDEPTH):
-# 	graffe = Graffe()
-# 	inputjoblist = tuple(graffe.getorcreatenode(x) for x in inputjoblist)
-# 	for n in inputjoblist:
-# 		childset = set()
-# 		depdict = depsfun(n.payload)
-# 		for relation, children in depdict.items():
-# 			for c in children:
-# 				c = graffe.getorcreatenode(c)
-# 				graffe.createedge(n, c, relation)
-# 				c.num_entries += 1
-# 				childset.add(c)
-# 		n.children = tuple(sorted(childset, key=lambda x: x.nodeid))
-
-# 	stack = list(n for n in inputjoblist if n.num_entries == 0)
-# 	for n in stack:
-# 		n.num_entries = 1
-# 	keepers = set()
-# 	while stack:
-# 		current = stack.pop()
-# 		current.num_entries -= 1
-# 		keepers.add(current)
-# 		if current.done or current.atmaxdepth:
-# 			continue
-# 		if current.level >= maxdepth:
-# 			assert current.level == maxdepth
-# 			current.atmaxdepth = True
-# 			current.children = set()  # remove children from edge-node
-# 			current.done = True
-# 			continue
-# 		if current.num_entries == 0:
-# 			for child in current.children:
-# 				child.level = current.level + 1
-# 				stack.append(child)
-# 		current.done = True
-
-# 	graffe.cleankeepers(keepers)
-# 	graffe.populatenodefrompayload()
-# 	graffe.populatewithneighbours()
-
-
-# 	return graffe
-
-
-
-
-	# # This is a breadth-first algo, that computes the level of each
-	# # join node to be max of all its parent's levels.
-	# edges = set()
-	# atmaxdepth = set()  # @@@ currently not implemented, this algo recurses everything!
-	# children = defaultdict(dict)
-	# parents = defaultdict(set)
-	# for item in inputjoblist:
-	# 	deps = jobdeps(item)
-	# 	children[item] = deps
-	# 	for d in deps.values():
-	# 		for dd in d:
-	# 			parents[dd].add(item)
-	# joinnodes = {key: sorted(val) for key, val in parents.items() if len(val) > 1}
-	# starts = set(inputjoblist) - set(parents)
-	# dones = set()
-	# stack = [(None, x, 0) for x in starts]  # (parent, current, level)
-	# levels = {}
-	# joinedparents = defaultdict(set)
-	# while stack:
-	# 	parent, current, level = stack.pop()
-	# 	if current in joinnodes:
-	# 		level = max(level, levels.get(current, level))
-	# 		levels[current] = level
-	# 		joinedparents[current].add(parent)
-	# 		if joinedparents[current] != parents[current]:
-	# 			continue
-	# 	levels[current] = level
-	# 	for key, childs in children[current].items():
-	# 		for child in childs:
-	# 			edges.add((current, child, key))
-	# 			if child not in dones:
-	# 				stack.append((current, child, level + 1))
-	# 	dones.add(current)
-	# nodes = defaultdict(list)
-	# for n, lev in levels.items():
-	# 	nodes[lev].append(n)
-	# return nodes, edges, atmaxdepth
-# def recurse_jobsords(inputitem, depsfun, maxdepth=MAXDEPTH):
-# 	# Phase 1: depth first to find all nodes with multiple entries.
-# 	# Flagging of atmaxdepth is pessimistic in depth first.
-# 	graffe = Graffe()
-
-# 	inputitem = graffe.getorcreatenode(inputitem, num_entries=1)
-# 	stack = [inputitem, ]
-# 	while stack:
-# 		current = stack.pop()
-# 		if current.done:
-# 			continue
-# 		if current.level >= maxdepth:
-# 			current.atmaxdepth = True
-# 			continue
-# 		current.depdict = depsfun(current.payload)
-# 		childset = set()
-# 		for relation, children in current.depdict.items():
-# 			for child in children:
-# 				child = graffe.getorcreatenode(child)
-# 				graffe.createedge(current, child, relation)
-# 				childset.add(child)
-# 		current.children = tuple(sorted(childset, key=lambda x: x.nodeid))
-# 		for child in current.children:
-# 			child.level = max(child.level, current.level + 1)
-# 			child.num_entries += 1
-# 			stack.append(child)
-# 		current.done = True
-
-
-# 	# Phase 2: breadth first, find levels and atmaxdepth
-
-# 	graffe.reset_done()
-
-# 	keepers = set()
-# 	stack = [inputitem, ]
-# 	while stack:
-# 		current = stack.pop()
-# 		current.num_entries -= 1
-# 		keepers.add(current)
-# 		if current.done or current.atmaxdepth:
-# 			continue
-# 		if current.level >= maxdepth:
-# 			current.atmaxdepth = True
-# 			current.done = True
-# 			continue
-# 		if current.num_entries == 0:
-# 			for child in current.children:
-# 				child.level = current.level + 1
-# 				stack.append(child)
-# 		current.done = True
-
-# 	graffe.cleankeepers(keepers)
-# 	graffe.populatenodefrompayload()
-# 	graffe.populatewithneighbours()
-# 	return graffe
-
-# def joblist_graph(urdentry, recursiondepth=MAXDEPTH):
-# 	job2urddep = {Job(x[1]): str(dep) + '/' + str(item.timestamp) for dep, item in urdentry.deps.items() for x in item.joblist}
-# 	jlist = urdentry.joblist
-# 	jobsinurdlist = tuple(Job(item[1]) for item in jlist)
-# 	graffe = create_graph(jobsinurdlist, maxdepth=recursiondepth)
-# 	names = {jobid: name for name, jobid in jlist}
-# 	return placement(graffe, names, jobsinurdlist, job2urddep)
-
-
-# def job_graph(inputjob, recursiondepth=MAXDEPTH):
-# 	graffe = create_graph(inputjob, maxdepth=recursiondepth)
-# 	return placement(graffe)
-
-
-# def dataset_graph(ds, recursiondepth=MAXDEPTH):
-# 	graffe = create_graph(ds, maxdepth=recursiondepth)
-# 	return placement(graffe)
