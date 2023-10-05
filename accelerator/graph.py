@@ -60,7 +60,7 @@ class Graffe:
 			self.children = []
 			self.depdict = {}
 			self.done = False
-			self.num_entries = 0
+			self.num_incoming = 0
 
 	def __init__(self):
 		self.count = 0
@@ -159,7 +159,7 @@ class Graffe:
 			current.children = tuple(sorted(childset, key=lambda x: x.nodeid))
 			for child in current.children:
 				child.level = max(child.level, current.level + 1)
-				child.num_entries += 1
+				child.num_incoming += 1
 				stack.append(child)
 			current.done = True
 
@@ -168,7 +168,7 @@ class Graffe:
 		keepers = set()
 		while stack:
 			current = stack.pop()
-			current.num_entries -= 1
+			current.num_incoming -= 1
 			keepers.add(current)
 			if current.done or current.atmaxdepth:
 				continue
@@ -178,7 +178,7 @@ class Graffe:
 				current.children = set()  # remove children from edge-node
 				current.done = True
 				continue
-			if current.num_entries == 0:
+			if current.num_incoming == 0:
 				for child in current.children:
 					child.level = max(child.level, current.level + 1)
 					stack.append(child)
@@ -198,17 +198,17 @@ def create_graph(inputitem, jobsinurdlist=set(), job2urddep={}, names={}, maxdep
 				for c in children:
 					c = graffe.getorcreatenode(c)
 					graffe.createedge(n, c, relation)
-					c.num_entries += 1
+					c.num_incoming += 1
 					childset.add(c)
 			n.children = tuple(sorted(childset, key=lambda x: x.nodeid))
-		stack = list(n for n in inputitem if n.num_entries == 0)
+		stack = list(n for n in inputitem if n.num_incoming == 0)
 		for n in stack:
-			n.num_entries = 1
+			n.num_incoming = 1
 	else:
-		# is job or dataset, need to do depth-first to find num_entries for all WrapperNodes
+		# is job or dataset, need to do depth-first to find num_incoming for all WrapperNodes
 		depsfun = jobdeps if isinstance(inputitem, Job) else dsdeps
 		inputitem = graffe.getorcreatenode(inputitem)
-		inputitem.num_entries = 1
+		inputitem.num_incoming = 1
 		stack = [inputitem, ]
 		graffe.depth_first(stack, depsfun, maxdepth)
 		graffe.reset_done()
