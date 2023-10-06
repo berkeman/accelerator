@@ -96,35 +96,11 @@ class Graffe:
 		for n in self.nodes.values():
 			n.done = False
 
-	def populatenode(self, urdinfo):
-		""" add parameters from payload (job/ds) to all WrapperNodes when called only, for performance """
+	def populate_with_neighbours(self):
+		""" add neighbour information to all WrapperNodes """
 		for n in self.nodes.values():
-			njob = n.payload if isinstance(n.payload, Job) else n.payload.job
-			n.jobid = str(njob)
-			n.method = njob.method
-			n.name = n.method  # @@@
-			n.timestamp = datetime.fromtimestamp(njob.params.starttime).strftime("%Y-%m-%d %H:%M:%S")
-			if isinstance(n.payload, Job):
-				n.files = sorted(n.payload.files())
-				n.datasets = sorted(n.payload.datasets)
-				n.subjobs = tuple((x, Job(x).method) for x in n.payload.post.subjobs)
-				if urdinfo:
-					jobsinurdlist, job2urddep, names = urdinfo
-					if jobsinurdlist and n.nodeid not in jobsinurdlist:
-						if job2urddep and n.nodeid in job2urddep:
-							n.notinurdlist = job2urddep[n.nodeid]
-						else:
-							n.notinurdlist = True
-					n.name = names.get(n.nodeid, None)
-			else:
-				n.columns = tuple((key, val.type) for key, val in n.payload.columns.items()),
-				n.lines = "%d x % s" % (len(n.payload.columns), '{:,}'.format(sum(n.payload.lines)).replace(',', ' ')),
-				n.ds = str(n.payload)
 			n.neighbour_nodes = set()
 			n.neighbour_edges = set()
-
-	def populatewithneighbours(self):
-		""" add neighbour information to all WrapperNodes """
 		for s, d, rel in self.edges:
 			edgekey = ''.join([s.safename, d.safename])
 			s.neighbour_nodes.add(d)
@@ -204,7 +180,7 @@ def create_graph(inputitem, urdinfo=(), maxdepth=MAXDEPTH):
 					c.num_incoming += 1
 					childset.add(c)
 			n.children = tuple(sorted(childset, key=lambda x: x.nodeid))
-		stack = list(n for n in inputitem if n.num_incoming == 0)
+		stack = [n for n in inputitem if n.num_incoming == 0]
 		for n in stack:
 			n.num_incoming = 1
 	else:
@@ -217,8 +193,31 @@ def create_graph(inputitem, urdinfo=(), maxdepth=MAXDEPTH):
 		graffe.reset_done()
 		stack = [inputitem, ]
 	graffe.breadth_first(stack, maxdepth)
-	graffe.populatenode(urdinfo)
-	graffe.populatewithneighbours()
+	# add parameters from payload (job/ds) to all WrapperNodes
+	for n in graffe.nodes.values():
+		njob = n.payload if isinstance(n.payload, Job) else n.payload.job
+		n.jobid = str(njob)
+		n.method = njob.method
+		n.timestamp = datetime.fromtimestamp(njob.params.starttime).strftime("%Y-%m-%d %H:%M:%S")
+		n.name = n.method
+		if isinstance(n.payload, Job):
+			n.files = sorted(n.payload.files())
+			n.datasets = sorted(n.payload.datasets)
+			n.subjobs = tuple((x, Job(x).method) for x in n.payload.post.subjobs)
+			if urdinfo:
+				jobsinurdlist, job2urddep, names = urdinfo
+				if jobsinurdlist and n.nodeid not in jobsinurdlist:
+					if job2urddep and n.nodeid in job2urddep:
+						n.notinurdlist = job2urddep[n.nodeid]
+					else:
+						n.notinurdlist = True
+				n.name = names.get(n.nodeid, None)
+		else:
+			# dataset
+			n.columns = tuple((key, val.type) for key, val in n.payload.columns.items()),
+			n.lines = "%d x % s" % (len(n.payload.columns), '{:,}'.format(sum(n.payload.lines)).replace(',', ' ')),
+			n.ds = str(n.payload)
+	graffe.populate_with_neighbours()
 	return graffe
 
 
@@ -226,10 +225,7 @@ def placement(graffe):
 	class Ordering:
 		"""The init function takes the first level of nodes as input.
 		The update function takes each consecutive level of nodes as
-		input.  It returns two lists, the first contains the nodes in
-		sorted order, and the second is a positive integer offset
-		(starting at zero) indicating in which order the nodes should
-		be drawn.
+		input.  It returns a list of the nodes in order.
 		"""
 		def __init__(self, nodes):
 			self.order = {x: str(ix) for ix, x in enumerate(sorted(nodes, key=lambda x: x.nodeid))}
@@ -278,15 +274,17 @@ def placement(graffe):
 	)
 
 
-def do_graph(inp, recursiondepth=MAXDEPTH):
-	if isinstance(inp, DotDict):
+def do_graph(inp, gtype, recursiondepth=MAXDEPTH):
+	if gtype == 'urdlist':
 		# is joblist
-		job2urddep = {x[1]: str(dep) + '/' + str(item.timestamp) for dep, item in inp.deps.items() for x in item.joblist}
+		job2urddep = {x[1]: "%s/%s" % (dep, item.timestamp) for dep, item in inp.deps.items() for x in item.joblist}
 		jlist = inp.joblist
 		inp = tuple(Job(item[1]) for item in jlist)
 		jobsinurdlist = tuple(str(x) for x in inp)
 		names = {jobid: name for name, jobid in jlist}
-		graffe = create_graph(inp, (jobsinurdlist, job2urddep, names), maxdepth=recursiondepth)
+		graffe = create_graph(inp, urdinfo=(jobsinurdlist, job2urddep, names), maxdepth=recursiondepth)
 	else:
 		graffe = create_graph(inp, maxdepth=recursiondepth)
-	return placement(graffe)
+	ret = placement(graffe)
+	ret['type'] = 'job' if gtype in ('urdlist', 'job') else 'ds'
+	return ret
