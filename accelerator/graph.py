@@ -1,7 +1,9 @@
 from math import sin, pi, tan, atan
 from collections import defaultdict
 from datetime import datetime
-from accelerator import JobWithFile, Job, DotDict
+from accelerator import JobWithFile, Job
+
+
 MAXDEPTH = 200
 
 
@@ -49,7 +51,7 @@ def dsdeps(ds):
 	return res
 
 
-class Graffe:
+class Grf:
 	class WrapperNode:
 		def __init__(self, payload):
 			self.nodeid = str(payload)
@@ -80,8 +82,6 @@ class Graffe:
 
 	def createedge(self, current, child, relation):
 		""" create a new edge (from WrapperNode to WrapperNode """
-		assert isinstance(current, self.WrapperNode)
-		assert isinstance(child, self.WrapperNode)
 		self.edges.add((current, child, relation))
 
 	def level2nodes(self):
@@ -113,7 +113,7 @@ class Graffe:
 		self.nodes = {key: val for key, val in self.nodes.items() if val in keepers}
 		self.edges = set(x for x in self.edges if x[0] in keepers and x[1] in keepers)
 
-	def serialise(self):
+	def safestrings(self):
 		""" collapse neighbour_nodes and edges to strings, for later JSON output """
 		for n in self.nodes.values():
 			n.neighbour_nodes = tuple(x.safename for x in n.neighbour_nodes)
@@ -126,6 +126,7 @@ class Graffe:
 			if current.done:
 				continue
 			if current.level >= maxdepth:
+				# actual level may be larger than .level
 				current.atmaxdepth = True
 				continue
 			current.depdict = depsfun(current.payload)
@@ -166,17 +167,17 @@ class Graffe:
 
 
 def create_graph(inputitem, urdinfo=(), maxdepth=MAXDEPTH):
-	graffe = Graffe()
+	grf = Grf()
 	if isinstance(inputitem, tuple):
 		# is joblist, create and populate WrapperNodes from input
-		inputitem = tuple(graffe.getorcreatenode(x) for x in inputitem)
+		inputitem = tuple(grf.getorcreatenode(x) for x in inputitem)
 		for n in inputitem:
 			childset = set()
 			depdict = jobdeps(n.payload)
 			for relation, children in depdict.items():
 				for c in children:
-					c = graffe.getorcreatenode(c)
-					graffe.createedge(n, c, relation)
+					c = grf.getorcreatenode(c)
+					grf.createedge(n, c, relation)
 					c.num_incoming += 1
 					childset.add(c)
 			n.children = tuple(sorted(childset, key=lambda x: x.nodeid))
@@ -186,15 +187,15 @@ def create_graph(inputitem, urdinfo=(), maxdepth=MAXDEPTH):
 	else:
 		# is job or dataset, need to do depth-first to find num_incoming for all WrapperNodes
 		depsfun = jobdeps if isinstance(inputitem, Job) else dsdeps
-		inputitem = graffe.getorcreatenode(inputitem)
+		inputitem = grf.getorcreatenode(inputitem)
 		inputitem.num_incoming = 1
 		stack = [inputitem, ]
-		graffe.depth_first(stack, depsfun, maxdepth)
-		graffe.reset_done()
+		grf.depth_first(stack, depsfun, maxdepth)
+		grf.reset_done()
 		stack = [inputitem, ]
-	graffe.breadth_first(stack, maxdepth)
+	grf.breadth_first(stack, maxdepth)
 	# add parameters from payload (job/ds) to all WrapperNodes
-	for n in graffe.nodes.values():
+	for n in grf.nodes.values():
 		njob = n.payload if isinstance(n.payload, Job) else n.payload.job
 		n.jobid = str(njob)
 		n.method = njob.method
@@ -217,11 +218,11 @@ def create_graph(inputitem, urdinfo=(), maxdepth=MAXDEPTH):
 			n.columns = tuple((key, val.type) for key, val in n.payload.columns.items()),
 			n.lines = "%d x % s" % (len(n.payload.columns), '{:,}'.format(sum(n.payload.lines)).replace(',', ' ')),
 			n.ds = str(n.payload)
-	graffe.populate_with_neighbours()
-	return graffe
+	grf.populate_with_neighbours()
+	return grf
 
 
-def placement(graffe):
+def placement(grf):
 	class Ordering:
 		"""The init function takes the first level of nodes as input.
 		The update function takes each consecutive level of nodes as
@@ -240,7 +241,7 @@ def placement(graffe):
 				self.order[key] = str(ix)
 			return nodes
 	# determine x and y coordinates
-	level2nodes = graffe.level2nodes()
+	level2nodes = grf.level2nodes()
 	order = Ordering(level2nodes[0])
 	for level, nodesatlevel in sorted(level2nodes.items()):
 		nodesatlevel = order.update(nodesatlevel)
@@ -267,24 +268,23 @@ def placement(graffe):
 		totoffs += offs
 		for n in level2nodes[level]:
 			n.x -= totoffs
-	graffe.serialise()
+	grf.safestrings()
 	return dict(
-		nodes=graffe.nodes,
-		edges=graffe.edges,
+		nodes=grf.nodes,
+		edges=grf.edges,
 	)
 
 
-def do_graph(inp, gtype, recursiondepth=MAXDEPTH):
+def graph(inp, gtype, recursiondepth=MAXDEPTH):
 	if gtype == 'urdlist':
-		# is joblist
 		job2urddep = {x[1]: "%s/%s" % (dep, item.timestamp) for dep, item in inp.deps.items() for x in item.joblist}
 		jlist = inp.joblist
 		inp = tuple(Job(item[1]) for item in jlist)
 		jobsinurdlist = tuple(str(x) for x in inp)
 		names = {jobid: name for name, jobid in jlist}
-		graffe = create_graph(inp, urdinfo=(jobsinurdlist, job2urddep, names), maxdepth=recursiondepth)
+		grf = create_graph(inp, urdinfo=(jobsinurdlist, job2urddep, names), maxdepth=recursiondepth)
 	else:
-		graffe = create_graph(inp, maxdepth=recursiondepth)
-	ret = placement(graffe)
+		grf = create_graph(inp, maxdepth=recursiondepth)
+	ret = placement(grf)
 	ret['type'] = 'job' if gtype in ('urdlist', 'job') else 'ds'
 	return ret
