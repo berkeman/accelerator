@@ -477,8 +477,7 @@ def run(cfg, from_shell=False):
 	def job_graph(jobid):
 		bottle.response.content_type = 'image/svg+xml; charset=UTF-8'
 		job = name2job(cfg, jobid)
-		ret = graph.do_graph(job)
-		ret['type'] = 'job'
+		ret = graph.graph(job, 'job')
 		return ret
 
 	@bottle.get('/dataset/<dsid:path>')
@@ -506,8 +505,7 @@ def run(cfg, from_shell=False):
 	def dataset_graph(dsid):
 		bottle.response.content_type = 'image/svg+xml; charset=UTF-8'
 		ds = name2ds(cfg, dsid.rstrip('/'))
-		ret = graph.do_graph(ds)
-		ret['type'] = 'ds'
+		ret = graph.graph(ds, 'ds')
 		return ret
 
 	def load_workdir(jobs, name):
@@ -581,8 +579,7 @@ def run(cfg, from_shell=False):
 		bottle.response.content_type = 'image/svg+xml; charset=UTF-8'
 		key = user + '/' + build + '/' + ts
 		d = call_u(key)
-		ret = graph.do_graph(d)
-		ret['type'] = 'job'
+		ret = graph.graph(d, 'urdlist')
 		return ret
 
 
