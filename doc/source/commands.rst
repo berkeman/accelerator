@@ -124,6 +124,7 @@ ax urd
 .. argparse::
    :ref: accelerator.shell.urd.createparser
    :prog: ax urd
+   :nodescription:
 
    path : @before
        A path
