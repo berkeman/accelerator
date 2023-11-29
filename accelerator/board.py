@@ -449,6 +449,14 @@ def run(cfg, from_shell=False, development=False):
 			dirs['..'] = os.path.join('/results', a, '') if a else '/'
 		return res
 
+	@bottle.get('/doc/')
+	@bottle.get('/doc/<filename:path>')
+	def doc(filename='index.html'):
+		if not os.path.exists(DOC_PATH):
+			return('Install "sphinx" (pip install sphinx sphinx-rtd-theme sphinx-argparse), and run "make html"')
+		return bottle.static_file(filename, root=DOC_PATH)
+
+
 	@bottle.get('/results')
 	@bottle.get('/results/')
 	@bottle.get('/results/<path:path>')
@@ -677,12 +685,20 @@ def run(cfg, from_shell=False, development=False):
 		return bottle.template(tpl, e=e)
 
 	bottle.TEMPLATE_PATH = [os.path.join(os.path.dirname(__file__), 'board')]
+
 	kw = {}
 	if development:
 		kw['reloader'] = True
 		kw['debug'] = True
 	if not from_shell:
 		kw['quiet'] = True
+
+	DOC_PATH = os.path.join(os.path.dirname(__file__), '../doc/build/html')
+	if from_shell:
+		kw = {'reloader': True}
+	else:
+		kw = {'quiet': True}
+
 	kw['server'] = WaitressServer
 	listen = cfg.board_listen
 	if isinstance(listen, tuple):
