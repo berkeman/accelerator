@@ -55,7 +55,7 @@
 		</div>
 	% else:
 		Dataset: <a id="gp-dataset" href=""></a><br>
-		<br>Job: <a id="gp-jobid" href=""></a><br>
+		Job: <a id="gp-jobid" href=""></a><br>
 		<div id="gp-columns" style="display:none">
 			<h1>Columns:</h1>
 			<table></table>
