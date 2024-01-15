@@ -38,6 +38,7 @@ from accelerator.shell.parser import ArgumentParser, name2job, name2ds
 from accelerator.shell.workdir import job_data, workdir_jids
 from accelerator.compat import setproctitle, url_quote, urlencode
 from accelerator import __version__ as ax_version
+from accelerator import graph
 
 # why wasn't Accept specified in a sane manner (like sending it in preference order)?
 def get_best_accept(*want):
@@ -137,6 +138,7 @@ def populate_hashed():
 	for filename, ctype in [
 		('style.css', 'text/css; charset=UTF-8'),
 		('script.js', 'text/javascript; charset=UTF-8'),
+		('graph.js', 'text/javascript; charset=UTF-8'),
 	]:
 		try:
 			with open(os.path.join(dirname, filename), 'rb') as fh:
@@ -170,14 +172,14 @@ def template(tpl_name, **kw):
 	)
 
 
-def view(name, subkey=None):
+def view(name, subkey=None, ignore_accept_hdr=False):
 	def view_decorator(func):
 		@functools.wraps(func)
 		def view_wrapper(**kw):
 			res = func(**kw)
 			if isinstance(res, dict):
 				accept = get_best_accept('application/json', 'text/json', 'text/html')
-				if accept == 'text/html':
+				if ignore_accept_hdr or accept == 'text/html':
 					return template(name, **res)
 				else:
 					bottle.response.content_type = accept + '; charset=UTF-8'
@@ -460,6 +462,31 @@ def run(cfg, from_shell=False):
 			return json.dumps(res)
 		else:
 			return dict(ds=ds)
+
+	@bottle.get('/graph/job/<jobid>')
+	@view('rendergraph', ignore_accept_hdr=True)
+	def job_graph(jobid):
+		bottle.response.content_type = 'image/svg+xml; charset=UTF-8'
+		job = name2job(cfg, jobid)
+		ret = graph.graph(job, 'job')
+		return ret
+
+	@bottle.get('/graph/dataset/<dsid:path>')
+	@view('rendergraph', ignore_accept_hdr=True)
+	def dataset_graph(dsid):
+		bottle.response.content_type = 'image/svg+xml; charset=UTF-8'
+		ds = name2ds(cfg, dsid.rstrip('/'))
+		ret = graph.graph(ds, 'dataset')
+		return ret
+
+	@bottle.get('/graph/urd/<user>/<build>/<ts>')
+	@view('rendergraph', ignore_accept_hdr=True)
+	def urd_graph(user, build, ts):
+		bottle.response.content_type = 'image/svg+xml; charset=UTF-8'
+		key = user + '/' + build + '/' + ts
+		d = call_u(key)
+		ret = graph.graph(d, 'urd')
+		return ret
 
 	def load_workdir(jobs, name):
 		known = call_s('workdir', name)
