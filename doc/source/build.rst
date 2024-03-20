@@ -1,7 +1,6 @@
 Buildscripts and Urd Database
 =============================
 
-
 Buildscripts are Python programs used to execute methods or retrieve
 old jobs and results(@), pass data and parameters, and collect
 resulting output.
@@ -23,22 +22,48 @@ The ``main()``-function is called when the build script is executed,
 and the provided ``urd``-object contains parameters and useful helper
 functions.
 
+.. tip :: In a setup of a project with ``ax init`` using default
+          parameters, build scripts are stored in the ``dev/`` directory.
+
 
 Naming and execution
 --------------------
 
 Buildscripts are stored along methods in method directories (@) and
-are identified by filenames starting with the string "``build``".  The
-"default" build script is named ``build.py`` and executed using ``ax
-run``.  A build script named ``build_something.py`` is executed using
-``ax run something``, and so on.
+are identified by filenames starting with the string "``build_``",
+except for the "default" build script that is simplty named
+``build.py``.  The default build script is executed using ``ax run``,
+and any other build script, such as for example ``build_something.py``
+is executed using ``ax run something``, and so on.
+
+.. code-block::
+    :caption: run the default ``build.py`` build script
+
+    ax run
+
+.. code-block::
+    :caption: run the ``build_myscript.py`` build script
+
+    ax run myscript
 
 .. tip :: All available buildscripts can be listed along with
   descriptions using the ``ax script`` command.
 
+Each run of a build script results in a new *job*, i.e. source code
+and all details relating to the execution of the build script is
+stored on disk.  The data is stored in a job directory, which is
+accessible using the ``ax job`` shell command as well as from a web
+browser using the accelerator board.
 
-Building Jobs
--------------
+.. note :: *Every execution of a build script results in a new job
+   stored on disk*.  This happens even if there are no changes to the
+   script.  This behaviour is different from the execution of methods,
+   which are re-executed if and only if there are any changes to the
+   source code or its input parameters.
+
+
+Building Jobs from methods
+--------------------------
 
 A build script is typically used to build a number of jobs that may
 pass data and results from one to the next.  Jobs are built using the
@@ -81,21 +106,48 @@ provided by the ``urd`` object.  See the :ref:`Urd class documentation
 
 
 
-Use JobList to find references to jobs
---------------------------------------
+A brief introduction to the Urd database
+----------------------------------------
+
+A powerful feature of Exax is the posibility to persistently store and
+retrieve references to existing jobs.  This is achieved using the
+built-in Urd transaction database.  This section gives a quick idea of
+what it is about, and the Urd database will be described in more
+detail later on.
 
 For each ``build()``-call, a references to the corresponding job is
 appended to the contents of the ``urd.joblist`` variable.  (See the
 :ref:`JobList <api:The JobList Class>` type for more information.)
-The contents of the ``urd.joblist`` variable can be stored
-persistently and used to find references to previously built jobs,
-which is extremely powerful (@@ref).
+The whole or parts of the ``urd.joblist`` is stored in the Urd
+database using a unique key (a string) plus a timestamp.
 
-By default, the content of the ``joblist`` variable is stored in the
-Urd database using the key ``_auto`` together with the current
-timestamp, but it is straightforward to store the whole or parts of
-the ``joblist`` using any other names or time references.  The Urd
-database is the topic of the next section.  This section deals with
+By default, the whole contents of the ``urd.joblist`` variable is
+stored using the key ``_auto`` together with the timestamp the build
+script started executing, but it is possible to control exactly what
+is stored and which key and timestamp to use.
+
+The ``urd.begin()`` and ``urd.finish()`` calls are used to specify
+which job references that are stored, and using which key.  Here is an
+example:
+
+.. code-block::
+    :caption: An *urd session* is defined by ``begin()`` and
+              ``finish()`` calls.
+
+    def main(urd):
+        urd.begin('testlist', '2023-06-20')
+        job = urd.build('awesome_method', x=3)
+	urd.finish('testlist')
+
+The nomenclature is that a *session* has been stored in the *urdlist*
+``testlist`` with *timestamp* ``2023-06-20``.  In this case, the
+session is a joblist with a single entry, a reference to the
+``awesome_method`` job.
+
+
+The JobList
+-----------
+  This section deals with
 the features of the ``joblist`` itself.
 
 Any job in ``joblist`` can be found easily.  For example, a specific
@@ -140,6 +192,42 @@ In addition to ``urd.joblist.get()`` that returns a single job, the
 items.  See the :ref:`JobList <api:The JobList Class>` for full
 information.
 
+
+
+
+
+
+The Urd Database in more detail
+-------------------------------
+
+
+.. note :: The name of the urdlist must be the same for both
+           ``begin()`` and ``finish()`` and cannot be omitted.
+
+.. note :: After a ``urd.begin()``-call, nothing is committed to the
+   database until ``urd.finish()`` is called.
+
+.. note :: If no ``begin()`` and ``finish()`` calls are used, the
+            default behaviour of a build script is to store the
+            contents of ``urd.joblist`` in the Urd database using the
+            key ``_auto`` together with the current timestamp.
+
+.. note :: Urd sessions cannot be nested.
+
+
+If the entry to be stored already exists in the database, meaning that
+the key, timestamp, `and` contents is the same, Exax accepts the input
+silently but it does not store anything.  On the other hand, an
+exception will be raised if the key and timestamp already exists, but
+the contents is different.  This is a straightforward way to verify
+that the database contains the same thing as is produced by the
+current state of the code base.
+
+
+
+
+The Urd
+database is the topic of the next section.
 
 @@@@ The JobList api doc does not show the .get-function at all!!!!!!!!!
 
@@ -195,6 +283,10 @@ the contents is different.  This is a straightforward way to verify
 that the database contains the same thing as is produced by the
 current state of the code base.
 
+
+
+About the key
+^^^^^^^^^^^^^
 
 
 About timestamps

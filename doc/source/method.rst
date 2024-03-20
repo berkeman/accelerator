@@ -1,5 +1,5 @@
-Methods Packages
-================
+Method Packages
+===============
 
 Methods and build scripts are stored in *method packages*.  This
 chapter explains method packages, how to name methods and build
@@ -9,8 +9,8 @@ specific Python virtual environments for any method.
 .. tip:: If you set up a project with ``ax init`` using default
          options, all methods and build scripts should be stored in
          the ``dev/``-directory.  To get started, all you need to know
-         is that method filenames should be prefixed with ``a_``, and
-         build scripts are prefixed with ``build_``.
+         is that method filenames are prefixed with ``a_``, and build
+         scripts are prefixed with ``build_``.
 
 
 
