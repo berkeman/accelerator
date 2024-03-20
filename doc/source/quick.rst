@@ -17,31 +17,33 @@ Get help
 
    ax help
 
-.. tip :: All ``ax``-command take the ``-h`` or ``--help`` option, for example ``ax init --help``!
+.. tip :: All ``ax``-commands take the ``-h`` or ``--help`` option, for example ``ax init --help``!
 
 Start a new project
 -------------------
 
 .. code-block::
 
-   ax init <projectname>
-
-with example files
-
-.. code-block::
-
    ax init <projectname> --examples
+
+The init-command will create a new directory containing everything
+required to start using Exax.  The ``--examples`` argument is there to
+include some examples and tutorial files in the project.
 
 .. tip:: If using a virtual environment, it is convenient to store it
    inside the project directory, like this::
 
-      mkdir newproject
-      cd newproject
+      mkdir <projectname>
+      cd <projectname>
       python3 -m venv venv
       source venv/bin/activate
       pip install accelerator
-      ax init --force  # force, since the directory is not empty, it contains our venv-directory.
+      ax init
 
+   (Since there is no name after "ax init", the project will be
+   initiated in the current ("newproject") directory.)
+
+.. tip:: ``ax init --help`` for more information about project initiation.
 
 
 Start an exax server
@@ -67,33 +69,47 @@ will make the Board (web) server listen to port 8888.
 
 Point a browser to http://localhost:8888 to connect.
 
+.. tip:: The board server starts automatically when the exax server
+         starts.  Modify the configuration file to set which port or
+         socket it should listen to by default.
+
+
+Show available build scripts
+----------------------------
+
+All build scripts will be listed by
+
+.. code-block::
+
+   ax script
+
+The examples will show up here if selected at project initialisation.
 
 
 Run the Tutorial and Other Examples
 -----------------------------------
 
-Start a new project with example files (see above).  Then check the
-contents in the ``examples`` directory and run for example
+If initiated with examples, they will be stored in the ``examples/``
+directory.  Run examples like this
 
 .. code-block::
 
    ax run tutorial01
 
+.. note:: Build script filenames start with ``build_``.  Omit this
+          prefix when running them using ``ax run``.
+
 
 Show available method directories, methods and descriptions
 -----------------------------------------------------------
 
+Methods are (typically) small programs that are run from a build
+script.  Methods may include code that executes using parallel
+processing.  List available methods like this
+
 .. code-block::
 
   ax method
-
-
-Show build scripts and descriptions
------------------------------------
-
-.. code-block::
-
-   ax script
 
 
 Run a specific build script
@@ -113,8 +129,8 @@ A script named ``build_myprogram.py`` is run by omitting the
 
 
 
-Write new code
---------------
+Write new code, filename prefixes
+---------------------------------
 
 By default, the ``ax init`` program creates a method package in a
 directory named ``dev/``. New methods and build scripts can be
@@ -124,19 +140,19 @@ prefix ``build_`` (e.g. ``build_myscript.py``).
 
 
 
-Extra:  Configure the Board server to autostart
------------------------------------------------
+The configuration file
+----------------------
 
-Open the ``accelerator.conf`` file (@) in an editor and edit the
-``board listen`` line similar to this
+The configuration file, ``accelerator.conf``, is where paths to code,
+input data, and output results are kept.  It also specifies which
+ports or sockets that the exax server and board server listens to.
+
+For example, to change listening port for the board server, the
+configuration file should have a line like this
 
 .. code-block::
 
    board listen: localhost:8888
-
-Then restart the server.  This will make the exax Board server listen
-to port 8888 on the current machine.  Start a web browser and point it
-to ``http://localhost:8888`` to view the content.
 
 .. note:: The exax server needs to be restarted for the configuration
           file changes to apply.
@@ -154,3 +170,5 @@ to ``http://localhost:8888`` to view the content.
          .. code-block::
 
             ssh -L 8888:/path/to/project/.socket.dir/board server
+
+	 and point a browser on the local machine to ``localhost:8888``.
