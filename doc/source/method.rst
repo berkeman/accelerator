@@ -1,20 +1,20 @@
 Method Packages
 ===============
 
-Methods and build scripts are stored in ordinary Python packages.  (A
-Python package is a directory with Python files and an ``__init__.py``
-file.) In this context they are called *method packages*.
+Methods as well as build scripts are stored in ordinary Python
+packages.  (A Python package is a directory with Python files and an
+``__init__.py`` file.) In this context they are called *method
+packages* or simply *method directories*.
 
-This chapter explains method packages, how to name methods and build
-scripts, how to limit execution to certain set of methods, and how to
-use a specific Python virtual environments for any method.
+This chapter explains method packages and how to name methods limit
+execution to certain set of methods, and use a specific Python virtual
+environment or dedicated interpreter for any method.
 
-.. tip:: If you set up a project with ``ax init`` using default
-         options, all methods and build scripts should be stored in
-         the ``dev/``-directory.  To get started, all you need to know
-         is that method filenames are prefixed with ``a_``, and build
-         scripts are prefixed with ``build_``.
-
+.. tip:: If a project is set up with ``ax init`` using default
+         options, all methods and build scripts will be stored in the
+         ``dev/``-directory.  To get started quickly, all you need to
+         know is that method filenames are prefixed with ``a_`` (and
+         build scripts are prefixed with ``build_``).
 
 
 Method Packages and Method Names
@@ -33,13 +33,13 @@ Method packages are typically created by the ``ax init`` command (but
 can of of course be created manually by following the above rules).
 
 .. tip:: The ``ax method`` command provides information about
-         available methods and packages.
+         existing methods and packages.
 
 .. note::
    There can be any number of methods and method packages in a
-   project, but *method names must be globally unique*.
+   project, but *method names must be unique*.
 
-Here's an example of what a method directory may contain (read on for
+Here's an example of what a method package may contain (read on for
 more information)::
 
   dev/
@@ -59,14 +59,14 @@ syntactically broken) files should never be considered for execution.
 
 
 
-Enabling method directories in ``accelerator.conf``
+Enabling Method Directories in ``accelerator.conf``
 ---------------------------------------------------
 
 To make a method package visible to exax, it has to be included in
 ``accelerator.conf``.  Here's an example
 
 .. code-block::
-   :caption: Example snippet from ``accelerator.conf``.
+   :caption: Example definition of method packages in ``accelerator.conf``.
 
     method packages:
         dev auto-discover
@@ -74,7 +74,9 @@ To make a method package visible to exax, it has to be included in
 
 In the above example, two method packages are enabled, ``dev`` and
 ``accelerator.standard_methods``.  The latter contains useful methods,
-and is bundled as part of the exax distribution.
+and is bundled as part of the exax distribution.  Again, method
+packages are Python packages, visible to the Python interpreter, so
+what is listed are Python package names, not file system paths.
 
 Note the ``auto-discover`` keyword after ``dev``.  It tells exax to
 include *all* methods (files matching the glob pattern ``a_*.py``) in
@@ -85,7 +87,7 @@ the next section.
 
 
 
-Execution restriction and interpreter selection
+Execution Restriction and Interpreter Selection
 -----------------------------------------------
 
 An optional file named ``methods.conf`` in a method package is used to
@@ -124,6 +126,7 @@ Interpreters are defined in ``accelerator.conf`` like this
 .. note:: Methods are listed *without* the ``a_`` prefix and ``.py``
           suffix in ``methods.conf``!
 
-.. note:: Access restriction is disabled if ``auto-discover`` is
-          enabled for the directory in ``accelerator.conf``
-          Interpreter selection is still active, though.
+.. note:: Access restriction is disabled using the per-package
+          ``auto-discover`` keyword in
+          ``accelerator.conf``. Interpreter selection is still active,
+          though.

@@ -11,8 +11,9 @@ Welcome to exax's online documentation!
    :caption: Contents:
    :numbered:
 
-   quick
+   advantages
    whatiswhat
+   quick
    method
    build
    method_exec
