@@ -65,9 +65,9 @@ What is a Job?
 --------------
 
 A *job* is a directory that is associated with the execution of a
-method.  The directory contains input parameters, source code, output
-files, and anything printed to standard out and standard error during
-the execution.
+method or build script.  The directory contains input parameters,
+source code, output files, and anything printed to standard out and
+standard error during the execution.
 
 Each job is associated a unique identifier, such as for example
 ``dev-37``.  This called the *job id*, and the directory where the
@@ -84,7 +84,9 @@ What is a Build Script?
 A build script is also a file containing Python code.  Build scripts
 can execute *methods*, and thus create *jobs*.  Build scripts have
 direct access to the data stored in job directories, so that they can
-pass data and parameters from previous jobs to new builds.
+pass data and parameters from previous jobs to new builds.  An
+execution of a build script *always* results in a new job directory on
+disk.
 
 The main purpose of the build script is to control the method
 execution, and a typical project has at least one build script that

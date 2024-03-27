@@ -1,39 +1,18 @@
 Methods - Writing and Executing
 ===============================
 
-@@@ methods compute stuff and stores results.
-@@@ input data to methods comes from other methods/jobs or from input_directory
-@@@ relevant output is linked in result_directory
 
-
-All source code in a project is separated into one or more files
-called methods.
-
-This chapter describes how to write and work with methods, and how to
-save and share computed results.  For information about file naming
-and directories, see chapter :doc:`method`.
+Methods are the main workhorses in an exax project.  Most computations
+are carried out there, and if the project is partitioned into several
+methods, only those affected by code changes will have to be re-built
+when re-executing the project's build script.
 
 
 Building Methods
 ----------------
 
-First a note on nomenclature: A *method* is a small program (with
-extra features).  A method is said to be *built* when executed, and in
-the build process a persistent *job* is created.
-
-When the method starts building, one of the first things that happens
-is that a new *job directory* (@) is created and the current working
-directory (cwd) will point into it.  The job directory will contain
-all input and output relating to the build, including parameters,
-source code, python version, any output generated, and so on.
-
-If the job already exists, meaning that a method with the same name,
-source code, and input parameters has be built in the past, exax will
-immediately return a reference to that job instead of building it
-again.
-
-Methods can be built either by build scripts (@) or by methods as
-subjobs (@).  In a build script, it may look like this
+Methods are built using a ``build()`` call, either from a *build
+script* like this
 
 .. code-block::
    :caption: Building ``mymethod`` from a build script.
@@ -41,7 +20,7 @@ subjobs (@).  In a build script, it may look like this
    def main(urd):
        job = urd.build('mymethod', x=3)
 
-and similarly in a method
+or from *another method* (as a *subjob*) like this
 
 .. code-block::
    :caption: Building ``mymethod`` from another method.
@@ -51,29 +30,58 @@ and similarly in a method
    def synthesis():
        job = build('mymethod', x=4)
 
+
+Existing Jobs Will be Re-Used Whenever Possible
+-----------------------------------------------
+
+The first thing that happens in the build-call is that the method's
+source code and input parameters are compared to what already exists
+in the project's workdirs.  Then, one out of two things will happen
+
+  1. The method is *built*, i.e. executed, and a new *job directory*
+     is created.  When execution finished, the return value from the
+     build call is a *job object* containing references to the *job*.
+
+  2. A matching *job directory* already exists, and the build
+     call **immediately** returns a *job object* containing references
+     to the existing *job*.
+
+The job directory will contain all input and output relating to the
+build, and also meta information about the execution itself.  Here is
+a more or less complete list of what is saved
+
+- the method's source code
+- input parameters
+- build timestamp
+- profiling information
+- Python version
+- exax version
+- job id of the builder
+- input directory
+- method package
+
 The build script has significant support, such as JobLists (@), the
 Urd database (@), and result linking (@), to aid development, whereas
-building a subjob has much less decorations.
+building a subjob has less decorations.
 
 
 
 Passing Input Parameters
 ------------------------
 
-There are three kinds of input paramters to a method, and they are all
-declared early in the source:
+There are *three kinds* of input paramters to a method: *options*,
+*datasets*, and *jobs*.  They are all declared early in the method's
+source file, see the following example
 
 .. code-block::
-   :caption: Example of the three types of input parameters
+   :caption:  Example of all three types of input parameters speficied in a method.
 
    options = dict(
                  x=3,
-                 stuff={
-                     'a': 4,
-                     'name': 'protomolecule',
-                     'z'=float,
-             })
-   datasets = ('source', ['inputs'],)
+                 name='protomolecule',
+                 f = float,
+             )
+   datasets = ('source', 'anothersource',)
    jobs = ('previous',)
 
 .. note:: ``datasets`` and ``jobs`` are *tuples*, and therefore it is *key
@@ -84,12 +92,10 @@ declared early in the source:
 - The ``options`` parameter is a dictionary, that can take almost
   "anything", with or without default values and type definitions.
 
-- The ``datasets`` parameter is a list or tuple of datasets.  Note the
-  "``['inputs']``" above that specifies a list of input datasets with
-  the name "``input``".
+- The ``datasets`` parameter is a list or tuple of datasets.
 
-- The ``jobs`` parameter is similar to ``datasets``, but contains a list
-  of named jobs.
+- The ``jobs`` parameter is similar to ``datasets``, but contains a
+  list of named jobs.
 
 The parameters are set by the build call like this:
 
@@ -98,18 +104,23 @@ The parameters are set by the build call like this:
 
    build('method',
          x=37,
-         stuff=dict(name='thename', z=4.2),
+         name='thename',
+         f=42.0
          source=ds,
-         inputs=[ds1, ds2, ds3],
          previous=job0
    )
 
-.. note:: The parameter names are by default assumed to be unique, so
-  that all parameters can be listed without explicitly telling if it is
-  a dataset, job, or option.
+.. note:: In the example above, all parameters have unique names, so
+          it is not necessary to specify if, say, ``x`` is an option,
+          dataset, or job.
 
-  It is possible to explicitly state the
-  kind using ``..., datasets={'source': ds},...`` and so on.
+          It is possible to explicitly state the
+          kind using ``..., datasets={'source': ds},...`` and so on.
+
+
+
+Receiving Input Parameters
+--------------------------
 
 Inside the method, parameters are available like in the following example
 
@@ -117,12 +128,33 @@ Inside the method, parameters are available like in the following example
    :caption: Print some input parameters to stdout.
 
    def synthesis():
-       print(options.x, options.stuff['name'])   # @@ dotdict?
-       print(datasets.inputs[0])
+       print(options.x, options.name)
+       print(datasets.ds.columns)
        print(jobs.previous)
 
+Inside the running method, all three parameters are converted to
+``accelerator.DotDict``, which are like ordinary Python dictionaries, but also
+supporting the dot-notation for accessing its values.
 
-See manual on formal option-rules for more info (flera sidor...)@@
+.. tip :: The ``options`` object is of type ``accelerator.DotDict``
+          (ref@), and its members can therefore be accessed using dot
+          notation, like ``options.x`` etc.
+
+
+Options: Default Values and Typing
+----------------------------------
+
+If an option is defined with a *value* (such as ``x=3`` above), this
+value is also the default value that will be used if not assigned by
+the build call.  The default value also affects the typing.  A default
+value of 37 will not match a string, for example, but it will match a
+float.
+
+If instead the option is specified using a *type*, (such as
+``f=float`` above), the input parameter must be of the same type.  If
+the input parameter is left unspecified in this case, the value will
+be ``None``.
+
 
 
 
@@ -140,113 +172,134 @@ The functions will be described below in reverse order, starting with
 ``synthesis()``.
 
 
-- ``synthesis`` is executed as a single process, and its return value is
-  stored persistently as the job's output value, like shown in this example:
 
-  .. code-block::
-    :caption: This is method ``a_test.py``...
+``synthesis()``
+...............
 
-    options = dict(x=3)
-    def synthesis()
-        val = options.x * 2
-        return dict(value=val, caption="this is a test")
+The ``synthesis()`` function is executed as a single process, and its
+return value is stored persistently as the job's output value, like
+shown in this example:
 
-  .. tip :: The ``options`` object is of type ``DotDict`` (ref@), and
-            its members can therefore be accessed using dot notation, like ``options.x`` etc.
+.. code-block::
+  :caption: This is method ``a_test.py``...
 
-
-  When the job has completed execution, the return value is conveniently
-  available using the returned object's ``load()`` function, like this
-
-  .. code-block::
-    :caption: ...and a corresponding build script ``build_mytest.py`` to build it.
-
-    def main(urd):
-        job = urd.build('test', x=10)
-        data = job.load()
-        print(data['value'])
-
-  If this is executed using ``ax run mytest``, the build script will
-  execute the method ``test`` and print the value "20" to standard
-  output.
+  options = dict(x=3)
+  def synthesis()
+      val = options.x * 2
+      return dict(value=val, caption="this is a test")
 
 
-- ``analysis()`` is forked into several processes and used for
-  parallel processing applications.  This is particularly useful
-  together with exax's ``Dataset`` described here (@).  The number of
-  forks is statically specified in the configuration file (@), and
-  optionally available as the ``slices`` input parameter.  The forks
-  are numbered from zero to ``slices-1`` and the number of the current
-  fork is available as the ``sliceno`` parameter:
 
-  .. code-block::
-      :caption: Example of ``analysis()`` function.
+When the job has completed execution, the return value is conveniently
+available using the returned object's ``load()`` function, like this
 
-      def analysis(sliceno, slices):
-          print('This is slice %d/%d' % (sliceno, slices))
-          return sliceno * sliceno
+.. code-block::
+  :caption: ...and a corresponding build script ``build_mytest.py`` to build it.
 
-  The return value from ``analysis()`` is available to the
-  ``synthesis()`` function as the ``analysis_res`` input parameter.
-  ``analysis_res`` is an iterator, containing one element per analysis
-  process.  It also has a convenient class method for merging all
-  results together, like this
+  def main(urd):
+      job = urd.build('test', x=10)
+      data = job.load()
+      print(data['value'])
 
-  .. code-block::
-      :caption: Use of ``analysis_res`` and its automagic result merger ``merge_auto()``.
-
-      def synthesis(analysis_res):
-          x = analysis_res.merge_auto()
-
-  ``merge_auto()`` typically does what is expected.  In the example
-  above, the returned integers from ``analysis()`` will be added
-  together into one number.  It will merge sets or dictionaries, and
-  it will update Counters, etc.
+If this is executed using ``ax run mytest``, the build script will
+execute the method ``test`` and print the value "20" to standard
+output.
 
 
-- ``prepare()`` is executed first, and just like ``synthesis()`` it
-  runs as a single process.  The main reason for ``prepare()`` is to
-  make it possible to set up datastructures and datasets prior to
-  parallel processing in the ``analysis()`` function.  If no parallel
-  processing is required, it is encouraged to use ``synthesis()``
-  instead of ``prepare()``.
 
-  The return value from ``prepare()`` is available to both
-  ``analysis()`` and ``synthesis()`` as ``prepare_res``, like this
+``analysis()``
+..............
 
-  .. code-block::
-      :caption: ``prepare_res`` example
+The ``analysis()`` function is intended for parallel processing.  It
+is forked into a number of parallel processes, specified in the
+configuration file
 
-      def prepare(job):
-          dw = job.datasetwriter()
-          dw.add('index', 'number')
-          return dw
+.. code-block::
+   :caption: Part of ``accelerator.conf`` specifying number of parallel processes.
 
-      def analysis(sliceno, prepare_res):
-          dw = prepare_res
-          or ix in range(10):
-              dw.write(ix)
+   slices: 64
 
-Return values from ``prepare()`` and ``analysis()`` are just stored
-temporarily in the job directory by default, and removed upon job
+This number must be the same for the whole project, and can be set to
+any number.  The ``ax init`` command will by default initiate this to
+the number of available cores on the machine.  (It makes little sense
+to set it to a larger number.)
+
+The number of slices, as well as the current fork number (ranging from
+zero to slices minus one) are available as parameters to the
+``analysis()`` function
+
+.. code-block::
+    :caption: Example of ``analysis()`` function.
+
+    def analysis(sliceno, slices):
+        print('This is slice %d/%d' % (sliceno, slices))
+        return sliceno * sliceno
+
+The return value from all ``analysis()`` calls are available to the
+``synthesis()`` function (described earlier) as the ``analysis_res``
+input parameter.  ``analysis_res`` is an iterator, containing one
+element per analysis process.  It also has a convenient class method
+for merging all results together, like this
+
+.. code-block::
+    :caption: Use of ``analysis_res`` and its automagic result merger ``merge_auto()``.
+
+    def synthesis(analysis_res):
+        x = analysis_res.merge_auto()
+
+``merge_auto()`` typically does what is expected.  In the example
+above, the returned integers from ``analysis()`` will be added
+together into one number.  It will merge sets or dictionaries, update
+Counters, etc.
+
+
+
+``prepare()``
+.............
+
+The ``prepare()`` function, if present, is executed first, and just
+like ``synthesis()`` it runs in a single process.  The main reason for
+``prepare()`` is to simplify any preparation work like setting up
+datastructures and datasets prior to parallel processing in the
+``analysis()`` function.  If no parallel processing is required, it is
+encouraged to use just ``synthesis()`` instead of ``prepare()``.
+
+The return value from ``prepare()`` is available to both
+``analysis()`` and ``synthesis()`` as ``prepare_res``, like this
+
+.. code-block::
+    :caption: ``prepare_res`` example
+
+    def prepare(job):
+        dw = job.datasetwriter()
+        dw.add('index', 'number')
+        return dw
+
+    def analysis(sliceno, prepare_res):
+        dw = prepare_res
+        for ix in range(10):
+            dw.write(ix)
+
+
+
+
+Function Inputs and Outputs
+...........................
+
+As shown in the previous section,
+  - ``analysis_res`` is available to ``synthesis()``, and
+  - ``prepare_res`` is available to both ``analysis()`` and ``synthesis()``.
+
+In addition, ``analysis()`` has access to the ``sliceno`` and
+``slices`` parameters, and all three functions have access to the
+``job`` object that will be described shortly.
+
+Return values from ``prepare()`` and ``analysis()`` are stored
+*temporarily* in the job directory by default, and removed upon job
 completion.  In contrast, the return value from ``synthesis()`` is
-stored persistently and considered to be the default output from the
+stored *persistently* and considered to be the default output from the
 job.
 
-
-
-Input Parameters to ``synthesis()`` etc.
-----------------------------------------
-
-As shown in the previous section, ``analysis_res`` is available to
-``synthesis()``, and ``prepare_res`` is available to both
-``analysis()`` and ``synthesis()``.
-
-In addition. ``analysis()`` has access to the ``sliceno`` and ``slices`` parameters.
-
-And all three functions have access to ``job``, which is an instance
-of ``CurrentJob`` (@), that contains convenience functions for saving
-files etc, see next section and the class documentation here (@).
 
 
 
