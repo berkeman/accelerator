@@ -17,8 +17,9 @@ Welcome to exax's online documentation!
    method
    build
    method_exec
-   urd_database
-   urd
+   urd_introduction
+   urd_details
+   urd_admin
 
    dataset
 

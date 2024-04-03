@@ -19,6 +19,21 @@ directory`` and on the start page of *Board*. (@@@)
   the name "``input``".  
 
 
+.. tip :: The "``result directory``" should be the place to find files
+  that are considered to be relevant "output" from a project run.  Soft
+  links in the result directory link to files in jobs using the
+  ``job.link_result()`` function (@).
+
+- working with data files
+ input directory
+ input_filename
+
+-visualising results
+ result directory
+
+-descriptions in build scripts
+
+
 Exax is a data processing framework.  It has many applications in for
 example data science, data engineering, and not least operations.
 
@@ -52,6 +67,15 @@ eight core CPU can do one CPU-core-hour of work in just 7.5 minutes.)
 The transparent workflow, from input data and source code to computed
 results, is easy to inspect, and Exax will always show results that
 are up to date with the project's source code.
+
+The Urd database is used to store references to previous computations
+so that any computed result can be fetched and used at a later time
+without any recomputations.  The database is also used for sharing
+data and results between users.
+
+All computations done by exax are stored on disk and registered so
+that they can be re-used later.  Computation re-use is a core part of
+the methodology and "just works".
 
 The streaming *dataset* datatype stores typed data in a row-column
 format.  It can handle billions of rows with hundreds of columns

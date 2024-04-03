@@ -1,4 +1,4 @@
-Build scripts
+Build Scripts
 =============
 
 Build scripts are the top level Python programs that control the
@@ -6,6 +6,11 @@ execution flow of a project.  Build scripts execute methods, assign
 parameters, and pass results and intermediate data from previous
 executions to the next.  In general, any code can be executed by a
 build script.
+
+
+Build Scripts Create Jobs
+-------------------------
+
 
 Execution of a build script will *always* result in the creation of a
 new job, i.e. a directory where source code and all details relating

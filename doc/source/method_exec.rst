@@ -1,5 +1,5 @@
-Methods - Writing and Executing
-===============================
+Methods
+=======
 
 
 Methods are the main workhorses in an exax project.  Most computations
@@ -306,109 +306,40 @@ job.
 Writing Files
 -------------
 
-A method can create any number of files while executing.  By making
-exax aware of these files, they can be associated with the jobs
-creating them, so that results can be connected to code creating it
-without the need for specific filenames.  This has a number of advantages and is discussed more in (@).
+Any file written by a job is stored in the current job directory, so
+that the relationship between input, source code, and output is always
+clear.
 
-.. note :: Files created by a job are and should always be stored in
-  the corresponding job directory.  By default, the current working
+.. note :: Files created by a job are and *should always be stored in
+  the corresponding job directory*.  By default, the current working
   directory is set to the current job directory when the method is
-  executing to simplify this.
+  executing to simplify this.  By writing to a file without an
+  absolute path ensures that it ends up the current job directory.
 
-.. tip :: The "``result directory``" should be the place to find files
-  that are considered to be relevant "output" from a project run.  Soft
-  links in the result directory link to files in jobs using the
-  ``job.link_result()`` function (@).
 
 There are built-in helper functions for creating files in the correct
 location and at the same time ensuring that exax is aware of their
-existence.  Here's a simple example of how a file is created by a
-method (using the ``save()`` function) and then accessed in the build
-script that created the job.
+existence.  The simplest way is to use ``job.open()`` instead of
+``open()``, like this
 
 .. code-block::
-   :caption: Writing and reading files (see  currentjob@ ref for info about ``save()`` and more.
+   :caption: Use of ``job.open()`` to register a file to the current job
 
-    # in the method "methodthatsavefiles"
-    def synthesis(job):
-        data1 = ...
-	job.save(data1, 'afilename')
-	job.save(data2, 'anotherfilename')
+   def synthesis(job):
+       data = ...
+       with job.open('thefilename', 'wt') as fh:
+           fh.write(data)
 
-    # in the build script
-    def main(urd):
-        job = urd.build('methodthatsavefiles')
-        data = {}
-        for fn in job.files:
-            data[fn] = job.load(fn)
-
-The ``save()`` function uses Python's Pickle module to serialise data.
-There is also a ``json_save()`` function, and a general ``open()``
-function with full flexibility, see ref @.
-
-.. note :: Reading and writing files in ``analysis()`` is special, because this
-  function is running as several parallel processes.  For this reason,
-  it is possible to work with *sliced files*, simply meaning that one
-  "filename" in the program corresponds to a set of files on disk, one
-  for each process.
-
-  This is handled using ``save(..., sliceno=sliceno)``, see @.
-
-In addition, it is possible to create temporary files, that only
-exists during the execution of the method and will be automatically
-deleted upon job completion.  The only reason for temporary files is
-if disk space is a concern.
-
-
-
-Keeping Track of created files
-------------------------------
-
-Any file written by a job will be stored in the current job directory,
-so that the relation to input, source code, and output is always
-clear.  It turns out that it is advantageous if exax is aware of
-created files.  Typically, this happens automatically, but there are
-exceptions that it is good to be aware of.
-
-.. tip ::  Files can be listed and viewed in *exax Board* using a web browser.
-
-  The ``ax job`` command can list and view files in a job.
-
-  In a build script, ``job.files`` lists all files in a job.
-
-The ``save()`` and ``json_save()`` functions (@ref) create connections
-between files and the jobs creating them automatically.  When more
-flexibility is required, there is a wrapper around the ``open()``
-function available in the ``job`` input parameter that is used much
-like the ordinary ``load()``-function.  Consider this
+There are also dedicated functions to write Python pickle and json
+files, like this
 
 .. code-block::
-   :caption: Use job.load() to have Exax aware about any created files.
+   :caption: writing pickle and json files
 
-    def synthesis(job):
-        data = ...
-        with job.open('myfile', 'wt') as fh:  # job.open() is wrapper around open()
-	    fh.write(data)
-
-The file `myfile` is now visible in *Board*, using the ``ax job``
-function, and in a build script like this
-
-.. code-block::
-   :caption: Find files created by a job.
-
-    def main(urd):
-        job = urd.build('mymethod', ...)
-	print(job.files())
-	print(job.filename('myfile'))
-
-The first print will show all files created by the job as a ``set``.
-The second will show the full absolute path to the file ``myfile``.
-
-.. note :: There is no need to use absolute paths with exax.  Absolute
-  path should be avoided, since they depend on the file system of the
-  particular machine being used.  But it is nice to know that it is
-  very easy to find any file generated in an exax project.
+   def synthesis(job):
+       data = ...
+       job.save(data, 'thisisapicklefile')
+       job.json_save(data, 'andthisisajsonfile')
 
 Sometimes, a method may call an external program that is generating
 files as part of the execution.  Exax can be made aware of these files
@@ -423,14 +354,76 @@ using the ``register_file()`` function.
        job.register_file('out.mp4')
 
 
+.. note :: Reading and writing files in ``analysis()`` is special,
+  because this function is running as several parallel processes.  For
+  this reason, it is possible to work with *sliced files*, simply
+  meaning that one "filename" in the program corresponds to a set of
+  files on disk, one for each process.
+
+  This is handled using ``save(..., sliceno=sliceno)``, see @.
+
+In addition, it is possible to create temporary files, that only
+exists during the execution of the method and will be automatically
+deleted upon job completion.  This *might* be useful for huge
+temporary files if disk space is a major concern.
+
+
+
+Find and Load Created Files 
+----------------------------
+
+Files in a job are easily accessible by other methods and build
+scripts, see this example where data in a job is read back into the
+running build script.
+
+.. code-block::
+   :caption: Writing and reading files (see  currentjob@ ref for info about ``save()`` and more.
+
+    # in the method "a_methodthatsavefiles.py"
+    def synthesis(job):
+        ...
+	job.save(data1, 'afilename')
+	job.save(data2, 'anotherfilename')
+
+    # in the build script "build.py"
+    def main(urd):
+        job = urd.build('methodthatsavefiles')
+        data = {}
+        for filename in job.files:
+            data[filename] = job.load(filename)
+
+All filenames are available using ``job.files()``, that returns a set
+of all filenames in the job.  The absolute path of a particular file
+can be retrieved using the ``job.filename()`` function, like this
+
+.. code-block::
+   :caption: Find files created by a job.
+
+    def main(urd):
+        job = urd.build('mymethod', ...)
+	print(job.files())
+	print(job.filename('myfile'))
+
+.. note :: There is no need to use absolute paths with exax.  Absolute
+  paths should in fact be avoided, since they prevent moving things
+  around in the file system later.
+
+  But it is nice to know that it is very easy to find any file
+  generated in an exax project.
+
+.. tip ::
+   Files can also be listed and viewed in *exax Board* using a web browser.
+
+   The ``ax job`` shell command can also list and view files in a job.
+
+
 
 Descriptions
 ------------
 
-It is possible to add a text describing what a method is doing using
-the ``description`` variable.  This description is available in *exax
-Board* (@) and using the ``ax method`` (@) command, and it looks like
-this
+A text description is added to a method using the ``description``
+variable.  This description is visible in *exax Board* (@) and using
+the ``ax method`` (@) command, and it looks like this
 
 .. code-block::
     :caption: Example of description
@@ -444,16 +437,17 @@ this
 .. tip :: Use ``ax method`` or *exax Board* to see descriptions of all
    available methods.
 
-If the description is multi-lined, the first row is a short
-description that will be shown when typing ``ax method`` to list all
-methods and their short descriptions.  A detailed description may
-follow on consecutive lines, and it will be shown when doing ``ax
-method <a particular method>``.  Exax updates its record of
-descriptions when re-scanning the method directories.
+Descriptions work much like git commit messages.  If the description
+is multi-lined, the first row is a short description that will be
+shown when typing ``ax method`` to list all methods and their short
+descriptions.  A detailed description may follow on consecutive lines,
+and it will be shown when doing ``ax method <a particular method>``.
+Exax updates its record of descriptions when re-scanning the method
+directories.
 
 
 
-Storing stdout and stderr
+Retrieving stdout and stderr
 -------------------------
 
 Everything written to ``stdout`` and ``stderr`` (using for example
@@ -468,16 +462,20 @@ example like this
 
 It is also straightforward to view the output in *Board*.
 
-In a program, the output is accessible using the ``job.output()``
-function (@, skriv om hur accessa out, err, analysis, ...).
+In a method or build script, this output is accessible using the
+``job.output()`` function.
 
 
 
 Subjobs
 -------
 
-Subjobs may be built from a running method, in the ``synthesis()``
-function.  Here is an example
+Job are typically built by build scripts, but in a similar way jobs
+can be built by methods as well.  There is no difference from a built
+jobs perspective, but the nomenclature is that when a method is
+building a job it is called a *subjob*.
+
+Subjobs are built in the ``synthesis()`` function like this
 
 .. code-block::
    :caption: Building a job from within a job.
@@ -493,12 +491,16 @@ returned ``job`` object is an instance of the ``Job`` class (@) that
 contains some useful helper functionality.
 
 .. note :: Subjobs are *not* visible in build script and do not show
-   up in ``urd.joblist``!
+   up in ``urd.joblist``!  Furthermore, they are not recorded in the
+   urd database.
+
+Subjobs are registered in the post-data of a job and can be retrieved by
+inspecting ``job.post.subjobs``.
 
 
 
 Subjobs and Datasets
-^^^^^^^^^^^^^^^^^^^^
+....................
 
 Datasets created by subjobs can be made available to the job that
 built the subjob, to make it look like the dataset was created there.
