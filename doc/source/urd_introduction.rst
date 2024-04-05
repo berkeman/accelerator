@@ -29,8 +29,8 @@ queried by the build script to find existing results or data to
 use in the computations.
 
 
-How Data is Stored in the Urd Database
---------------------------------------
+How is Data Stored?
+-------------------
 
 The Urd database is basically a key-value storage, where the key is
 composed of
@@ -68,8 +68,8 @@ iterations (an integer).  Both timestamps and integers, as well as
 tuples of both, are supported.
 
 
-All Jobs are Automatically Stored in the Database
--------------------------------------------------
+The Automatic Urd Session
+-------------------------
 
 When a build script starts executing, the variable ``urd.joblist`` is
 initiated to an empty state.  For each ``build()``-call in the script,
@@ -90,8 +90,8 @@ variable is stored persistently in the Urd database under the key
 
 
 
-Using Explicit Names and Timestamps
------------------------------------
+Manual Urd Sessions
+-------------------
 
 It is also possible to store partial sequences of this list of jobs
 using user defined keys and timestamps.  The ``urd.begin()`` and
@@ -111,19 +111,56 @@ The nomenclature is that the *urd session* is stored in the *urdlist*
 session is a joblist with a single entry, a reference to the
 ``awesome_method`` job.
 
+In the example above, the urdlist only reflects the list's descriptive
+name.  If the user part is implicit, like in this case, the value of
+the shell variable ``$USER`` will be used under the hood.  The example
+also specifies the name of the urdlist twice, in both the ``begin()``
+and ``finish()`` functions.  This is a requirement and safety measure
+to prevent unnecessary writes to the wrong urdlist.  If the names
+differ, execution will stop and raise an error.
+
+
 .. note:: An urdlist is always composed of two parts: user and a name,
    such as ``alice/import``.  If only one name is given, like
    ``import``, the user is implicit and the shell variable ``$USER``
    is used instead.
 
 .. note:: The name specified in the ``begin()`` and ``finish()``
-          functions *must be the same*.  Otherwise execution stops.
-          This is a safety-function to prevent unnecessary writes to
-          the wrong urdlists.
+          functions *must be the same*.
+
+.. note:: Urd sessions cannot be nested.  A second ``begin()`` without
+          a ``finish()`` call inbetween will cause a failure.
 
 .. tip:: The user part is very convenient to use when several
           programmers work in the same project.  It also enables the
           use of "virtual" users for the sake of separation.
+
+
+Ending a Manual Urd Session
+---------------------------
+
+There are three ways to end an urd session:
+
+- execute the ``urd.finish()`` call and have the session
+  recorded/rejected/ignored.
+
+- end the build script “prematurely” without a
+  ``urd.finish()``-call. No data will be stored in Urd.
+
+- issue an ``urd.abort()`` call.  No data will be stored in Urd.
+
+The ``abort()`` function is used like this
+
+.. code-block::
+   :caption: Abort an Urd Session (nothing is stored in the Urd database).
+
+   urd.begin('test')
+   urd.abort()
+   # execution continues here, a new session can be initiated
+   urd.begin('newtest')
+
+A new urd session can be initiated once the previous is finished or aborted.
+Only one urd session can be active at a time.
 
 
 
@@ -158,14 +195,36 @@ explicitly.  These are the rules that applies
        urd.begin('testlist', '2023-06-20', update=True)
        ...
 
-
- - Entries newer than a specific timestamp can be for ever ignored
-   using ``urd.truncate(timestamp)``.  Specifically, setting timetamp
-   to "0" will make the database to appear completely empty. (Although
-   all entries are still available in the plain text transaction log
-   file.)
-
 The server serves requests one at a time, so there are no races
 possible when the Urd database is serving multiple users.
+
+
+Truncating Urd Lists
+--------------------
+
+Data can never be erased from the urd database, but a *restart marker*
+can be inserted at any time giving the appearance that everything
+after the marker timestamp is removed, like in this example:
+
+.. code-block::
+    :caption: Urd session with restart marker.
+
+    def main(urd):
+	urd.truncate('testlist', '2023')
+        ...
+
+The above ``truncate`` call makes all entries in ``testlist`` that
+are from 2023 or later inaccessible.
+
+.. tip ::  Truncating to zero gives the appearance of a completely empty urdlist.
+
+
+.. note :: Data is never erased in the Urd transaction database.
+   Furthermore, all data is stored in an *easily readable format*, so
+   if data is believed to be "lost", it is possible to find it by
+   looking in the database files.
+
+
+
 
 

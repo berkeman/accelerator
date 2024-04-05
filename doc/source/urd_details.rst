@@ -4,166 +4,28 @@ The Urd Database in More Detail
 This section digs deeper into the features of the Urd database.
 
 
-The JobList
------------
-  This section deals with
-the features of the ``joblist`` itself.
 
-Any job in ``joblist`` can be found easily.  For example, a specific
-job in a joblist can be found by searching for the corresponding
-method using the joblist's ``.get()`` function, like this
-
-.. code-block::
-    :caption: The last line uses ``urd.joblist.get()`` to locate a specific job using the method's name.
-
-    def main(urd):
-        urd.build('csvimport', data='file.txt')
-        ...
-        urd.build('dosomething', source=urd.joblist.get('csvimport')
-
-The ``get()`` function will return the *last* job created based on
-method name (``csvimport`` in this case).  If there are several builds
-based on the same method, they cannot be uniquely identified using
-this approach.  If this turns out to be a problem, one solution is to
-assigning a unique *name* to each build, since the ``get()``-call can
-also lookup methods based on the assigned names, like in this example:
-
-.. code-block::
-    :caption: Use ``urd.joblist.get()`` to locate a specific job using an assigned name.
-
-    def main(urd):
-        urd.build('csvimport', data='file1.txt', name='firstimport')
-        urd.build('csvimport', data='file2.txt', name='otherimport')
-        ...
-        urd.build('dosomething', source=urd.joblist.get('firstimport')
-
-.. tip :: ``get`` also takes a ``default`` argument that is returned
-   if the search fails.
-
-The joblist is actually a list, so it is also possible to get specific
-indices in the list.
-
-.. tip :: Accessing the last job in a list is a common pattern.  Use
-    ``urd.joblist.get(-1)`` to achieve this.
-
-In addition to ``urd.joblist.get()`` that returns a single job, the
-``urd.joblist.find()`` function returns a new JobList of matching
-items.  See the :ref:`JobList <api:The JobList Class>` for full
-information.
-
-
-
-
-
-
-The Urd Database in more detail
--------------------------------
-
-
-.. note :: The name of the urdlist must be the same for both
-           ``begin()`` and ``finish()`` and cannot be omitted.
-
-.. note :: After a ``urd.begin()``-call, nothing is committed to the
-   database until ``urd.finish()`` is called.
-
-.. note :: If no ``begin()`` and ``finish()`` calls are used, the
-            default behaviour of a build script is to store the
-            contents of ``urd.joblist`` in the Urd database using the
-            key ``_auto`` together with the current timestamp.
-
-.. note :: Urd sessions cannot be nested.
-
-
-If the entry to be stored already exists in the database, meaning that
-the key, timestamp, `and` contents is the same, Exax accepts the input
-silently but it does not store anything.  On the other hand, an
-exception will be raised if the key and timestamp already exists, but
-the contents is different.  This is a straightforward way to verify
-that the database contains the same thing as is produced by the
-current state of the code base.
-
-
-
-
-The Urd
-database is the topic of the next section.
-
-@@@@ The JobList api doc does not show the .get-function at all!!!!!!!!!
-
-
-Urd Sessions and the Urd Database
----------------------------------
-
-A major feature of Exax is that joblists can be stored `persistently`
-and `searchable`, and this has turned out to be extremely useful for
-future use and for sharing jobs with others.
-
-The data is stored in the Urd transaction database, so references to
-anything from one particular job to all jobs ever executed can be
-retrieved in a simple way.  In the transaction database, information
-is always appended, and never removed or changed, so a complete
-history will always be available.
-
-.. tip :: Entries in the urd database can be explored using the ``ax urd`` command.
-
-Storing a joblist persistently is done by encapsulating the build
-calls to be stored between ``urd.begin()`` and ``urd.finish()`` calls,
-like in the following example:
-
-.. code-block::
-    :caption: An *urd session* is defined by ``begin`` and ``finish`` calls.
-
-    def main(urd):
-        urd.begin('testlist', '2023-06-20')
-        job = urd.build('awesome_method', x=3)
-	urd.finish('testlist')
-
-The nomenclature is that the *session* has been stored in the
-*urdlist* ``testlist`` with *timestamp* ``2023-06-20``.  The name of
-the urdlist must be the same for both ``begin()`` and ``finish()`` and
-cannot be omitted.
-
-.. note :: Nothing is stored in the database until ``urd.finish()`` is called.
-
-.. note :: If no ``begin()`` and ``finish()`` calls are used, the
-            default behaviour of a build script is to store the
-            contents of ``urd.joblist`` persistently in the Urd
-            database using the key ``_auto`` together with the current
-            timestamp.
-
-.. note :: Urd sessions cannot be nested.
-
-
-If the entry to be stored already exists in the database, meaning that
-the key, timestamp, `and` contents is the same, Exax accepts the input
-silently but it does not store anything.  On the other hand, an
-exception will be raised if the key and timestamp already exists, but
-the contents is different.  This is a straightforward way to verify
-that the database contains the same thing as is produced by the
-current state of the code base.
-
-
-
-About the key
-^^^^^^^^^^^^^
-
-
-About timestamps
-^^^^^^^^^^^^^^^^
+Urd Database Timestamps
+-----------------------
 
 The ``timestamp`` used to access items may be stated as either a
-``date``, ``datetime``, ``int`` , (``date``, ``int``),
-(``datetime``, ``int``) or ``"datetime+int"``, where dates and
-datetimes may be specified using strings in format
+``date``, ``datetime``, ``int`` , ``(date, int)``, ``(datetime,
+int)`` or ``"datetime+int"``, where dates and datetimes may be
+specified using strings in the following format
 
-``"%Y-%m-%d %H:%M:%S.%f"``
+::
+
+  "%Y-%m-%d %H:%M:%S.%f"
+
+
 
 (See Python’s ``datetime`` module for explanation.)
 
-A specific timestamp can be shortened than the above specification in
-order to represent a wider time range. The following examples cover
-all possible cases::
+A specific timestamp can be truncated to represent a wider time
+range. The following examples cover all possible cases
+::
 
+  '2016-10'                    # month resolution
   '2016-10-25'                 # day resolution
   '2016-10-25 15'              # hour resolution
   '2016-10-25 15:25'           # minute resolution
@@ -171,123 +33,38 @@ all possible cases::
   '2016-10-25 15:25:00.123456' # microsecond resolution
 
   '2016-10-25+3'               # Example of timestamp + int
+  ('2016-10-25', 3)            # equivalent to above
 
 Note that
   - ``ints`` without ``datetimes`` sort first,
   - ``datetimes`` without ``ints`` sorts before ``datetimes`` with ``ints``,
   - shorter ``datetime`` strings sorts before longer ``datetime`` strings, and
-  - a timestamp must be > 0.
+  - timestamps must be > 0.
 
 
-Truncating Urd Lists
-^^^^^^^^^^^^^^^^^^^^
+Retrieving Sessions from the Database
+-------------------------------------
 
-Data can never be erased from the urd database, but a *restart marker*
-can be inserted at any time giving the appearance of that everything
-after the marker timestamp is removed, like in this example:
+The point of retrieving a session is that it has pointers to one or
+more jobs containing data that is needed by a new job.  A specific urd
+session can be retrieved from the Urd database using the name of the
+*urdlist* and the *timestamp* it is associated with.
 
-.. code-block::
-    :caption: Urd session with restart marker.
-
-    def main(urd):
-	urd.truncate('testlist', '2023')
-        ...
-
-The above ``truncate`` call makes all entries in ``testlist`` that
-are from 2023 or later inaccessible.
-
-.. tip ::  Truncating to zero gives the appearance of a completely empty urdlist.
-
-
-.. note :: Data is never erased in the Urd transaction database.
-   Furthermore, all data is stored in an easily readable format, so if
-   data is believed to be "lost", it is possible to find by looking in
-   the database files.
-
-
-Overwriting the Last session
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Although data cannot be erased or changed in the urd database, it is
-possible to *replace* the last entry by a new one.  Both the old and
-new entry will be stored in the database, but only the latter will be
-visible.  This example shows how to do it:
-
-.. code-block::
-    :caption: Replace last urd entry.
-
-    def main(urd):
-        urd.begin('testlist', '2023-06-20', update=True)
-	...
-
-@@@ är det bara senaste som kan uppdateras, eller är det alla?
-
-
-Ending an Urd Session
-^^^^^^^^^^^^^^^^^^^^^
-
-There are three ways to end an urd session:
-
-- execute the ``urd.finish()`` call and have the session recorded/rejected/ignored. 
-
-- end the build script “prematurely” without a ``urd.finish()``-call. No
-  data will be stored in Urd.
-
-- issue an ``urd.abort()`` call.  No data will be stored in Urd.
-
-The ``abort()`` function is used like this
-
-.. code-block::
-   :caption: Abort an Urd Session (nothing is stored in the Urd database).
-
-   urd.begin('test')
-   urd.abort()
-   # execution continues here, a new session can be initiated
-   urd.begin('newtest')
-
-A new urd session can be initiated once the previous is finished or aborted.
-
-
-
-Finding and listing existing sessions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-A specific urd session, i.e. a joblist with some meta information, can
-be retrieved from the Urd database using its *key* (@@@
-key=name=path?)  and *timestamp*.  There are two sets of functions
-assigned for this
+There are two sets of functions assigned for this
 
   - one that will `record and associate the lookup with the ongoing
     session`, and
-    
+
   - one that will not.
 
-Recording lookups is for transparency reasons, to make it clear which
-jobs from which joblists that are used as inputs to new jobs.
-Consider the following example:
+Recording a lookup means that the looked up urd session will be added
+as a `dependency` to the ongoing session.  This is for transparency
+reasons, i.e., to make it clear which jobs from which joblists that
+are used as inputs to new jobs.
 
-.. code-block::
-    :caption: The ``process`` urd session depends on the ``import`` session
 
-    date = '2023-02-01'
-    # import something
-    urd.begin('import', date)
-    urd.build('csvimport', filename='data.csv')
-    urd.finish('import')
-
-    # process it
-    urd.begin('process', date)
-    session = urd.get('import', date)
-    importjob = session.urdlist.get(-1)
-    urd.build('process', importjob=importjob)
-    urd.finish('process')
-
-The ``urd.get()`` call happens, and must happen, inside an ongoing urd
-session, i.e. between ``begin()`` and ``finish()``.  The result from
-the call will therefore be stored in the ``process``-session, so that
-it will be apparent from examining the ``process`` session which
-``import`` session that it depends on.
-
+Retrieving a Session and make it a Dependency
+---------------------------------------------
 
 The function calls that record the lookups are
 
@@ -296,8 +73,69 @@ The function calls that record the lookups are
   - ``latest()``.
 
 For any of these calls to work, they have to be issued from *within*
-an ongoing session, i.e. after a ``begin()`` call. Otherwise Urd will
-not be able to record session dependencies and an exception is raised.
+an ongoing manual urd session, i.e. after a ``begin()``
+call. Otherwise Urd will not be able to record session dependencies
+and an exception is raised.  Here is an example.
+
+.. code-block::
+    :caption: The ``process`` urd session depends on the ``import`` session
+
+    # then we retrieve and process it
+    urd.begin('process', date)
+    session = urd.latest('import')
+    importjob = session.joblist.get('csvimport')
+    urd.build('process_data', source=importjob)
+    urd.finish('process')
+
+The code above creates a new urd session called ``process``.  This
+session retrieves the latest session from the ``import`` urdlist, and
+takes the ``csvimport`` job stored there as input to the
+``process_data`` method.
+
+The contents of the Urd database is investigated using the ``ax urd``
+shell command:
+
+.. code:: bash
+
+    > ax urd                              # 1
+    alice/import
+    alice/process
+
+    > ax urd import                       # 2
+    timestamp: 2023-02-01
+    caption  :
+    deps     :
+    JobList(
+       [  0] csvimport : dev-2698
+    )
+
+    > ax urd process                      # 3
+    timestamp: 2023-02-01
+    caption  :
+    deps     : alice/import/2023-02-01
+    JobList(
+       [  0] process_data : dev-2732
+    )
+
+At row ``#1``, the ``ax urd`` command is run without arguments.  It
+returns the two *joblists* present in the database.
+
+At row ``#2``, the command returns the *contents of the latest
+session* in the ``import`` urdlist.  The joblist contains a
+``csvimport`` job.
+
+At row ``#3``, the contents of the latest *process* session reveals a
+joblist with a ``process`_data` job, but also a ``deps`` part where
+the ``alice/import/2023-02-01`` session is inserted.  This session
+holds the ``csvimport`` job that the ``process_data`` job used as
+input.  This urd session was created by the example code above.
+
+.. tip:: The Board web server is another convenient way to investigate
+         the Urd database.
+
+
+Retrieving a Session with no Dependency
+---------------------------------------
 
 The function calls that do not record anything are the
 
@@ -305,32 +143,46 @@ The function calls that do not record anything are the
   - ``peek_first()``, and
   - ``peek_latest()``
 
-calls, that in all other aspects are equivalent to the non-peek versions.
-All these functions will be explained below:
+calls, that in all other aspects are equivalent to the non-peek
+versions.  These functions can be called anywhere in a build script,
+and not only in an ongoing manual urd session.
 
 
-- Finding an exact or closest match:  ``get()`` or ``peek()``
+Description of the Retrieval Functions
+--------------------------------------
 
-  These functions will return the single session, if available,
-  corresponding to a specified *list* and *timestamp*, see the following
-  example
+- **Find the latest entries**, ``latest()`` and ``peek_latest()``:
 
-  .. code-block::
-
-    urd.begin('anotherlist')
-    urd.get("test", "2018-01-01T23")
-
-  The timestamp must match exactly for an item to be
-  returned.
-
-  If there is no matching item, the call will return an empty session,
-  i.e. something like this
+  These calls are probably the most commonly used functions for
+  session retrieval.  They will, for a given urdlist, return the
+  session with most recent timestamp.  If there is no such session, an
+  empty session is returned.  Empty sessions look like this
 
   .. code-block::
 
     {'deps': {}, 'joblist': JobList([]), 'caption': '', 'timestamp': '0'}
 
-  The strict matching behaviour can be relaxed by prefixing the
+  The ``latest()`` function will record a dependency and must be
+  issued in an ongoing manual urd session, i.e., between a set of
+  ``begin()`` and ``finish()`` calls, while the ``peek_latest()``
+  function can be called anywhere in a build script.
+
+
+- **Finding an exact or closest match**:  ``get()`` or ``peek()``
+
+  These functions will return the single session, if available,
+  corresponding to a specified *urdlist* and *timestamp*, see the
+  following example
+
+  .. code-block::
+
+    urd.peek("test", "2018-01-01T23")
+
+  The timestamp must match exactly for an item to be returned.
+
+  If there is no matching item, the call will return an empty session.
+
+  **The strict matching behaviour can be relaxed** by prefixing the
   timestamp with one of “<”, “<=”, “>”, or “>=”.  For example
 
   .. code-block::
@@ -353,34 +205,33 @@ All these functions will be explained below:
   will match the latest timestamp starting with “``2018-05``” or less,
   such as “``2018-04-01``” or “``2018-05-31T23:59:59.999999``”.
 
+  The ``get()`` call will record a dependency, while the ``peek()``
+  call will not.
 
-- Find the latest entries, ``latest()`` and ``peek_latest()``:
 
-  These calls will, for a given key, return the session with most
-  recent timestamp.  If there is no such session, an empty list is
-  returned (@@ is this correct?)
-
-  
-- Find the first entries, ``first()`` and ``peek_first()``:
+- **Find the first entries**, ``first()`` and ``peek_first()``:
 
   These calls will, for a given key, return the first session.  If
-  there is no such session, an empty list is returned (@@ is this
-  correct?)
+  there is no such session, an empty list is returned.
+
+  The ``first()`` call will record a dependency, while the ``peek_first()``
+  call will not.
 
 
-Listing all timestamps After a Specific Timestamp
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Finding Recent Timestamps
+-------------------------
 
 The ``since()`` call is used to extract lists of timestamps
 corresponding to recorded sessions. In its most basic form, it is
 called with a timestamp like this
 
 .. code-block::
-   
+
     urd.since('test', '2016-10-05')
-    
-which returns a list with all existing timestamps in the ``test`` urd
-list more recent than the one provided, such as for example
+
+which returns a list with all existing timestamps in the ``test``
+urdlist that are more recent than the provided argument.  It may for
+example return
 
 .. code-block::
 
@@ -393,13 +244,81 @@ all these are valid:
 
 .. code-block::
 
-    urd.since('test', '0')
+    urd.since('test', '0')                    # returns all timestamps in the urdlist
     urd.since('test', '2016')
     urd.since('test', '2016-1')
     urd.since('test', '2016-10-05')
-    urd.since('test', '2016-10-05T20')        # @@@ är det T eller space?
+    urd.since('test', '2016-10-05T20')
     urd.since('test', '2016-10-05T20:00:00')
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Working with JobLists
+---------------------
+
+An urd session contains a joblist that holds all job ids associated
+with the session.  This joblist object is of type ``JobList``, which
+is an extension of the Python ``list`` class.
+
+Traditional list indexing and slicing works as expected, see this example
+
+.. code::
+
+   # find a joblist in an urd session
+   session = urd.peek_latest('something')
+   jl = session.joblist
+   #
+   print(jl[2])      # job id number 2 (start at 0)
+   print(jl[3:5])    # a JobList containing jobs 3 and 4.
+
+In addition the ``JobList`` class has a convenient ``get()`` function,
+that makes the joblist behave more like a dictionary.
+
+.. code::
+
+   jobid = jl.get('csvimport')
+
+This will return the job id of the last ``csvimport`` job in the
+joblist.  It returns ``None`` if there are no matches.  The ``get()``
+function also works with list indices, like this example
+
+.. code::
+
+   # return last job id in joblist
+   jobid = jl.get(-1)
+
+that returns the last job id in the list.  Retrieving the last job id
+in a list is a common pattern.  The advantage of using ``get(-1)``
+instead of indexing ``[-1]`` is that the former will not fail if the
+joblist is empty.
+
+.. tip :: Accessing the last job in a list is a common pattern.  Use
+    ``urd.joblist.get(-1)`` to achieve this.  The call returns
+    ``None`` if the list is empty.
+
+There is also a ``find()`` function to return all matches in a
+joblist.  Information about this function and more is found in the
+JobList documentation @@.

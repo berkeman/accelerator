@@ -1,23 +1,21 @@
 Urd Database - The Admin
 ========================
 
-The Urd database is used to store references to built jobs
-persistently, and to make it simple to share data and results between
-users and scripts.  Basic usage is covered in section @.
-
+@@@@
 
 Users, Keys, and Permissions
 ----------------------------
 
-A reference to an urd list is composed of a *username* and a *list
+A reference to an urdlist is composed of a *username* and a *list
 name*, separated by a slash, like this
 
   ``alice/import``
 
-The hierarchy is always two levels, but in a build script, the user
-part is not mandatory.  Exax will automatically prefix the list name
-with the name of the user executing the build script.  So the user
-``alice`` could refer to the list above simply as ``import``, like this
+The hierarchy is always exactly two levels, but in a build script the
+user part may be implicit.  Exax will automatically prefix the list
+name with the name of the user executing the build script.  So the
+user ``alice`` could refer to the list above simply as ``import``,
+like this
 
 .. code-block::
 
@@ -28,9 +26,10 @@ with the name of the user executing the build script.  So the user
 
 
 The Urd database is transparently readable for everyone, but it is
-possible to limit *write* access to the urd database for each user.
-This is done by setting passwords in the Urd server's ``passwd`` file.
-(@@ ref ) If, for example, the ``passwd`` file contains the line
+possible to *limit write access* to the urd database on a per user
+basis.  This is done by setting passwords in the Urd server's
+``passwd`` file.  (@@ ref ) If, for example, the ``passwd`` file
+contains the line
 
 .. code-block::
   :caption: contents of ``urd.db/passwd``
