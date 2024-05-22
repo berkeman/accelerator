@@ -1,6 +1,10 @@
 Introduction and Advantages
 ---------------------------
 
+Säga något om att dela jobb *på samma filsystem*.
+
+configure board
+
 - result_director
 .. code-block::
     :caption: Create a link to a file created by job1 to ``result_directory``.

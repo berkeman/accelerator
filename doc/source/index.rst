@@ -14,6 +14,7 @@ Welcome to exax's online documentation!
    advantages
    whatiswhat
    quick
+   tldr_examples
    method
    build
    method_exec

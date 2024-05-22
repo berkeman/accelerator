@@ -1,64 +1,20 @@
 Urd Database - The Admin
 ========================
 
-@@@@
+*No setup or admin is required* to use the Urd database in single user
+mode.  The ``ax init`` command will set up an empty database, and the
+Urd database server starts automatically when the exax server is
+started using ``ax server``.
 
-Users, Keys, and Permissions
-----------------------------
-
-A reference to an urdlist is composed of a *username* and a *list
-name*, separated by a slash, like this
-
-  ``alice/import``
-
-The hierarchy is always exactly two levels, but in a build script the
-user part may be implicit.  Exax will automatically prefix the list
-name with the name of the user executing the build script.  So the
-user ``alice`` could refer to the list above simply as ``import``,
-like this
-
-.. code-block::
-
-   def main(urd):
-       item = urd.peek('import', '2020-02-20')
-       # for user "alice" this is the same as
-       item = urd.peek('alice/import', '2020-02-20')
-
-
-The Urd database is transparently readable for everyone, but it is
-possible to *limit write access* to the urd database on a per user
-basis.  This is done by setting passwords in the Urd server's
-``passwd`` file.  (@@ ref ) If, for example, the ``passwd`` file
-contains the line
-
-.. code-block::
-  :caption: contents of ``urd.db/passwd``
-
-  production:secret
-
-the user ``production`` needs to be authorised to write to the
-``production`` lists (and the password is ``secret``).  User and
-password are set using the ``$URD_AUTH`` shell variable, for example
-when launching the build script like this:
-
-.. code-block:: sh
-  :caption: Run a build script as the user ``production`` with a
-            password for urd database authentication.
-
-  URD_AUTH=production:secret ax run productionscript
-
-.. tip :: Use $URD_AUTH to protect against accidental writes when
-   multiple users share the same Urd server.
-
+What this chapter explains is how to set up the Urd database server so
+that its contents can be shared between different users.
 
 
 Setup a shared server
 ---------------------
 
-A standalone Urd server is needed to share information between several
-users or agents executing build scripts.  By default, the exax server
-will automatically start a *local* Urd server, but a shared server
-needs to be setup separately.
+A standalone Urd server is needed to share information between users
+or agents executing build scripts.  It needs to be setup separately.
 
 To setup a standalone Urd server, two things are needed
 
@@ -66,16 +22,16 @@ To setup a standalone Urd server, two things are needed
   - a ``passwd`` file (stored in the same directory) containing
     user-password pairs.
 
-The default name of the database directory is ``urd.db/``, so here's
-how it can be done
+The default name of the database directory is ``urd.db/``.  Here's how
+it can be done
 
 .. code-block::
-  
+
   mkdir urd.db
   <editor> urd.db/passwd  # where <editor> is editor of choice.
 
 The ``passwd`` file is one user-password pair, separated by a colon,
-one entry per line, like in this example
+per line, like in this example
 
 .. code-block::
    :caption: Example ``passwd`` file.
@@ -85,6 +41,8 @@ one entry per line, like in this example
    sh:shsecret
    prod:productionsecret
 
+.. note:: Anyone can *read* from the database, but only users present
+   in the ``passwd`` file can *write* to the database.
 
 To launch the server, do
 
@@ -93,11 +51,46 @@ To launch the server, do
 
   ax urd-server --listen=<[host:]port> --path=<path>
 
-Please check the ``ax urd-server`` command documentation for complete
-reference. (@@ref)
-
 The server will serve requests from multiple users in the order that
 they arrive.
+
+
+Connecting to a Shared Urd Server
+---------------------------------
+
+The local Urd database server is serving on a socket in the project
+directory, here is what the default configuration looks like
+
+.. code-block::
+   :caption: ``accelerator.conf``: Local Urd server is on this socket
+
+   urd: local .socket.dir/urd
+
+
+To listen to an external shared Urd database server, change this to
+<hostname>:<port> like this
+
+.. code-block::
+    :caption: ``accelerator.conf``: Shared Urd server is on port 12345 on localhost.
+
+    urd localhost 12345
+
+
+# here's a "bug", jag kan inte se det andra code-blocket!!!!!!!!!!!!!!!!!!!!!
+
+ Now, the exax server will use the external Urd database server.
+
+.. note::
+    Remember to populate the ``passwd`` file in the shared Urd
+    database server's ``urd.db`` directory to get write access.
+
+
+ To connect to a shared Urd database using a password, set the
+ ``$URD_AUTH`` environvent variable to "user:password" for example
+ like this
+
+ .. code-block::
+    URD_AUTH=myusername:mysecret ax run mybuildscript
 
 
 
@@ -118,4 +111,4 @@ The Urd database has the following structure
 
 Each list-file is a transaction log, where each new transaction is
 appended to the end of the file.  It is written in plain text and
-intended to be more or less human readable.
+intended to be (more or less) human readable.

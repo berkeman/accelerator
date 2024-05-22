@@ -303,21 +303,57 @@ job.
 
 
 
-Writing Files
--------------
+Writing and Registering Files
+-----------------------------
 
 Any file written by a job is stored in the current job directory, so
 that the relationship between input, source code, and output is always
 clear.
 
+*Registering* a file means making exax aware of it, so that simple
+helper functions can list and retrieve the data directly from a job
+object.
+
 .. note :: Files created by a job are and *should always be stored in
   the corresponding job directory*.  By default, the current working
   directory is set to the current job directory when the method is
-  executing to simplify this.  By writing to a file without an
-  absolute path ensures that it ends up the current job directory.
+  executing to simplify this.  Avoiding a filename without absolute
+  path will ensure that the file ends up the current job directory.
+
+The default behaviour is the expected one. Files are typically created
+using Pythons ``open()`` function.  All created files will be
+automatically _registered_ by exax when the execution of the method
+finishes.  The registration will make the files visible and easy
+accessible from the corresponding job object.
 
 
-There are built-in helper functions for creating files in the correct
+
+
+  
+All files created in a job will be added to the job's meta
+information, so that files can be listed and opened directly from a
+job object, as is the topic of the next section.
+
+Sometimes, it is convenient to not have exax keep track of the created
+files.  This could be for example if the files are not at all relevant
+outside the job.
+
+# @@@ Hur undvika att registrera den enda filen som skapats av en annan exekutabel?
+
+# @@@ we call it "registered files"
+# @@@ files in subdirectories are not registered
+# @@@ all files created (except temporary files) will be registered by default
+# @@@ using any of register_file, register_files, or job.open will change behavour to only explicit registering
+# @@@ register_file on a temp file will un-temp the file
+# @@@ register_files() can take wildcards
+# @@@ register_files() returnerar ett set med filnamn den registerat
+
+
+
+
+
+
+  There are built-in helper functions for creating files in the correct
 location and at the same time ensuring that exax is aware of their
 existence.  The simplest way is to use ``job.open()`` instead of
 ``open()``, like this
