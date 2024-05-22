@@ -303,16 +303,13 @@ job.
 
 
 
-Writing and Registering Files
------------------------------
+Writing Files
+-------------
 
-Any file written by a job is stored in the current job directory, so
-that the relationship between input, source code, and output is always
-clear.
-
-*Registering* a file means making exax aware of it, so that simple
-helper functions can list and retrieve the data directly from a job
-object.
+Any file written by a job is stored in the current job directory.
+This is also where the source code and input parameters are stored, so
+keeping everything at one place ensures that the relationship between
+input, source code, and output is always clear.
 
 .. note :: Files created by a job are and *should always be stored in
   the corresponding job directory*.  By default, the current working
@@ -320,75 +317,39 @@ object.
   executing to simplify this.  Avoiding a filename without absolute
   path will ensure that the file ends up the current job directory.
 
-The default behaviour is the expected one. Files are typically created
-using Pythons ``open()`` function.  All created files will be
-automatically _registered_ by exax when the execution of the method
-finishes.  The registration will make the files visible and easy
-accessible from the corresponding job object.
+There are built-in helper functions for creating files in the correct
+location.  These functions will also *register* the files, which is
+the topic of the next section.
 
-
-
-
-  
-All files created in a job will be added to the job's meta
-information, so that files can be listed and opened directly from a
-job object, as is the topic of the next section.
-
-Sometimes, it is convenient to not have exax keep track of the created
-files.  This could be for example if the files are not at all relevant
-outside the job.
-
-# @@@ Hur undvika att registrera den enda filen som skapats av en annan exekutabel?
-
-# @@@ we call it "registered files"
-# @@@ files in subdirectories are not registered
-# @@@ all files created (except temporary files) will be registered by default
-# @@@ using any of register_file, register_files, or job.open will change behavour to only explicit registering
-# @@@ register_file on a temp file will un-temp the file
-# @@@ register_files() can take wildcards
-# @@@ register_files() returnerar ett set med filnamn den registerat
-
-
-
-
-
-
-  There are built-in helper functions for creating files in the correct
-location and at the same time ensuring that exax is aware of their
-existence.  The simplest way is to use ``job.open()`` instead of
-``open()``, like this
+The first helper finction is ``job.save()``.  This stores data as a
+Python pickle file:
 
 .. code-block::
-   :caption: Use of ``job.open()`` to register a file to the current job
+   :caption: writing a pickle file
+
+   def synthesis(job):
+       data = ...
+       job.save(data, 'thisisthenameofapicklefile')
+
+There is also a dedicated function to write json files:
+
+.. code-block::
+   :caption: Writing a json file.
+
+   def synthesis(job):
+       data = ...
+       job.json_save(data, 'andthisisajsonfile')
+
+In addition, there is a generic ``job.open()`` function as well, that
+is a wrapper around Python's ``open()`` function:
+
+.. code-block::
+   :caption: Use of ``job.open()``.
 
    def synthesis(job):
        data = ...
        with job.open('thefilename', 'wt') as fh:
            fh.write(data)
-
-There are also dedicated functions to write Python pickle and json
-files, like this
-
-.. code-block::
-   :caption: writing pickle and json files
-
-   def synthesis(job):
-       data = ...
-       job.save(data, 'thisisapicklefile')
-       job.json_save(data, 'andthisisajsonfile')
-
-Sometimes, a method may call an external program that is generating
-files as part of the execution.  Exax can be made aware of these files
-using the ``register_file()`` function.
-
-.. code-block::
-   :caption:  Register a file created by external program.
-
-   def synthesis(job):
-       # use external program ffmpeg to generate a movie file "out.mp4"
-       subprocess.run(['ffmpeg', ..., 'out.mp4'])
-       job.register_file('out.mp4')
-
 
 .. note :: Reading and writing files in ``analysis()`` is special,
   because this function is running as several parallel processes.  For
@@ -398,10 +359,65 @@ using the ``register_file()`` function.
 
   This is handled using ``save(..., sliceno=sliceno)``, see @.
 
-In addition, it is possible to create temporary files, that only
-exists during the execution of the method and will be automatically
-deleted upon job completion.  This *might* be useful for huge
-temporary files if disk space is a major concern.
+In addition, it is possible to create temporary files that only exists
+during the execution of the method and will be automatically deleted
+upon job completion.  This *might* be useful for huge temporary files
+if disk space is a major concern.  Add the parameter ``temp=True`` to
+the call to make a file temporary.
+
+
+
+Registering Files
+-----------------
+
+*Registering* a file means making exax aware of it, so that simple
+helper functions can list and retrieve the data directly from a job
+object.  For example, registered files can be listed using
+``job.files()``, and accessed using ``job.open()`` or ``job.json_load()``.
+
+Almost all created files are registered by default when the method
+finishes execution.  Files in subdirectories is the exception, but it
+is possible to register them manually if needed.  Manual registration,
+however, turns off automatic registration for all files.  Registration
+is either manual or automatic.
+
+.. note :: If a file is manually registered, automatic registration is
+   disabled for all other files, so they have to be registered
+   manually too, if needed.
+
+.. note :: Files in subdirectories are not registered automatically.
+
+Calls to ``job.save()``, ``job.json_save()``, and ``job.open()`` will
+register the created file, *and* turn off automatic registration of
+all other files.  This is a very reasonable default.
+
+To register a file manually, use ``job.register_file()``, for example
+like this, when the file has been created by an external command:
+
+.. code-block::
+   :caption:  Register a file created by external program.
+
+   def synthesis(job):
+       # use external program ffmpeg to generate a movie file "out.mp4"
+       subprocess.run(['ffmpeg', ..., 'out.mp4'])
+       job.register_file('out.mp4')
+
+Several files could be registered at once using glob patterns, like this
+
+.. code-block::
+   :caption: Registering a file using ``job.register_files()``
+
+   def synthesis(job):
+       # create file "myfile1.txt", "myfile2.txt", ..., "myfile10.txt"
+       job.register_files("myfile*.txt")
+
+The call ``job.register_files()`` will return a set containing the
+names of all files that were registered!
+
+What about temporary files?  Temporary files are not registered, not
+even when created by the helper functions.  On the other hand, if a
+temporary file is registered manually, it stops being temporary.
+
 
 
 
@@ -409,8 +425,8 @@ Find and Load Created Files
 ----------------------------
 
 Files in a job are easily accessible by other methods and build
-scripts, see this example where data in a job is read back into the
-running build script.
+scripts, see this example where data created in a job is read back
+into the running build script.
 
 .. code-block::
    :caption: Writing and reading files (see  currentjob@ ref for info about ``save()`` and more.
@@ -418,8 +434,8 @@ running build script.
     # in the method "a_methodthatsavefiles.py"
     def synthesis(job):
         ...
-	job.save(data1, 'afilename')
-	job.save(data2, 'anotherfilename')
+        job.save(data1, 'afilename')
+        job.save(data2, 'anotherfilename')
 
     # in the build script "build.py"
     def main(urd):
@@ -428,17 +444,21 @@ running build script.
         for filename in job.files:
             data[filename] = job.load(filename)
 
-All filenames are available using ``job.files()``, that returns a set
-of all filenames in the job.  The absolute path of a particular file
-can be retrieved using the ``job.filename()`` function, like this
+There is also a ``job.json_load()`` function to directly load json
+content.
+
+The names of a job's all registered files are available using
+``job.files()``.  This call will return a set of all filenames in the
+job.  The absolute path of a particular file can be retrieved using
+the ``job.filename()`` function, like this
 
 .. code-block::
    :caption: Find files created by a job.
 
     def main(urd):
         job = urd.build('mymethod', ...)
-	print(job.files())
-	print(job.filename('myfile'))
+        print(job.files())
+        print(job.filename('myfile'))
 
 .. note :: There is no need to use absolute paths with exax.  Absolute
   paths should in fact be avoided, since they prevent moving things
