@@ -240,7 +240,7 @@ class Job(unicode):
 		else:
 			return ''.join(res.values())
 
-	def link_result(self, filename='result.pickle', linkname=None):
+	def link_result(self, filename='result.pickle', linkname=None, header='', description=''):
 		"""Put a symlink to filename in result_directory
 		Only use this in a build script."""
 		from accelerator.g import running
@@ -261,6 +261,26 @@ class Job(unicode):
 				linkname += os.path.basename(filename)
 		source_fn = os.path.join(self.path, filename)
 		assert os.path.exists(source_fn), "Filename \"%s\" does not exist in jobdir \"%s\"!" % (filename, self.path)
+
+		from accelerator import g
+		from json import dumps
+		with open(g.job.filename('.board.txt'), 'at') as fh:
+			# @@@ fixa så att detta funkar med länkar, kolla att filen finns etc.
+			res = {
+				'job': self,
+				'filename': filename,
+				'header': header,
+				'description': description,
+				'method': self.method,
+				'size': None,
+				'isdir': False,
+			}
+			if os.path.isdir(self.filename(filename)):
+				res['isdir'] = True
+			else:
+				res['size'] = os.lstat(self.filename(filename)).st_size
+			fh.write(dumps(res) + '\n')
+
 		result_directory = cfg['result_directory']
 		dest_fn = result_directory
 		for part in linkname.split('/'):
