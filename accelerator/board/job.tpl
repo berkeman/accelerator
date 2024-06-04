@@ -34,6 +34,74 @@
 	% end
 	<h2>job graph</h2>
 	% include('graph', mode='job', key=job)
+
+	% if job.is_build and results is not None:
+		<h2>Results</h2>
+		<div class="box" id="results" results="{{ results }}">
+			<div id="waiting"><div class="spinner"></div>
+			<script>
+				const waitingEl = document.getElementById('waiting');
+				let prev = waitingEl;
+				oneresultbox = function (data) {
+					let path = '/job/' + data.job + '/' + data.filename;
+					const resultEl = document.createElement('DIV');
+					const txt = text => resultEl.appendChild(document.createTextNode(text));
+					const a = function (text, ...parts) {
+						const a = document.createElement('A');
+						a.innerText = text;
+						let href = '/job'
+						for (const part of parts) {
+							href = href + '/' + encodeURIComponent(part);
+						}
+						a.href = href;
+						a.target = '_blank';
+						resultEl.appendChild(a);
+					}
+					resultEl.className = 'result';
+					if (data.header) {
+						resultEl.innerHTML = "<h3>" + data.header + "</h3>";
+					} else {
+						resultEl.innerHTML = "<h3>" + data.job + "/" + data.filename + "&nbsp; (" + data.method + ")</h3>";
+					}
+					if (data.isdir) {
+						child = document.createElement('DIV');
+						ul = document.createElement('UL');
+						el = document.createElement('LI');
+						const a = document.createElement('A');
+						a.innerText = data.filename;
+						a.href = encodeURI('/job/' + data.job + '/' + data.filename);
+						child.id = 'dirs';
+						child.appendChild(ul);
+						el.appendChild(a);
+						ul.appendChild(el);
+					} else {
+						child = sizewrap(path, data, '@@@@@@@@@@', '/');
+					}
+					tail = document.createElement('DIV');
+					if (data.description) {
+						tail.innerHTML = '<br><i>' + data.description + '</i>';
+					}
+					resultEl.appendChild(child);
+					if (!data.isdir) {
+						a(data.filename, data.job, data.filename);
+						txt(' from ');
+						a(data.job, data.job);
+						txt(' (');
+						a('Source', data.job, 'method.tar.gz/');
+						txt(')');
+					}
+					resultEl.appendChild(tail);
+					prev.before(resultEl);
+				};
+				for (const item of JSON.parse(document.getElementById('results').getAttribute("results"))) {
+					oneresultbox(item);
+				};
+				waitingEl.style.display = 'none';
+			</script>
+		</div>
+	% end
+	</div>
+
 	<h2>setup</h2>
 	<div class="box">
 		% if job.is_build:
