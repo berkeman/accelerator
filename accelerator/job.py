@@ -241,7 +241,7 @@ class Job(unicode):
 		else:
 			return ''.join(res.values())
 
-	def link_result(self, filename='result.pickle', linkname=None):
+	def link_result(self, filename='result.pickle', linkname=None, header=None, description=None):
 		"""Put a symlink to filename in result_directory
 		Only use this in a build script."""
 		from accelerator.g import running
@@ -276,6 +276,27 @@ class Job(unicode):
 			pass
 		os.symlink(source_fn, dest_fn + '_')
 		os.rename(dest_fn + '_', dest_fn)
+		from accelerator import g
+		from json import dumps
+		with open(g.job.filename('.resultfiles.jsonl'), 'at') as fh:
+			# @@@ fixa så att detta funkar med länkar, kolla att filen finns etc.
+			stat = os.stat(source_fn)
+			res = {
+				'is_build': True,
+				'jobid': self,
+				'name': filename,
+				'header': header,
+				'description': description,
+				'method': self.method,
+				'size': None,
+				'isdir': False,
+				'ts': stat.st_mtime,
+			}
+			if os.path.isdir(self.filename(filename)):
+				res['isdir'] = True
+			else:
+				res['size'] = stat.st_size
+			fh.write(dumps(res) + '\n')
 
 	def link_to_here(self, filename='result.pickle'):
 		from accelerator.g import job
