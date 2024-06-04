@@ -30,8 +30,6 @@
 	<div id="waiting"><div class="spinner"></div></div>
 <script language="javascript">
 (function () {
-	const imageExts = new Set(['jpg', 'jpeg', 'gif', 'png', 'apng', 'svg', 'bmp', 'webp']);
-	const videoExts = new Set(['mp4', 'mov', 'mpg', 'mpeg', 'mkv', 'avi', 'webm']);
 	const waitingEl = document.getElementById('waiting');
 	const statusEl = document.querySelector('#status span');
 	const show_all = document.getElementById('show-all');
@@ -224,114 +222,6 @@
 			el.classList.add('hidden');
 			el.dataset.name = '';
 		}
-	};
-	const sizewrap = function (name, data, size, url_path) {
-		if (data.size < 5000000) return load(name, data, size, url_path);
-		const clickEl = document.createElement('DIV');
-		clickEl.className = 'clickme';
-		clickEl.innerText = 'Click to load ' + data.size + ' bytes';
-		clickEl.onclick = function () {
-			clickEl.parentNode.replaceChild(load(name, data, size, url_path), clickEl);
-		};
-		return clickEl;
-	};
-	const name2ext = function (name) {
-		const parts = name.split('.');
-		let ext = parts.pop().toLowerCase();
-		if (ext === 'gz' && parts.length > 1) {
-			ext = parts.pop().toLowerCase();
-		}
-		return ext;
-	}
-	const load = function (name, data, size, url_path) {
-		const fileUrl = url_path + encodeURIComponent(name) + '?ts=' + data.ts;
-		const ext = name2ext(name);
-		const container = document.createElement('DIV');
-		const spinner = document.createElement('DIV');
-		spinner.className = 'spinner';
-		container.appendChild(spinner);
-		const onerror = function () {
-			spinner.remove();
-			container.className = 'error';
-			container.innerText = 'ERROR';
-		};
-		let fileEl;
-		let stdhandling = false;
-		size.disabled = false;
-		size.onclick = function () {
-			if (container.className) {
-				size.value = 'big';
-				container.className = '';
-			} else {
-				size.value = 'small';
-				container.className = 'big';
-				container.scrollIntoView({behavior: 'smooth', block: 'end'});
-			}
-		};
-		if (imageExts.has(ext)) {
-			fileEl = document.createElement('IMG');
-			fileEl.onclick = function () {
-				if (fileEl.naturalHeight > fileEl.height) {
-					if (container.className) {
-						container.className = 'full';
-						size.value = 'small';
-						fileEl.scrollIntoView({behavior: 'smooth', block: 'nearest'});
-					} else {
-						container.className = 'big';
-						container.scrollIntoView({behavior: 'smooth', block: 'nearest'});
-						if (fileEl.naturalHeight > fileEl.height) {
-							size.value = 'bigger';
-						} else {
-							size.value = 'small';
-						}
-					}
-				} else {
-					size.value = 'big';
-					container.className = '';
-					fileEl.className = '';
-				}
-			};
-			size.onclick = fileEl.onclick;
-			stdhandling = true;
-		} else if (videoExts.has(ext)) {
-			fileEl = document.createElement('VIDEO');
-			fileEl.src = fileUrl;
-			fileEl.controls = true;
-			spinner.remove(); // shows a video UI immediately anyway
-		} else if (ext === 'pdf') {
-			fileEl = document.createElement('EMBED');
-			fileEl.type = 'application/pdf';
-			stdhandling = true;
-		} else {
-			fileEl = document.createElement('DIV');
-			fileEl.className = 'textfile';
-			const pre = document.createElement('PRE');
-			fileEl.appendChild(pre);
-			fetch(fileUrl, {headers: {Accept: 'text/plain'}})
-			.then(res => {
-				if (res.ok) return res.text();
-				throw new Error('error response');
-			})
-			.then(res => {
-				if (ext === 'html') {
-					fileEl.innerHTML = res;
-				} else {
-					parseANSI(pre, res);
-				}
-				spinner.remove();
-			})
-			.catch(error => {
-				console.log(error);
-				onerror();
-			});
-		}
-		if (stdhandling) {
-			fileEl.onload = () => spinner.remove();
-			fileEl.onerror = onerror;
-			fileEl.src = fileUrl;
-		}
-		container.appendChild(fileEl);
-		return container;
 	};
 	const update_date = function(el) {
 		const date = new Date(el.dataset.ts * 1000);
