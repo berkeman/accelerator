@@ -291,7 +291,7 @@ class Job(unicode):
 			if os.path.isdir(self.filename(filename)):
 				res['isdir'] = True
 			else:
-				res['size'] = os.lstat(self.filename(filename)).st_size
+				res['size'] = os.stat(self.filename(filename)).st_size
 			fh.write(dumps(res) + '\n')
 
 	def chain(self, length=-1, reverse=False, stop_job=None):
