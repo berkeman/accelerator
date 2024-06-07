@@ -80,6 +80,23 @@
 					if (data.description) {
 						tail.innerHTML = '<br><i>' + data.description + '</i>';
 					}
+					const dateEl = document.createElement('SPAN');
+					dateEl.className = 'date';
+					resultEl.appendChild(dateEl)
+					update_date(resultEl);
+					const size = document.createElement('INPUT');
+					size.type = 'submit';
+					size.value = 'big';
+					size.disabled = true;
+					resultEl.appendChild(size);
+					const hide = document.createElement('INPUT');
+					hide.type = 'submit';
+					hide.value = 'hide';
+					hide.onclick = function () {
+						show_all.disabled = false;
+						resultEl.classList.add('hidden');
+					}
+					resultEl.appendChild(hide);
 					resultEl.appendChild(child);
 					if (!data.isdir) {
 						a(data.filename, data.job, data.filename);

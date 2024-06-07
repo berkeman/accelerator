@@ -155,13 +155,10 @@ const resultbox = (function () {
 			resultEl.appendChild(el);
 		}
 		txt(' ');
-	if (!url_path) {
-	    console.log(url_path);
-	    const dateEl = document.createElement('SPAN');
-	    dateEl.className = 'date';
-	    resultEl.appendChild(dateEl)
-	    update_date(resultEl);
-	};
+		const dateEl = document.createElement('SPAN');
+		dateEl.className = 'date';
+		resultEl.appendChild(dateEl)
+		update_date(resultEl);
 		const size = document.createElement('INPUT');
 		size.type = 'submit';
 		size.value = 'big';
