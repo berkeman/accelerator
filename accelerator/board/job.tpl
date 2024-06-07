@@ -42,8 +42,8 @@
 			(function () {
 				const resultfiles = document.getElementById('results');
 				oneresultbox = function (data) {
-					let path = '/job/' + data.job + '/' + data.filename;
 					const resultEl = document.createElement('DIV');
+					let path = '/job/' + data.job + '/' + data.filename;
 					const txt = text => resultEl.appendChild(document.createTextNode(text));
 					const a = function (text, ...parts) {
 						const a = document.createElement('A');
