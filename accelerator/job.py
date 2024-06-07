@@ -240,7 +240,7 @@ class Job(unicode):
 		else:
 			return ''.join(res.values())
 
-	def link_result(self, filename='result.pickle', linkname=None, header='', description=''):
+	def link_result(self, filename='result.pickle', linkname=None, header=None, description=None):
 		"""Put a symlink to filename in result_directory
 		Only use this in a build script."""
 		from accelerator.g import running
