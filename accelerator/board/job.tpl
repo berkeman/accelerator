@@ -51,7 +51,6 @@
 				const resultfiles = document.getElementById('results');
 				for (const data of JSON.parse(resultfiles.getAttribute('data-results'))) {
 					const resultEl = document.createElement('DIV');
-					let path = '/job/' + data.job + '/' + data.filename;
 					const txt = text => resultEl.appendChild(document.createTextNode(text));
 					const a = function (text, ...parts) {
 						const a = document.createElement('A');
@@ -105,6 +104,7 @@
 						el.appendChild(a);
 						ul.appendChild(el);
 					} else {
+						let path = '/job/' + data.job + '/' + data.filename;
 						child = sizewrap(path, data, size, '/');
 					}
 
