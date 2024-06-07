@@ -37,11 +37,19 @@
 
 	% if job.is_build and results is not None:
 		<h2>Results</h2>
+		<input type="submit" value="show all" id="show-all" disabled>
 		<div class="box" id="results" data-results="{{ results }}">
 			<script>
 			(function () {
+				const show_all = document.getElementById('show-all');
+				show_all.onclick = function() {
+					show_all.disabled = true;
+					for (const el of document.querySelectorAll('.result.hidden')) {
+						el.classList.remove('hidden');
+					}
+				}
 				const resultfiles = document.getElementById('results');
-				oneresultbox = function (data) {
+				for (const data of JSON.parse(resultfiles.getAttribute('data-results'))) {
 					const resultEl = document.createElement('DIV');
 					let path = '/job/' + data.job + '/' + data.filename;
 					const txt = text => resultEl.appendChild(document.createTextNode(text));
@@ -62,6 +70,29 @@
 					} else {
 						resultEl.innerHTML = "<h3>" + data.job + "/" + data.filename + "&nbsp; (" + data.method + ")</h3>";
 					}
+
+					tail = document.createElement('DIV');
+					if (data.description) {
+						tail.innerHTML = '<br><i>' + data.description + '</i>';
+					}
+					const dateEl = document.createElement('SPAN');
+					dateEl.className = 'date';
+					resultEl.appendChild(dateEl)
+//					update_date(resultEl);
+					const size = document.createElement('INPUT');
+					size.type = 'submit';
+					size.value = 'big';
+					size.disabled = true;
+					resultEl.appendChild(size);
+					const hide = document.createElement('INPUT');
+					hide.type = 'submit';
+					hide.value = 'hide';
+					hide.onclick = function () {
+						show_all.disabled = false;
+						resultEl.classList.add('hidden');
+					}
+					resultEl.appendChild(hide);
+
 					if (data.isdir) {
 						child = document.createElement('DIV');
 						ul = document.createElement('UL');
@@ -74,12 +105,9 @@
 						el.appendChild(a);
 						ul.appendChild(el);
 					} else {
-						child = sizewrap(path, data, '@@@@@@@@@@', '/');
+						child = sizewrap(path, data, size, '/');
 					}
-					tail = document.createElement('DIV');
-					if (data.description) {
-						tail.innerHTML = '<br><i>' + data.description + '</i>';
-					}
+
 					resultEl.appendChild(child);
 					if (!data.isdir) {
 						a(data.filename, data.job, data.filename);
@@ -91,9 +119,7 @@
 					}
 					resultEl.appendChild(tail);
 					resultfiles.appendChild(resultEl);
-				};
-				for (const item of JSON.parse(resultfiles.getAttribute('data-results'))) {
-					oneresultbox(item);
+					
 				};
 			})();
 			</script>
