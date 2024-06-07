@@ -261,7 +261,20 @@ class Job(unicode):
 				linkname += os.path.basename(filename)
 		source_fn = os.path.join(self.path, filename)
 		assert os.path.exists(source_fn), "Filename \"%s\" does not exist in jobdir \"%s\"!" % (filename, self.path)
-
+		result_directory = cfg['result_directory']
+		dest_fn = result_directory
+		for part in linkname.split('/'):
+			if not os.path.exists(dest_fn):
+				os.mkdir(dest_fn)
+			elif dest_fn != result_directory and os.path.islink(dest_fn):
+				raise AcceleratorError("Refusing to create link %r: %r is a symlink" % (linkname, dest_fn))
+			dest_fn = os.path.join(dest_fn, part)
+		try:
+			os.remove(dest_fn + '_')
+		except OSError:
+			pass
+		os.symlink(source_fn, dest_fn + '_')
+		os.rename(dest_fn + '_', dest_fn)
 		from accelerator import g
 		from json import dumps
 		with open(g.job.filename('.board.txt'), 'at') as fh:
@@ -280,21 +293,6 @@ class Job(unicode):
 			else:
 				res['size'] = os.lstat(self.filename(filename)).st_size
 			fh.write(dumps(res) + '\n')
-
-		result_directory = cfg['result_directory']
-		dest_fn = result_directory
-		for part in linkname.split('/'):
-			if not os.path.exists(dest_fn):
-				os.mkdir(dest_fn)
-			elif dest_fn != result_directory and os.path.islink(dest_fn):
-				raise AcceleratorError("Refusing to create link %r: %r is a symlink" % (linkname, dest_fn))
-			dest_fn = os.path.join(dest_fn, part)
-		try:
-			os.remove(dest_fn + '_')
-		except OSError:
-			pass
-		os.symlink(source_fn, dest_fn + '_')
-		os.rename(dest_fn + '_', dest_fn)
 
 	def chain(self, length=-1, reverse=False, stop_job=None):
 		"""Like Dataset.chain but for jobs."""
