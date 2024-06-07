@@ -30,73 +30,6 @@
 	<div id="waiting"><div class="spinner"></div></div>
 <script language="javascript">
 (function () {
-	resultbox = function(prev, name, data) {
-		const resultEl = document.createElement('DIV');
-		const txt = text => resultEl.appendChild(document.createTextNode(text));
-		const a = function (text, ...parts) {
-			const a = document.createElement('A');
-			a.innerText = text;
-			let href = '/job'
-			for (const part of parts) {
-				href = href + '/' + encodeURIComponent(part);
-			}
-			a.href = href;
-			a.target = '_blank';
-			resultEl.appendChild(a);
-		}
-		resultEl.className = 'result';
-		resultEl.dataset.name = name;
-		resultEl.dataset.ts = data.ts;
-		if (data.jobid) {
-			a(name, data.jobid, data.name);
-			txt(' from ');
-			a(data.jobid, data.jobid);
-			txt(' (');
-			const methodEl = document.createElement('SPAN')
-			methodEl.className = 'method'
-			resultEl.appendChild(methodEl);
-			txt(')');
-			fetch('/job/' + encodeURIComponent(data.jobid), {headers: {Accept: 'application/json'}})
-			.then(res => {
-				if (res.ok) return res.json();
-				throw new Error('error response');
-			})
-			.then(res => {
-				const a = document.createElement('A');
-				a.innerText = res.params.method;
-				a.href = '/method/' + encodeURIComponent(res.params.method);
-				a.target = '_blank';
-				methodEl.appendChild(a);
-			});
-		} else {
-			txt(name + ' ');
-			const el = document.createElement('SPAN');
-			el.className = 'unknown';
-			el.appendChild(document.createTextNode('from UNKNOWN'));
-			resultEl.appendChild(el);
-		}
-		txt(' ');
-		const dateEl = document.createElement('SPAN');
-		dateEl.className = 'date';
-		resultEl.appendChild(dateEl)
-		update_date(resultEl);
-		const size = document.createElement('INPUT');
-		size.type = 'submit';
-		size.value = 'big';
-		size.disabled = true;
-		resultEl.appendChild(size);
-		const hide = document.createElement('INPUT');
-		hide.type = 'submit';
-		hide.value = 'hide';
-		hide.onclick = function () {
-			show_all.disabled = false;
-			resultEl.classList.add('hidden');
-		}
-		resultEl.appendChild(hide);
-		resultEl.appendChild(sizewrap(name, data, size, '{{ url_path }}/'));
-		prev.after(resultEl);
-		prev = resultEl;
-	}
 	const waitingEl = document.getElementById('waiting');
 	const statusEl = document.querySelector('#status span');
 	const show_all = document.getElementById('show-all');
@@ -185,7 +118,7 @@
 					}
 					remove(oldEl);
 				}
-				resultbox(prev, name, data);
+				resultbox(prev, name, data, '{{ url_path }}/');
 			}
 			for (const el of Object.values(existing)) {
 				remove(el);
@@ -224,27 +157,6 @@
 			setTimeout(el.remove, 1400);
 			el.classList.add('hidden');
 			el.dataset.name = '';
-		}
-	};
-	const update_date = function(el) {
-		const date = new Date(el.dataset.ts * 1000);
-		el.querySelector('.date').innerText = fmtdate_ago(date);
-	};
-	const fmtdate = function(date) {
-		if (!date) date = new Date();
-		return date.toISOString().substring(0, 19).replace('T', ' ') + 'Z';
-	};
-	const units = [['minute', 60], ['hour', 24], ['day', 365.25], ['year', 0]];
-	const fmtdate_ago = function (date) {
-		const now = new Date();
-		let ago = (now - date) / 60000;
-		for (const [unit, size] of units) {
-			if (size === 0 || ago < size) {
-				ago = ago.toFixed(0);
-				let s = (ago == 1) ? '' : 's';
-				return fmtdate(date) + ', ' + ago + ' ' + unit + s + ' ago';
-			}
-			ago = ago / size;
 		}
 	};
 	update();
