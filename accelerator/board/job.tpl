@@ -37,11 +37,10 @@
 
 	% if job.is_build and results is not None:
 		<h2>Results</h2>
-		<div class="box" id="results" results="{{ results }}">
-			<div id="waiting"><div class="spinner"></div>
+		<div class="box" id="results" data-results="{{ results }}">
 			<script>
-				const waitingEl = document.getElementById('waiting');
-				let prev = waitingEl;
+			(function () {
+				const resultfiles = document.getElementById('results');
 				oneresultbox = function (data) {
 					let path = '/job/' + data.job + '/' + data.filename;
 					const resultEl = document.createElement('DIV');
@@ -91,12 +90,12 @@
 						txt(')');
 					}
 					resultEl.appendChild(tail);
-					prev.before(resultEl);
+					resultfiles.appendChild(resultEl);
 				};
-				for (const item of JSON.parse(document.getElementById('results').getAttribute("results"))) {
+				for (const item of JSON.parse(resultfiles.getAttribute('data-results'))) {
 					oneresultbox(item);
 				};
-				waitingEl.style.display = 'none';
+			})();
 			</script>
 		</div>
 	% end
