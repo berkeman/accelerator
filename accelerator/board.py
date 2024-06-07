@@ -536,7 +536,7 @@ def run(cfg, from_shell=False, development=False):
 			current = jobs[job]
 			if job.is_build:
 				results = []
-				with job.open('.board.txt', 'rt') as fh:
+				with job.open('.resultfiles.jsonl', 'rt') as fh:
 					for line in fh.read().rstrip('\n').split('\n'):
 						results.append(json.loads(line))
 				results = json.dumps(results)

@@ -277,7 +277,7 @@ class Job(unicode):
 		os.rename(dest_fn + '_', dest_fn)
 		from accelerator import g
 		from json import dumps
-		with open(g.job.filename('.board.txt'), 'at') as fh:
+		with open(g.job.filename('.resultfiles.jsonl'), 'at') as fh:
 			# @@@ fixa så att detta funkar med länkar, kolla att filen finns etc.
 			res = {
 				'job': self,
