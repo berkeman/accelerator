@@ -536,10 +536,13 @@ def run(cfg, from_shell=False, development=False):
 			current = jobs[job]
 			if job.is_build:
 				results = []
-				with job.open('.resultfiles.jsonl', 'rt') as fh:
-					for line in fh:
-						results.append(json.loads(line))
-				results = json.dumps(results)
+				try:
+					with job.open('.resultfiles.jsonl', 'rt') as fh:
+						for line in fh:
+							results.append(json.loads(line))
+					results = json.dumps(results)
+				except FileNotFoundError:
+					pass
 		else:
 			aborted = True
 			current = False
