@@ -39,6 +39,8 @@
 		<h2>Results</h2>
 		<div class="box" id="results" data-results="{{ results }}">
 			<script>
+			(function () {
+				const resultfiles = document.getElementById('results');
 				for (const item of JSON.parse(resultfiles.getAttribute('data-results'))) {
 					resultbox(resultfiles, 'pelle', item, '');
 				};

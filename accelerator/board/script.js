@@ -109,10 +109,11 @@ const resultbox = (function () {
 		};
 		return clickEl;
 	};
-    const resultbox = function(prev, name, data, url_path) {
+	const resultbox = function(prev, name, data, url_path) {
+		// url_path is set when called from main,
+		// but empty when called from build job.
 		const resultEl = document.createElement('DIV');
 		const txt = text => resultEl.appendChild(document.createTextNode(text));
-
 		const a = function (text, ...parts) {
 			const a = document.createElement('A');
 			a.innerText = text;
@@ -124,13 +125,11 @@ const resultbox = (function () {
 			a.target = '_blank';
 			resultEl.appendChild(a);
 		}
-
 		resultEl.className = 'result';
 		resultEl.dataset.name = name;
 		resultEl.dataset.ts = data.ts;
-
+		// resultbox header
 		if (url_path) {
-		    console.log('has url_path');
 			if (data.jobid) {
 				a(name, data.jobid, data.name);
 				txt(' from ');
@@ -160,28 +159,23 @@ const resultbox = (function () {
 				resultEl.appendChild(el);
 			}
 		} else {
-		    if (data.header) {
-		 	resultEl.innerHTML = "<h3>" + data.header + "</h3>";
-		    } else {
-		 	resultEl.innerHTML = "<h3>" + data.job + "/" + data.filename + "&nbsp; (" + data.method + ")</h3>";
-		    }
+			if (data.header) {
+				resultEl.innerHTML = "<h3>" + data.header + "</h3>";
+			} else {
+				resultEl.innerHTML = "<h3>" + data.job + "/" + data.filename + "&nbsp; (" + data.method + ")</h3>";
+			}
 		}
-
 		txt(' ');
-
-		if( url_path ) {
-		    const dateEl = document.createElement('SPAN');
-		    dateEl.className = 'date';
-		    resultEl.appendChild(dateEl)
-		    update_date(resultEl);
-		}
-
+		//
+		const dateEl = document.createElement('SPAN');
+		dateEl.className = 'date';
+		resultEl.appendChild(dateEl)
+		update_date(resultEl);
 		const size = document.createElement('INPUT');
 		size.type = 'submit';
 		size.value = 'big';
 		size.disabled = true;
 		resultEl.appendChild(size);
-
 		const hide = document.createElement('INPUT');
 		hide.type = 'submit';
 		hide.value = 'hide';
@@ -192,40 +186,38 @@ const resultbox = (function () {
 		resultEl.appendChild(hide);
 
 		if( url_path ) {
-		    resultEl.appendChild(sizewrap(name, data, size, url_path));
+			resultEl.appendChild(sizewrap(name, data, size, url_path));
 		} else {
-		    if (data.isdir) {
-		 	child = document.createElement('DIV');
-		 	ul = document.createElement('UL');
-		 	el = document.createElement('LI');
-		 	const a = document.createElement('A');
-		 	a.innerText = data.filename;
-		 	a.href = encodeURI('/job/' + data.job + '/' + data.filename);
-		 	child.id = 'dirs';
-		 	child.appendChild(ul);
-		 	el.appendChild(a);
-		 	ul.appendChild(el);
-		    }
-		    else {
-			let path = data.job + '/' + data.filename;
-		 	child = sizewrap(path, data, size, url_path);
-		    }
-		    resultEl.appendChild(child);
-		    
-		    tail = document.createElement('DIV');
-		    if (data.description) {
-			tail.innerHTML = '<br><i>' + data.description + '</i>';
-		    }
-		    resultEl.appendChild(tail);
+			if (data.isdir) {
+				child = document.createElement('DIV');
+				ul = document.createElement('UL');
+				el = document.createElement('LI');
+				const a = document.createElement('A');
+				a.innerText = data.filename;
+				a.href = encodeURI('/job/' + data.job + '/' + data.filename);
+				child.id = 'dirs';
+				child.appendChild(ul);
+				el.appendChild(a);
+				ul.appendChild(el);
+			}
+			else {
+				let path = data.job + '/' + data.filename;
+				child = sizewrap(path, data, size, url_path);
+			}
+			resultEl.appendChild(child);
+
+			tail = document.createElement('DIV');
+			if (data.description) {
+				tail.innerHTML = '<br><i>' + data.description + '</i>';
+			}
+			resultEl.appendChild(tail);
 		}
 
-		prev.after(resultEl);
-		prev = resultEl;
+		prev.appendChild(resultEl);
 	};
 	return resultbox;
-
-
 })();
+
 const update_date = function(el) {
 	const date = new Date(el.dataset.ts * 1000);
 	el.querySelector('.date').innerText = fmtdate_ago(date);
