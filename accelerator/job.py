@@ -287,11 +287,14 @@ class Job(unicode):
 				'method': self.method,
 				'size': None,
 				'isdir': False,
+				'ts': None,
 			}
 			if os.path.isdir(self.filename(filename)):
 				res['isdir'] = True
 			else:
-				res['size'] = os.stat(self.filename(filename)).st_size
+				stat = os.stat(self.filename(filename))
+				res['size'] = stat.st_size
+				res['ts'] = stat.st_ctime
 			fh.write(dumps(res) + '\n')
 
 	def chain(self, length=-1, reverse=False, stop_job=None):
