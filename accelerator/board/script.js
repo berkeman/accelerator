@@ -187,6 +187,8 @@ const resultbox = (function () {
 
 		if( url_path ) {
 			resultEl.appendChild(sizewrap(name, data, size, url_path));
+		    prev.after(resultEl);
+		    prev = resultEl;
 		} else {
 			if (data.isdir) {
 				child = document.createElement('DIV');
@@ -211,9 +213,8 @@ const resultbox = (function () {
 				tail.innerHTML = '<br><i>' + data.description + '</i>';
 			}
 			resultEl.appendChild(tail);
+		    prev.appendChild(resultEl);
 		}
-
-		prev.appendChild(resultEl);
 	};
 	return resultbox;
 })();
