@@ -112,6 +112,7 @@ const resultbox = (function () {
     const resultbox = function(prev, name, data, url_path) {
 		const resultEl = document.createElement('DIV');
 		const txt = text => resultEl.appendChild(document.createTextNode(text));
+
 		const a = function (text, ...parts) {
 			const a = document.createElement('A');
 			a.innerText = text;
@@ -123,47 +124,64 @@ const resultbox = (function () {
 			a.target = '_blank';
 			resultEl.appendChild(a);
 		}
+
 		resultEl.className = 'result';
 		resultEl.dataset.name = name;
 		resultEl.dataset.ts = data.ts;
-		if (data.jobid) {
-			a(name, data.jobid, data.name);
-			txt(' from ');
-			a(data.jobid, data.jobid);
-			txt(' (');
-			const methodEl = document.createElement('SPAN')
-			methodEl.className = 'method'
-			resultEl.appendChild(methodEl);
-			txt(')');
-			fetch('/job/' + encodeURIComponent(data.jobid), {headers: {Accept: 'application/json'}})
-			.then(res => {
-				if (res.ok) return res.json();
-				throw new Error('error response');
-			})
-			.then(res => {
-				const a = document.createElement('A');
-				a.innerText = res.params.method;
-				a.href = '/method/' + encodeURIComponent(res.params.method);
-				a.target = '_blank';
-				methodEl.appendChild(a);
-			});
+
+		if (url_path) {
+		    console.log('has url_path');
+			if (data.jobid) {
+				a(name, data.jobid, data.name);
+				txt(' from ');
+				a(data.jobid, data.jobid);
+				txt(' (');
+				const methodEl = document.createElement('SPAN')
+				methodEl.className = 'method'
+				resultEl.appendChild(methodEl);
+				txt(')');
+				fetch('/job/' + encodeURIComponent(data.jobid), {headers: {Accept: 'application/json'}})
+				.then(res => {
+					if (res.ok) return res.json();
+					throw new Error('error response');
+				})
+				.then(res => {
+					const a = document.createElement('A');
+					a.innerText = res.params.method;
+					a.href = '/method/' + encodeURIComponent(res.params.method);
+					a.target = '_blank';
+					methodEl.appendChild(a);
+				});
+			} else {
+				txt(name + ' ');
+				const el = document.createElement('SPAN');
+				el.className = 'unknown';
+				el.appendChild(document.createTextNode('from UNKNOWN'));
+				resultEl.appendChild(el);
+			}
 		} else {
-			txt(name + ' ');
-			const el = document.createElement('SPAN');
-			el.className = 'unknown';
-			el.appendChild(document.createTextNode('from UNKNOWN'));
-			resultEl.appendChild(el);
+		    if (data.header) {
+		 	resultEl.innerHTML = "<h3>" + data.header + "</h3>";
+		    } else {
+		 	resultEl.innerHTML = "<h3>" + data.job + "/" + data.filename + "&nbsp; (" + data.method + ")</h3>";
+		    }
 		}
+
 		txt(' ');
-		const dateEl = document.createElement('SPAN');
-		dateEl.className = 'date';
-		resultEl.appendChild(dateEl)
-		update_date(resultEl);
+
+		if( url_path ) {
+		    const dateEl = document.createElement('SPAN');
+		    dateEl.className = 'date';
+		    resultEl.appendChild(dateEl)
+		    update_date(resultEl);
+		}
+
 		const size = document.createElement('INPUT');
 		size.type = 'submit';
 		size.value = 'big';
 		size.disabled = true;
 		resultEl.appendChild(size);
+
 		const hide = document.createElement('INPUT');
 		hide.type = 'submit';
 		hide.value = 'hide';
@@ -172,7 +190,35 @@ const resultbox = (function () {
 			resultEl.classList.add('hidden');
 		}
 		resultEl.appendChild(hide);
-		resultEl.appendChild(sizewrap(name, data, size, url_path));
+
+		if( url_path ) {
+		    resultEl.appendChild(sizewrap(name, data, size, url_path));
+		} else {
+		    if (data.isdir) {
+		 	child = document.createElement('DIV');
+		 	ul = document.createElement('UL');
+		 	el = document.createElement('LI');
+		 	const a = document.createElement('A');
+		 	a.innerText = data.filename;
+		 	a.href = encodeURI('/job/' + data.job + '/' + data.filename);
+		 	child.id = 'dirs';
+		 	child.appendChild(ul);
+		 	el.appendChild(a);
+		 	ul.appendChild(el);
+		    }
+		    else {
+			let path = data.job + '/' + data.filename;
+		 	child = sizewrap(path, data, size, url_path);
+		    }
+		    resultEl.appendChild(child);
+		    
+		    tail = document.createElement('DIV');
+		    if (data.description) {
+			tail.innerHTML = '<br><i>' + data.description + '</i>';
+		    }
+		    resultEl.appendChild(tail);
+		}
+
 		prev.after(resultEl);
 		prev = resultEl;
 	};
