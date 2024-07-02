@@ -525,6 +525,7 @@ def run(cfg, from_shell=False, development=False):
 			post = job.post
 		except IOError:
 			post = None
+		results = None
 		if post:
 			aborted = False
 			files = [fn for fn in job.files() if fn[0] != '/']
@@ -533,6 +534,15 @@ def run(cfg, from_shell=False, development=False):
 			jobs = call_s('jobs_are_current', jobs='\0'.join(jobs))
 			subjobs = [(Job(jobid), jobs[jobid]) for jobid in post.subjobs]
 			current = jobs[job]
+			if job.is_build:
+				results = []
+				try:
+					with job.open('.resultfiles.jsonl', 'rt') as fh:
+						for line in fh:
+							results.append(json.loads(line))
+					results = json.dumps(results)
+				except FileNotFoundError:
+					pass
 		else:
 			aborted = True
 			current = False
@@ -547,6 +557,7 @@ def run(cfg, from_shell=False, development=False):
 			params=job.params,
 			subjobs=subjobs,
 			files=files,
+			results=results,
 		)
 
 	@bottle.get('/dataset/<dsid:path>')
