@@ -18,6 +18,13 @@ const resultitem = (function () {
 		resultEl.className = 'result';
 		resultEl.dataset.name = name;
 		resultEl.dataset.ts = data.ts;
+		if (data.is_build) {
+			if (data.header) {
+				resultEl.innerHTML = "<b>" + data.header + "</b>" + "&nbsp&nbsp&nbsp&nbsp";
+			} else {
+				resultEl.innerHTML = "<b>[" + data.method + "]</b>" + "&nbsp&nbsp&nbsp&nbsp";
+			}
+		}
 		if (data.jobid) {
 			a(name, data.jobid, data.name);
 			txt(' from ');
@@ -64,7 +71,26 @@ const resultitem = (function () {
 			resultEl.classList.add('hidden');
 		}
 		resultEl.appendChild(hide);
-		resultEl.appendChild(sizewrap(name, data, size, url_path));
+		if (data.isdir) {
+			child = document.createElement('DIV');
+			ul = document.createElement('UL');
+			el = document.createElement('LI');
+			const a = document.createElement('A');
+			a.innerText = data.filename;
+			a.href = encodeURI('/job/' + data.job + '/' + data.filename);
+			child.id = 'dirs';
+			child.appendChild(ul);
+			el.appendChild(a);
+			ul.appendChild(el);
+		} else {
+			child = sizewrap(name, data, size, url_path);
+		}
+		resultEl.appendChild(child);
+		if (data.description) {
+			tail = document.createElement('DIV');
+			tail.innerHTML = '<br><i>' + data.description + '</i>';
+			resultEl.appendChild(tail);
+		}
 		return resultEl;
 	};
 	const sizewrap = function (name, data, size, url_path) {
