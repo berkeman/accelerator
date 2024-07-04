@@ -120,7 +120,7 @@
 					}
 					remove(oldEl);
 				}
-				const resultitem = function (name, data) {
+				const resultitem = function (name, data, url_path, show_all) {
 				const resultEl = document.createElement('DIV');
 				const txt = text => resultEl.appendChild(document.createTextNode(text));
 				const a = function (text, ...parts) {
@@ -183,10 +183,10 @@
 					resultEl.classList.add('hidden');
 				}
 				resultEl.appendChild(hide);
-				resultEl.appendChild(sizewrap(name, data, size));
+				resultEl.appendChild(sizewrap(name, data, size, url_path));
 				return resultEl;
 				}
-				resultEl = resultitem(name, data);
+				resultEl = resultitem(name, data, '{{ url_path }}', show_all);
 				prev.after(resultEl);
 				prev = resultEl;
 			}
@@ -229,13 +229,13 @@
 			el.dataset.name = '';
 		}
 	};
-	const sizewrap = function (name, data, size) {
-		if (data.size < 5000000) return load(name, data, size);
+	const sizewrap = function (name, data, size, url_path) {
+		if (data.size < 5000000) return load(name, data, size, url_path);
 		const clickEl = document.createElement('DIV');
 		clickEl.className = 'clickme';
 		clickEl.innerText = 'Click to load ' + data.size + ' bytes';
 		clickEl.onclick = function () {
-			clickEl.parentNode.replaceChild(load(name, data, size), clickEl);
+			clickEl.parentNode.replaceChild(load(name, data, size, url_path), clickEl);
 		};
 		return clickEl;
 	};
@@ -247,8 +247,8 @@
 		}
 		return ext;
 	}
-	const load = function (name, data, size) {
-		const fileUrl = '{{ url_path }}/' + encodeURIComponent(name) + '?ts=' + data.ts;
+	const load = function (name, data, size, url_path) {
+		const fileUrl = url_path + '/' + encodeURIComponent(name) + '?ts=' + data.ts;
 		const ext = name2ext(name);
 		const container = document.createElement('DIV');
 		const spinner = document.createElement('DIV');
