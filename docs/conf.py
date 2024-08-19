@@ -13,10 +13,12 @@ author = 'abcd'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx.ext.autodoc',
-			  'sphinx.ext.autosummary',
-			  'sphinx.ext.autosectionlabel',
-			  'sphinxarg.ext']
+extensions = [
+	'sphinx.ext.autodoc',
+	'sphinx.ext.autosummary',
+	'sphinx.ext.autosectionlabel',
+#	'sphinxarg.ext'
+]
 
 autosectionlabel_prefix_document = True  # Make sure the target is unique
 
@@ -34,6 +36,6 @@ html_theme_options = {
 	'prev_next_buttons_location': 'both',
 }
 html_css_files = [
-    'css/custom.css',
+	'css/custom.css',
 ]
 html_show_sourcelink = False
