@@ -1,5 +1,5 @@
-The Urd Database
-================
+69The Urd Database
+==================
 
 The Urd database persistently stores references to all jobs built in
 build scripts.  By default, references to *all jobs built in a build
@@ -165,7 +165,7 @@ possible when the Urd database is serving multiple users.
 
 The JobList
 -----------
-  This section deals with
+This section deals with
 the features of the ``joblist`` itself.
 
 Any job in ``joblist`` can be found easily.  For example, a specific

@@ -504,7 +504,7 @@ directories.
 
 
 Retrieving stdout and stderr
--------------------------
+----------------------------
 
 Everything written to ``stdout`` and ``stderr`` (using for example
 plain ``print()``-statements) is always stored persistently in the job
