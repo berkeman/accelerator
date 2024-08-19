@@ -1,6 +1,6 @@
 
 
-.. include:: api/currentjob.rst
+.. include:: currentjob.rst
 
 The JobList Class
 -----------------
