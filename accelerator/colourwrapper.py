@@ -54,10 +54,10 @@ class Colour:
 	ways of combining several attributes.
 
 	You can also use:
-		colour(v, '#RGB[bg]') (0 - 5) ("256 colour" mode)
-		colour(v, '#GG[bg]') (00 - 1D) (grayscale from "256 colour" mode)
-		colour(v, 'XNN[bg]') (00 - FF) (directly specifying a "256 colour" index)
-		colour(v, '#RRGGBB[bg]') (00 - FF) (but terminal support is not great)
+	colour(v, '#RGB[bg]') (0 - 5) ("256 colour" mode)
+	colour(v, '#GG[bg]') (00 - 1D) (grayscale from "256 colour" mode)
+	colour(v, 'XNN[bg]') (00 - FF) (directly specifying a "256 colour" index)
+	colour(v, '#RRGGBB[bg]') (00 - FF) (but terminal support is not great)
 
 	Finally you can use names you put in the config file, some of which
 	have default values. This also has a fallback system, so 'foo/bar' will
@@ -67,7 +67,7 @@ class Colour:
 	In the configuration file you can also use <pre >post to just put
 	those literal strings around the value. e.g.
 	[colour]
-		grep/header = <\e[4:3m >\e[24m
+	grep/header = <\e[4:3m >\e[24m
 	if your terminal supports such extended codes.
 
 	The functions take force=True to return escape sequences even if colour
