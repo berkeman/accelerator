@@ -62,89 +62,90 @@ Fixed:
 ax init
 -------
 
-.. argparse::
-   :ref: accelerator.shell.init.createparser
-   :prog: ax init
-   :nodescription:
+..
+   .. argparse::
+      :ref: accelerator.shell.init.createparser
+      :prog: ax init
+      :nodescription:
 
-   Set up a new project directory hierarchy.  Default location is
-   current directory.
+      Set up a new project directory hierarchy.  Default location is
+      current directory.
 
-   The command creates
+      The command creates
 
-   - a project configuration file "``accelerator.conf``",
-   - a method directory ("``./dev``" by default),
-   - a workdir ("``workdirs/dev``" by default"), and
-   - a result directory ("``./result_directiory``")
+      - a project configuration file "``accelerator.conf``",
+      - a method directory ("``./dev``" by default),
+      - a workdir ("``workdirs/dev``" by default"), and
+      - a result directory ("``./result_directiory``")
 
-   It also performs a ``git init`` by default.
+      It also performs a ``git init`` by default.
 
-   .. note:: After running this command, you probably what to have a look
-             at, and perhaps modify, ``accelerator.conf``.
-
-
-   DIR : @replace
-      Name of project directory to create.  If omitted, the current directory
-      will be used.
-
-   --slices : @replace
-      By default, the number of slices will be set to the number of
-      available CPU cores.  Use this to override.
-
-   --name : @replace
-      Name of method dir *and* workdir, default is “``dev``”.
-
-   --input : @replace
-      Input directory, i.e., path to directory where input files are stored.
-
-      .. NOTE:: This is not set by default!
-
-   --force : @replace
-      Go ahead even though directory is not empty, or workdir exists with incompatible slice count.
-      The default behaviour is to *not* proceed.
-
-   --tcp : @replace
-      Listen on TCP instead of unix sockets.
-      Specify HOST (can be IP) to listen on that host specify PORT to use range(PORT, PORT + 3) specify both as HOST:PORT
-      **@@@ vad 17 står det här???**
-      Default: False
-
-   --no-git : @replace
-      Don't create git repository (run ``git init``) in project directory.  The default is to create it.
-
-   --examples : @replace
-      Copy example files to project directory.  Useful for inspection and execution of built-in example code.
-      The default is to *not* copy these files.
+      .. note:: After running this command, you probably what to have a look
+		at, and perhaps modify, ``accelerator.conf``.
 
 
+      DIR : @replace
+	 Name of project directory to create.  If omitted, the current directory
+	 will be used.
 
-ax urd
-------
+      --slices : @replace
+	 By default, the number of slices will be set to the number of
+	 available CPU cores.  Use this to override.
 
-.. argparse::
-   :ref: accelerator.shell.urd.createparser
-   :prog: ax urd
-   :nodescription:
+      --name : @replace
+	 Name of method dir *and* workdir, default is “``dev``”.
 
-   path : @before
-       A path
+      --input : @replace
+	 Input directory, i.e., path to directory where input files are stored.
 
+	 .. NOTE:: This is not set by default!
 
-ax job
-------
+      --force : @replace
+	 Go ahead even though directory is not empty, or workdir exists with incompatible slice count.
+	 The default behaviour is to *not* proceed.
 
-.. argparse::
-   :ref: accelerator.shell.job.createparser
-   :prog: ax job
-   :nodescription:
+      --tcp : @replace
+	 Listen on TCP instead of unix sockets.
+	 Specify HOST (can be IP) to listen on that host specify PORT to use range(PORT, PORT + 3) specify both as HOST:PORT
+	 **@@@ vad 17 står det här???**
+	 Default: False
 
-   Used to inspect jobs.
+      --no-git : @replace
+	 Don't create git repository (run ``git init``) in project directory.  The default is to create it.
+
+      --examples : @replace
+	 Copy example files to project directory.  Useful for inspection and execution of built-in example code.
+	 The default is to *not* copy these files.
 
 
 
-ax ds
------
+   ax urd
+   ------
 
-.. argparse::
-   :ref: accelerator.shell.ds.createparser
-   :prog: ax ds
+   .. argparse::
+      :ref: accelerator.shell.urd.createparser
+      :prog: ax urd
+      :nodescription:
+
+      path : @before
+	  A path
+
+
+   ax job
+   ------
+
+   .. argparse::
+      :ref: accelerator.shell.job.createparser
+      :prog: ax job
+      :nodescription:
+
+      Used to inspect jobs.
+
+
+
+   ax ds
+   -----
+
+   .. argparse::
+      :ref: accelerator.shell.ds.createparser
+      :prog: ax ds
