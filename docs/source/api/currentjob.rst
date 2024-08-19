@@ -24,6 +24,7 @@ an optional input argument named "``job``" to ``prepare()``,
    :members:
    :undoc-members:
    :exclude-members: input_directory
+
 -----
 
 Below are some more details and examples.
