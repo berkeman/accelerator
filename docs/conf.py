@@ -17,7 +17,7 @@ extensions = [
 	'sphinx.ext.autodoc',
 	'sphinx.ext.autosummary',
 	'sphinx.ext.autosectionlabel',
-#	'sphinxarg.ext'
+	'sphinxarg.ext'
 ]
 
 autosectionlabel_prefix_document = True  # Make sure the target is unique
