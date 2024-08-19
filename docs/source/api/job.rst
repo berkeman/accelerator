@@ -138,7 +138,7 @@ also stored in the job directory.  This data is accessed using
 
 
 Link to Result Directory - ``link_result()``
-^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A soft link from a file in a job directory to the result directory is
 created using ``job.link_result()``:
