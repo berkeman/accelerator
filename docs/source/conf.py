@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'exax'
+project = 'berkeman-exax'
 copyright = '2023, abcd'
 author = 'abcd'
 
