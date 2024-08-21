@@ -5,7 +5,8 @@ Säga något om att dela jobb *på samma filsystem*.
 
 configure board
 
-- result_director
+- result_directory
+
 .. code-block::
     :caption: Create a link to a file created by job1 to ``result_directory``.
 
@@ -29,10 +30,12 @@ directory`` and on the start page of *Board*. (@@@)
   ``job.link_result()`` function (@).
 
 - working with data files
+
  input directory
  input_filename
 
 -visualising results
+
  result directory
 
 -descriptions in build scripts

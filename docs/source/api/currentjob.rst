@@ -21,6 +21,7 @@ an optional input argument named "``job``" to ``prepare()``,
 -----
 
 .. autoclass:: accelerator.job.CurrentJob
+   :no-index:
    :members:
    :undoc-members:
    :exclude-members: input_directory

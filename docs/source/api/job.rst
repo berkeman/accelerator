@@ -12,6 +12,7 @@ used for file writing and job control *during execution* of a job.
 -----
 
 .. autoclass:: accelerator.Job
+   :no-index:
    :members:
    :undoc-members:
    :exclude-members: version,number,workdir

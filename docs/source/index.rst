@@ -2,35 +2,33 @@ Welcome to exax's online documentation!
 =======================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
    :numbered:
+   :glob:
 
    advantages
    whatiswhat
    quick
-   tldr_examples
    method
    build
+   job
    method_exec
+   urd
+   urd_database
    urd_introduction
    urd_details
    urd_admin
-
    dataset
-
    config
-
-   api/currentjob.rst
-   api/job.rst
-   api/joblist.rst
-   api/urd.rst
-   api/dataset.rst
-   api/datasetchain.rst
-   api/datasetwriter.rst
-
+   api/currentjob
+   api/datasetchain
+   api/dataset
+   api/datasetwriter
+   api/job
+   api/joblist
+   api/urd
    commands
-
    status
 
 input directory

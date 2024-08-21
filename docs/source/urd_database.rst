@@ -207,7 +207,7 @@ indices in the list.
 
 In addition to ``urd.joblist.get()`` that returns a single job, the
 ``urd.joblist.find()`` function returns a new JobList of matching
-items.  See the :ref:`JobList <api:The JobList Class>` for full
+items.  See the :ref:`JobList <api/joblist:The JobList Class>` for full
 information.
 
 

@@ -161,7 +161,7 @@ configuration file should have a line like this
          accessed using port forwarding.  A simple way is to let board
          connect to a socket, which is the default:
 
-         .. code-block:: ``accelerator.conf``:
+         .. code-block::
 
             board listen: .socket.dir/board
 
