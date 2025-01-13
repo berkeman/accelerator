@@ -62,10 +62,10 @@ Fixed:
 ax init
 -------
 
-.. argparse::
-   :ref: accelerator.shell.init.createparser
-   :prog: ax init
-   :nodescription:
+#.. argparse::
+#   :ref: accelerator.shell.init.createparser
+#   :prog: ax init
+#   :nodescription:
 
    Set up a new project directory hierarchy.  Default location is
    current directory.
@@ -121,10 +121,10 @@ ax init
 ax urd
 ------
 
-.. argparse::
-   :ref: accelerator.shell.urd.createparser
-   :prog: ax urd
-   :nodescription:
+#.. argparse::
+#   :ref: accelerator.shell.urd.createparser
+#   :prog: ax urd
+#   :nodescription:
 
    path : @before
        A path
@@ -133,10 +133,10 @@ ax urd
 ax job
 ------
 
-.. argparse::
-   :ref: accelerator.shell.job.createparser
-   :prog: ax job
-   :nodescription:
+#.. argparse::
+#   :ref: accelerator.shell.job.createparser
+#   :prog: ax job
+#   :nodescription:
 
    Used to inspect jobs.
 
@@ -145,6 +145,6 @@ ax job
 ax ds
 -----
 
-.. argparse::
-   :ref: accelerator.shell.ds.createparser
-   :prog: ax ds
+#.. argparse::
+#   :ref: accelerator.shell.ds.createparser
+#   :prog: ax ds
