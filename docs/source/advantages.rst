@@ -4,10 +4,10 @@ What is Exax?
 Exax is a data processing framework designed to make development
 *faster* and with *fewer mistakes*.  It achieves this using two main
 approaches:
-  - exax remembers all program executions, and recalls previous
-    results instead of having to re-computing them
-  - exax implements a naive, yet efficient, and easy to use parallel
-    processing environment
+- exax remembers all program executions, and recalls previous
+results instead of having to re-computing them
+- exax implements a naive, yet efficient, and easy to use parallel
+processing environment
 
 Exax can run on any hardware ranging from a Raspberry Pie or laptop to a
 multi-processor rack server.
