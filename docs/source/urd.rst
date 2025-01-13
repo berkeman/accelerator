@@ -1,7 +1,6 @@
 Urd Database - The Admin
 ========================
 
-@@@@
 
 Users, Keys, and Permissions
 ----------------------------
