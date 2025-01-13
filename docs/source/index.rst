@@ -34,7 +34,7 @@ Welcome to exax's online documentation!
 #   api/datasetchain.rst
 #   api/datasetwriter.rst
 
-   commands
+#   commands
 
    status
 
