@@ -97,7 +97,7 @@ directory.  Run examples like this
    ax run tutorial01
 
 .. note:: Build script filenames start with ``build_``.  Omit this
-          prefix when running them using ``ax run``.
+          prefix (and the ``.py``-suffix) when running them using ``ax run``.
 
 
 Show available method directories, methods and descriptions
@@ -157,8 +157,8 @@ configuration file should have a line like this
 .. note:: The exax server needs to be restarted for the configuration
           file changes to apply.
 
-.. tip:: If Exax runs on another machine, its board server can be
-         accessed using port forwarding.  A simple way is to let board
+.. tip:: If Exax runs on a remote machine, its board server can be
+         accessed using ssh port forwarding.  A simple way is to let board
          connect to a socket, which is the default:
 
          .. code-block:: ``accelerator.conf``:

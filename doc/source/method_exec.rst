@@ -15,20 +15,20 @@ Methods are built using a ``build()`` call, either from a *build
 script* like this
 
 .. code-block::
-   :caption: Building ``mymethod`` from a build script.
+   :caption: Building ``my_method`` from a build script.
 
    def main(urd):
-       job = urd.build('mymethod', x=3)
+       job = urd.build('my_method', x=3)
 
-or from *another method* (as a *subjob*) like this
+or from *another method* (as a "*subjob*") like this
 
 .. code-block::
-   :caption: Building ``mymethod`` from another method.
+   :caption: Building ``my_method`` from another method.
 
    from accelerator.subjobs import build
 
    def synthesis():
-       job = build('mymethod', x=4)
+       job = build('my_method', x=4)
 
 
 Existing Jobs Will be Re-Used Whenever Possible
@@ -38,12 +38,12 @@ The first thing that happens in the build-call is that the method's
 source code and input parameters are compared to what already exists
 in the project's workdirs.  Then, one out of two things will happen
 
-  1. The method is *built*, i.e. executed, and a new *job directory*
-     is created.  When execution finished, the return value from the
-     build call is a *job object* containing references to the *job*.
+  1. The method is *built*, i.e. executed and a new *job directory* is
+     created.  When execution finished, the return value from the
+     build call is a *Job object* containing references to the *job*.
 
   2. A matching *job directory* already exists, and the build
-     call **immediately** returns a *job object* containing references
+     call **immediately** returns a *Job object* containing references
      to the existing *job*.
 
 The job directory will contain all input and output relating to the
@@ -59,10 +59,11 @@ a more or less complete list of what is saved
 - job id of the builder
 - input directory
 - method package
+- any other files the job "depends extra" on
 
-The build script has significant support, such as JobLists (@), the
-Urd database (@), and result linking (@), to aid development, whereas
-building a subjob has less decorations.
+The build script has additional support functionality, such as
+JobLists (@), the Urd database (@), and result linking (@), to aid
+development, whereas building a subjob has less decorations.
 
 
 
@@ -112,7 +113,7 @@ The parameters are set by the build call like this:
 
 .. note:: In the example above, all parameters have unique names, so
           it is not necessary to specify if, say, ``x`` is an option,
-          dataset, or job.
+          a dataset, or a job.
 
           It is possible to explicitly state the
           kind using ``..., datasets={'source': ds},...`` and so on.
@@ -136,9 +137,9 @@ Inside the running method, all three parameters are converted to
 ``accelerator.DotDict``, which are like ordinary Python dictionaries, but also
 supporting the dot-notation for accessing its values.
 
-.. tip :: The ``options`` object is of type ``accelerator.DotDict``
-          (ref@), and its members can therefore be accessed using dot
-          notation, like ``options.x`` etc.
+.. tip :: The input parameters are of type ``accelerator.DotDict``
+          (ref@), and their members can therefore be accessed using
+          dot notation, like ``options.x`` etc.
 
 
 Options: Default Values and Typing
@@ -147,7 +148,7 @@ Options: Default Values and Typing
 If an option is defined with a *value* (such as ``x=3`` above), this
 value is also the default value that will be used if not assigned by
 the build call.  The default value also affects the typing.  A default
-value of 37 will not match a string, for example, but it will match a
+value of 3 will not match a string, for example, but it will match a
 float.
 
 If instead the option is specified using a *type*, (such as
@@ -211,8 +212,8 @@ output.
 ..............
 
 The ``analysis()`` function is intended for parallel processing.  It
-is forked into a number of parallel processes, specified in the
-configuration file
+is forked into a number of parallel processes, called *slices*,
+specified in the configuration file:
 
 .. code-block::
    :caption: Part of ``accelerator.conf`` specifying number of parallel processes.
@@ -222,11 +223,12 @@ configuration file
 This number must be the same for the whole project, and can be set to
 any number.  The ``ax init`` command will by default initiate this to
 the number of available cores on the machine.  (It makes little sense
-to set it to a larger number.)
+to set it to a larger number, but in some cases a lower number is
+preferred in order to limit the max load on the machine.)
 
-The number of slices, as well as the current fork number (ranging from
-zero to slices minus one) are available as parameters to the
-``analysis()`` function
+The number of slices, as well as the current fork number *sliceno*
+(ranging from zero to *slices* minus one) are available as parameters to
+the ``analysis()`` function
 
 .. code-block::
     :caption: Example of ``analysis()`` function.
@@ -314,8 +316,8 @@ input, source code, and output is always clear.
 .. note :: Files created by a job are and *should always be stored in
   the corresponding job directory*.  By default, the current working
   directory is set to the current job directory when the method is
-  executing to simplify this.  Avoiding a filename without absolute
-  path will ensure that the file ends up the current job directory.
+  executing to simplify this.  Avoiding filenames with absolute
+  paths will ensure that the file ends up the current job directory.
 
 There are built-in helper functions for creating files in the correct
 location.  These functions will also *register* the files, which is
@@ -375,17 +377,20 @@ helper functions can list and retrieve the data directly from a job
 object.  For example, registered files can be listed using
 ``job.files()``, and accessed using ``job.open()`` or ``job.json_load()``.
 
-Almost all created files are registered by default when the method
-finishes execution.  Files in subdirectories is the exception, but it
-is possible to register them manually if needed.  Manual registration,
-however, turns off automatic registration for all files.  Registration
+Almost all created files are *registered automatically by default*
+when the method finishes execution.  Files in subdirectories is the
+exception, they are not automatically registered.
+
+.. note :: Files in subdirectories are not registered automatically.
+
+Files can also be registered manually.  Manual registration does,
+however, turn off automatic registration for all files.  Registration
 is either manual or automatic.
 
 .. note :: If a file is manually registered, automatic registration is
    disabled for all other files, so they have to be registered
    manually too, if needed.
 
-.. note :: Files in subdirectories are not registered automatically.
 
 Calls to ``job.save()``, ``job.json_save()``, and ``job.open()`` will
 register the created file, *and* turn off automatic registration of
@@ -411,12 +416,11 @@ Several files could be registered at once using glob patterns, like this
        # create file "myfile1.txt", "myfile2.txt", ..., "myfile10.txt"
        job.register_files("myfile*.txt")
 
-The call ``job.register_files()`` will return a set containing the
-names of all files that were registered!
+.. note:: The call ``job.register_files()`` will return a set containing the names of all files that were registered!
 
-What about temporary files?  Temporary files are not registered, not
-even when created by the helper functions.  On the other hand, if a
-temporary file is registered manually, it stops being temporary.
+*Temporary files are not registered*, not even when created by the
+helper functions.  On the other hand, if a temporary file is being
+registered manually, it stops being temporary.
 
 
 
@@ -456,7 +460,7 @@ the ``job.filename()`` function, like this
    :caption: Find files created by a job.
 
     def main(urd):
-        job = urd.build('mymethod', ...)
+        job = urd.build('my_method', ...)
         print(job.files())
         print(job.filename('myfile'))
 
@@ -470,6 +474,7 @@ the ``job.filename()`` function, like this
 .. tip ::
    Files can also be listed and viewed in *exax Board* using a web browser.
 
+.. tip ::
    The ``ax job`` shell command can also list and view files in a job.
 
 
@@ -498,8 +503,6 @@ is multi-lined, the first row is a short description that will be
 shown when typing ``ax method`` to list all methods and their short
 descriptions.  A detailed description may follow on consecutive lines,
 and it will be shown when doing ``ax method <a particular method>``.
-Exax updates its record of descriptions when re-scanning the method
-directories.
 
 
 
@@ -528,7 +531,7 @@ Subjobs
 
 Job are typically built by build scripts, but in a similar way jobs
 can be built by methods as well.  There is no difference from a built
-jobs perspective, but the nomenclature is that when a method is
+job's perspective, but the nomenclature is that when a method is
 building a job it is called a *subjob*.
 
 Subjobs are built in the ``synthesis()`` function like this
@@ -539,7 +542,7 @@ Subjobs are built in the ``synthesis()`` function like this
    from accelerator.subjobs import build
 
    def synthesis():
-       job = build('mymethod')
+       job = build('my_method')
 
 The ``subjobs.build()`` call uses the same input parameters and syntax
 as the ``urd.build()`` call in a build scripts.  Similarly, the

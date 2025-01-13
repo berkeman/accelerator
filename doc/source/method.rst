@@ -3,9 +3,9 @@ Method Packages
 
 
 Methods and build scripts are stored in ordinary Python packages.  (A
-Python package is a directory with Python files and an ``__init__.py``
-file.) In this context they are called *method packages* or simply
-*method directories*.
+Python package is a directory with Python files and a mandatory
+``__init__.py`` file.) In this context they are called *method
+packages* or simply *method directories*.
 
 This chapter explains method packages and how to name methods and
 build scripts, limit execution to certain set of methods, and use a
@@ -14,15 +14,15 @@ method.
 
 .. tip:: If a project is set up with ``ax init`` using default
          options, all methods and build scripts will be stored in the
-         ``dev/``-directory.  To get started quickly, all you need to
-         know is that method filenames are prefixed with ``a_`` and
-         build scripts are prefixed with ``build_``.
+         ``dev/``-directory.  Remember that method filenames are
+         prefixed with ``a_`` and build scripts are prefixed with
+         ``build_``.
 
 
 Method Packages and File Naming
 -------------------------------
 
-Method packages are made available to a project by specifying them in
+Method packages are made visible to a project by specifying them in
 ``accelerator.conf``.
 
 Formally, a method package is
@@ -51,11 +51,11 @@ more information)
 
   dev/
       __init__.py   # mandatory
-      methods.conf  # optional
+      methods.conf  # optional, see below
       a_test.py     # a method
       build_foo.py  # a build script
-      bogus.py      # an ignored python file (no "a_"-prefix)
-      test.txt      # not a python file, ignored
+      bogus.py      # an ignored Python file (no "a_"-prefix)
+      test.txt      # not a Python file, is also ignored
 
 Methods stored in a method package must start with the string ``a_``,
 so for example the ``a_csvimport.py`` is a valid method filename, but
@@ -83,10 +83,11 @@ To make a method package visible to exax, it has to be included in
         accelerator.standard_methods
 
 In the above example, two method packages are enabled, ``dev`` and
-``accelerator.standard_methods``.  The latter contains useful methods,
-and is bundled as part of the exax distribution.  Again, method
-packages are Python packages, visible to the Python interpreter, so
-what is listed are Python package names, not file system paths.
+``accelerator.standard_methods``.  The latter is bundled as part of
+the exax distribution contains useful methods mainly for dataset
+processing.  Note that method packages are listed using Python package
+names, as seen by the Python interpreter, and not by file system
+paths.
 
 Note the ``auto-discover`` keyword after ``dev``.  It tells exax to
 include *all* methods (files matching the glob pattern ``a_*.py``) in
@@ -105,10 +106,10 @@ limit execution to a set of explicitly specified methods.  This is
 useful for example in a production environment where strict control of
 what is executable is a requirement.
 
-In addition, the ``methods.conf`` file is also used to specify
+In addition, the ``methods.conf`` file can be used to specify
 independent Python interpreters for each method!  This means that each
 method can run on its own Python version, and each method can use its
-own virtual environment.
+own virtual environment with unique dependencies and versions.
 
 .. tip:: Using ``methods.conf``, two different methods could for
          example use two different versions of *pyTorch* in the same
@@ -117,12 +118,14 @@ own virtual environment.
 If no ``methods.conf`` is present, all methods in the method directory
 are assumed to be executable using the default Python interpreter.
 
+Here is an example of a ``methods.conf`` file:
+
 .. code-block::
    :caption: Example ``methods.conf`` file.
 
    # This is a comment
-   import_data        tf212    # use the "tf212" interpreter / virtual environment
-   train_network               # use the default interpreter
+   import                # method import use the default interpreter
+   train        tf212    # method train uses the "tf212" virtual environment
 
 Interpreters are defined in ``accelerator.conf`` like this
 
@@ -138,5 +141,5 @@ Interpreters are defined in ``accelerator.conf`` like this
 
 .. note:: Access restriction is disabled using the per-package
           ``auto-discover`` keyword in
-          ``accelerator.conf``. Interpreter selection is still active,
+          ``accelerator.conf``. *Interpreter selection is still active*,
           though.

@@ -14,10 +14,10 @@ Build Scripts Create Jobs
 
 Execution of a build script will *always* result in the creation of a
 new job, i.e. a directory where source code and all details relating
-to the execution of the build script is stored on disk.  This is
+to the execution of the build script is stored on disk.  (This is
 different for method execution, where directories are created *only*
 for combinations of source code and input parameters that have not
-been seen before.
+been seen before.)
 
 ..
    The data stored in a job directory is accessible using the ``ax job``
@@ -48,8 +48,8 @@ object called ``urd``, like this:
        # do something here...
 
 The ``main()``-function is called when the build script is executed,
-and the provided ``urd``-object contains parameters and useful helper
-functions.
+and the provided ``urd``-object will then contain parameters and
+useful helper functions.
 
 .. tip :: In a setup of a project with ``ax init`` using default
           parameters, build scripts are stored in the ``dev/``
@@ -65,7 +65,8 @@ identified by filenames starting with the string "``build_``", except
 for the "default" build script that is simply named ``build.py``.  The
 default build script is executed using the shell command ``ax run``,
 and any other build script, such as for example ``build_something.py``
-is executed using ``ax run something``, and so on.
+is executed using ``ax run something``, and so on.  Here are two
+examples:
 
 .. code-block::
     :caption: run the default ``build.py`` build script
@@ -91,7 +92,7 @@ the *job ids* of all jobs created or re-used.
 
 .. tip:: The data stored in a job directory is accessible using the
    ``ax job`` shell command, as well as from a web browser listening
-   to the included accelerator *board* web server.
+   to the built in accelerator *board* web server.
 
 
 Building Jobs from Methods
@@ -100,39 +101,39 @@ Building Jobs from Methods
 The typical use of build scripts is to build jobs by executing methods
 (i.e smaller Python programs), where data and results may be passed
 from one job to the next.  Using methods, a complicated project can be
-efficiently broken down in to smaller independent parts.
+efficiently broken down into smaller independent parts.
 
 Jobs are built using the ``urd.build()`` call.  The first argument to
 the call is the name of the method to be executed, and the remaining
 arguments are either input parameters to the method or to the build
 process itself.
 
-The output from the build call is a *job object* that can be used to
+The output from the build call is a *Job object* that can be used to
 access data in the job.  The object can be passed to other build calls
-so that the next execution gets access to the data in the existing
+so that the next execution gets access to the data in a previous
 job.
 
 Here are some basic examples
 
 .. code-block::
-    :caption: Build script running ``awesome_method`` with and without option ``x=3``.
+    :caption: Build script running ``my_method`` with and without option ``x=3``.
 
     def main(urd):
-        urd.build('awesome_method')
-        urd.build('awesome_method', x=3)
+        urd.build('my_method')
+        urd.build('my_method', x=3)
 
 .. code-block::
     :caption: Pass reference to ``job1`` into ``next_method``.
 
     def main(urd):
-        job1 = urd.build('awesome_method', x=3)
+        job1 = urd.build('my_method', x=3)
         job2 = urd.build('next_method', prev=job1)
 
 .. code-block::
     :caption: Print data that a job returned
 
     def main(urd):
-        job = urd.build('awesome_method')
+        job = urd.build('my_method')
 	print(job.load())
 
 The ``.build()`` function is just one of several class methods

@@ -1,49 +1,30 @@
-Introduction and Advantages
----------------------------
+What is Exax?
+=============
 
-Säga något om att dela jobb *på samma filsystem*.
+Exax is a data processing framework designed to make development
+*faster* and with *fewer mistakes*.  It achieves this using two main
+approaches:
+  - exax remembers all program executions, and recalls previous
+    results instead of having to re-computing them
+  - exax implements a naive, yet efficient, and easy to use parallel
+    processing environment
 
-configure board
+Exax can run on any hardware ranging from a Raspberry Pie or laptop to a
+multi-processor rack server.
 
-- result_director
-.. code-block::
-    :caption: Create a link to a file created by job1 to ``result_directory``.
+Exax has a built in web-server for visualisation of results and
+dashboarding.
 
-    def main(urd):
-        job = urd.build('awesome_method', x=3)
-	job.link_result('outfile.txt')
-
-In the last example, the resulting file created by the
-``awesome_method`` job is considered to be of value for a human
-observer and will therefore appear (as a soft link) in the ``result
-directory`` and on the start page of *Board*. (@@@)
-
-  Note the
-  "``['inputs']``" above that specifies a list of input datasets with
-  the name "``input``".  
+Read about more features below.
 
 
-.. tip :: The "``result directory``" should be the place to find files
-  that are considered to be relevant "output" from a project run.  Soft
-  links in the result directory link to files in jobs using the
-  ``job.link_result()`` function (@).
 
-- working with data files
- input directory
- input_filename
-
--visualising results
- result directory
-
--descriptions in build scripts
-
-
-Exax is a data processing framework.  It has many applications in for
-example data science, data engineering, and not least operations.
+Design Goals
+------------
 
 Exax is designed to be
 
- - **fast**.  The two main reasons is is fast are:
+ - **fast**.  Three main reasons is is fast are:
 
    - it will re-use earlier computations to save execution time
 
@@ -57,32 +38,46 @@ Exax is designed to be
 
    - there is an observable connection between results, source, and input data
 
- - and in addition it is easier to **avoid common mistakes**, because
+   - it is easy to find previous results and computations
+
+ - **helpful in avoiding common mistakes**, because
 
    - there is no need for arbitrary intermediate filenames that can be mixed up
 
-   - an unchanged program will re-run in a fraction of a second in order to validate a result
+   - results can be proven to be up to date with source code and input data
+
+ - **minimalistic**, with a very small footprint and a **minimum of dependencies**
+
+
+
+Some Key Highlights
+-------------------
 
 Exax remembers old computations, and will not re-compute anything that
-has been computed before.  This saves time and energy.  The simple
-parallel processing capabilities makes use of modern multi-core
-processors and speed up computations correspondingly.  (A standard
-eight core CPU can do one CPU-core-hour of work in just 7.5 minutes.)
+has been computed before.  Computation re-use is a core part of the
+methodology and “just works”.  This saves time and energy.
+
+The simple parallel processing capabilities makes use of modern
+multi-core processors and speed up computations correspondingly.
+
 The transparent workflow, from input data and source code to computed
 results, is easy to inspect, and Exax will always show results that
 are up to date with the project's source code.
 
-The Urd database is used to store references to previous computations
-so that any computed result can be fetched and used at a later time
-without any recomputations.  The database is also used for sharing
-data and results between users.
+Several users can work on the same project on the same machine, and
+share results and intermediate computations without interfering with
+eachother.
 
-All computations done by exax are stored on disk and registered so
-that they can be re-used later.  Computation re-use is a core part of
-the methodology and "just works".
+Exax is not limited to analysis or development work.  It is originally
+designed for back end processing of live running recommender systems,
+and is therefore easy to operate.
+
+There is a built in database, called the Urd database, where
+references to computations and results can be stored and looked up
+using simple human readable keys.  The database is also used for
+sharing data and results between users.
 
 The streaming *dataset* datatype stores typed data in a row-column
 format.  It can handle billions of rows with hundreds of columns
 easily, on a laptop.  When accessed, the data is streamed to the CPU
-cores, thereby avoiding time consuming disk ``seek()`` operations
-completely.
+cores, thereby avoiding time consuming disk operations entirely.
