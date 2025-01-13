@@ -26,13 +26,13 @@ Welcome to exax's online documentation!
 
    config
 
-   api/currentjob.rst
-   api/job.rst
-   api/joblist.rst
-   api/urd.rst
-   api/dataset.rst
-   api/datasetchain.rst
-   api/datasetwriter.rst
+#   api/currentjob.rst
+#   api/job.rst
+#   api/joblist.rst
+#   api/urd.rst
+#   api/dataset.rst
+#   api/datasetchain.rst
+#   api/datasetwriter.rst
 
    commands
 
