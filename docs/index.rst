@@ -1,15 +1,11 @@
-.. exax documentation master file, created by
-   sphinx-quickstart on Tue Jun 20 19:03:08 2023.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to exax's online documentation!
 =======================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
    :numbered:
+   :glob:
 
    advantages
    whatiswhat
@@ -21,11 +17,8 @@ Welcome to exax's online documentation!
    urd_introduction
    urd_details
    urd_admin
-
    dataset
-
    config
-
 ..   api/currentjob.rst
 ..   api/job.rst
 ..   api/joblist.rst
@@ -33,15 +26,11 @@ Welcome to exax's online documentation!
 ..   api/dataset.rst
 ..   api/datasetchain.rst
 ..   api/datasetwriter.rst
-
 ..   commands
-
    status
 
-input directory
-result directory
-
-
+..input directory
+..result directory
 .. Mål:
 .. - en användare skall kunna hitta hur man gör saker
 .. - utgå från hur man gör (inte varför):
