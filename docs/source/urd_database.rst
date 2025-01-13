@@ -3,7 +3,7 @@ The Urd Database
 
 The Urd database persistently stores references to all jobs built in
 build scripts.  By default, references to *all jobs built in a build
-script* will be stored automatically.  In addition, *a subsets of the
+script* will be stored automatically.  In addition, *a subset of the
 jobs* can be tagged and associated with a user defined name and
 timestamp for easy retrieval.  The database is based on a transaction
 log files, meaning that data can only be appended, never removed or

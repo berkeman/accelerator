@@ -563,7 +563,7 @@ Subjobs and Datasets
 
 Datasets created by subjobs can be made available to the job that
 built the subjob, to make it look like the dataset was created there.
-It works as show in the following example
+It works as shown in the following example
 
 .. code-block::
    :caption: Link a subjob's dataset to the current job.

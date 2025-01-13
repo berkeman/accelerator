@@ -3,15 +3,16 @@ Introduction to The Urd Database
 
 The Urd database persistently stores references to all jobs built in
 build scripts.  By default, references to *all jobs built in a build
-script* will be stored automatically.  In addition, *a subsets of the
+script* will be stored automatically.  In addition, *a subset of the
 jobs* can be tagged and associated with a user defined name and
-timestamp for easy retrieval.  The database is based on a transaction
+timestamp for easy retrieval.  The database is based on transaction
 log files, meaning that data can only be appended, never removed or
 overwritten.
 
-The exax server will automatically start a *local* urd server, which
-is intended for personal use.  The urd server can also be set up in a
-stand alone fashion, to share jobs and data between several users.
+The exax server automatically starts a *local* urd server, for the
+sake of convenience and personal use.  The urd server can also be set
+up in a stand alone fashion, to share jobs and data between several
+users.
 
 
 What is Stored in the Urd Database?
@@ -21,12 +22,13 @@ The Urd database stores *urd sessions*.  The main part of an urd
 session is the *joblist*, which is basically a list of job ids
 returned from ``build()``-calls when executing a build script.  When
 the build script finishes, it creates a new urd session entry in the
-database containing the joblist plus metadata.
+database, and populates it with the joblist plus metadata.
 
 Meta data in the urd session includes a timestamp, and it may also
 contain references to other urd sessions, if there were any sessions
-queried by the build script to find existing results or data to
-use in the computations.
+queried by the build script to find existing results or data to use in
+the computations.  In this fashion, *dependencies* between different
+sessions can be tracked and made observable.
 
 
 How is Data Stored?
