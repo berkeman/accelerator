@@ -10,7 +10,7 @@ log files, meaning that data can only be appended, never removed or
 overwritten.
 
 The exax server will automatically start a *local* urd server, which
-is intended for personal use.  The urd server can also be set up in a
+is intended for personal use.  An Urd server can also be set up in a
 stand alone fashion, to share jobs and data between several users.
 
 
