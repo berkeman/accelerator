@@ -693,7 +693,7 @@ def run(cfg, from_shell=False, development=False):
 	if not from_shell:
 		kw['quiet'] = True
 
-	DOC_PATH = os.path.join(os.path.dirname(__file__), '../doc/build/html')
+	DOC_PATH = os.path.join(os.path.dirname(__file__), '../docs/build/html')
 	if from_shell:
 		kw = {'reloader': True}
 	else:
