@@ -20,7 +20,7 @@ Here is an idea of what the build script may look like.
    :caption: Example build script
 
     def main(urd):
-        pdata  = urd.build('parse', filename='input_filename')
+        pdata = urd.build('parse', filename='input_filename')
 	clean = urd.build('clean', data=pdata)
 	train = urd.build('train', data=clean)
 	plot1 = urd.build('plot_train', input=train)
@@ -39,12 +39,11 @@ script directly visible in the board web server (and also in the
 
 
 
-Some Benefits
-=============
+Why is this Better?
+===================
 
 Partitioning a project into separate independent functions is an
-obvious thing to do, but one does not need exax for this.  So what
-other benefits does this bring?
+obvious thing to do.  What is improved by using exax?  What are the benefits?
 
 
 - *We kan trivially validate that the everything is up-to-date and that the
@@ -89,7 +88,7 @@ other benefits does this bring?
   is the input filename.
 
 
-- All previous runs are stored and can be retrieved at any time.
+- *All previous runs are stored and can be retrieved at any time.*
 
   This includes source code.  We can go back and find produced results
   *and* the corresponding source code of any code execution in the
@@ -100,7 +99,7 @@ other benefits does this bring?
   unfortunately was not version controlled.  Exax has your back.
 
 
-- Parallel processing is easy to do, and really speeds things up.
+- *Parallel processing is easy to do, and really speeds things up.*
 
   Exax is designed for naive parallel processing, where a set of
   processes run in parallel without inter-process communicaation.  It
@@ -120,3 +119,34 @@ other benefits does this bring?
 
   - *generating animation video frames in parallel*
     (Combine frames later in the right order to generate a video file.)
+
+
+- *Collaboration can be really efficient in computationally exepensive projects*
+
+  Only the first developer executing a new script will need to wait
+  for the execution to complete.  All other users will just get a
+  reference to the existing job in a fraction of a second.  This works
+  by sharing workdirs between the users.
+
+  Another example is doing analysis of a production environment.  A
+  user doing some analysis work can access the jobs created by the
+  actual production system and use them directly in the analysis.  It
+  is then the *actual* production system that is analysed, not some
+  copy, and since it reads existing jobs it is very fast.
+
+
+
+Some Example Project where Exax has been used
+=============================================
+
+- multiple production environments for large recommender systems
+- a large collaborative filtering project
+- a mining optimisation system
+- a churn prediction project
+- a SLAM hardware accelerator project
+- a zfs backup framework
+- a video visualisation of NYC cab traffic during Covid 19
+- a video visuaisation of all the Backblaze data
+- various radio data projects with huge datasets and multiple code versions
+- various machine learning projects with for example video input
+- an EEG data analysis project

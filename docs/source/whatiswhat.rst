@@ -40,17 +40,6 @@ convenience functions, so although the file structure is human
 readable, there is little reason to know about the details of it.
 
 
-What is a Workdir?
-------------------
-
-Job directories are stored in *workdirs*, which are just ordinary
-directories.  For most project, one workdir is enough, but for example
-in a collaborative environment it makes sense to have unique workdirs
-for each user.  The name and location of the workdirs are defined in
-the configuration file.
-
-
-
 
 What is a Build Script?
 -----------------------
@@ -108,7 +97,7 @@ to this already existing job.
           will be re-used and not re-computed.
 
 Job scripts can do simple, but very powerful, *parallel processing*.
-Execution flow in a method is controlled by a few pre-defined
+Execution flow in a job script is controlled by a few pre-defined
 functions.
 
 .. tip:: A machine equipped with 64 core can do one CPU-core-hour of
@@ -122,3 +111,30 @@ server.
 
 
 
+A Few More...
+-------------
+
+**What is a workdir?**
+
+Job directories are stored in *workdirs*, which are just ordinary
+directories.  For most project, one workdir is enough, but for example
+in a collaborative environment it makes sense to have unique workdirs
+for each user.  The name and location of the workdirs are defined in
+the configuration file.
+
+**What is a method directory**
+
+This is where build and job scripts are stored.  One is enough, but sometimes
+it makes sense to separate functionality into two or more directories.
+Defined in the configuration file
+
+**What is the result directory**
+
+This is where important results may be stored.  Defined in the configuration file
+
+**What is the input directory**
+
+This is a path to where the input data files are stored.  Defining
+this in one place makes the path to the data relative, meaning that
+data can be moved around in the file system without causing changes to
+any job.  Defined in the configuration file
