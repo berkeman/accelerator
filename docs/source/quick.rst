@@ -89,7 +89,7 @@ The examples will show up here if selected at project initialisation.
 Run the Tutorial and Other Examples
 -----------------------------------
 
-If initiated with examples, they will be stored in the ``examples/``
+If initiated with examples, example files will be stored in the ``examples/``
 directory.  Run examples like this
 
 .. code-block::
@@ -100,16 +100,20 @@ directory.  Run examples like this
           prefix (and the ``.py``-suffix) when running them using ``ax run``.
 
 
-Show available method directories, methods and descriptions
------------------------------------------------------------
+Show available method directories, job scripts and descriptions
+---------------------------------------------------------------
 
-Methods are (typically) small programs that are run from a build
-script.  Methods may include code that executes using parallel
-processing.  List available methods like this
+Job scripts are (typically) small programs that are run from a build
+script.  Job scripts may include code that executes using parallel
+processing.  List available job scripts like this
 
 .. code-block::
 
   ax method
+
+This will show a list of all standard job scripts that are bundled
+with exax.  If initiated with ``--examples``, all example job scripts
+will show up here as well.
 
 
 Run a specific build script
@@ -129,23 +133,28 @@ A script named ``build_myprogram.py`` is run by omitting the
 
 
 
-Write new code, filename prefixes
----------------------------------
+Packages and Filename Prefixes
+------------------------------
 
 By default, the ``ax init`` program creates a method package in a
-directory named ``dev/``. New methods and build scripts can be
-executed only if stored there.  Methods are stored using the filename
-prefix ``a_`` (e.g. ``a_mymethod.py``), and build scripts use the
-prefix ``build_`` (e.g. ``build_myscript.py``).  
+directory named ``dev/``. This is where job and build scripts should
+be stored in the new project, otherwise they cannot be executed by
+exax.
+
+Job scripts are stored using the filename prefix ``a_``
+(e.g. ``a_mymethod.py``), and build scripts use the prefix ``build_``
+(e.g. ``build_myscript.py``).
 
 
 
-The configuration file
+The Configuration File
 ----------------------
 
 The configuration file, ``accelerator.conf``, is where paths to code,
-input data, and output results are kept.  It also specifies which
-ports or sockets that the exax server and board server listens to.
+input data, and output results are defined.  The file also specifies
+which ports or sockets that the exax server and board server listens
+to, and how many parallel processes that should be forked in case of
+parallel processing.
 
 For example, to change listening port for the board server, the
 configuration file should have a line like this

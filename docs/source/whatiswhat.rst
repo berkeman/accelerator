@@ -122,11 +122,16 @@ in a collaborative environment it makes sense to have unique workdirs
 for each user.  The name and location of the workdirs are defined in
 the configuration file.
 
-**What is a method directory**
+**What is a method package**
 
-This is where build and job scripts are stored.  One is enough, but sometimes
-it makes sense to separate functionality into two or more directories.
-Defined in the configuration file
+@@@SCRIPT PACKAGE
+
+This is where build and job scripts are stored.  As the name
+indicated, they are importable Python packages.
+
+The standard method bundled with exax are stored in another package,
+and example files in yet another.  It is possible to define any number
+of packages in the configuration file.
 
 **What is the result directory**
 

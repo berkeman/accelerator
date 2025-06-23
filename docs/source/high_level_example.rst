@@ -39,8 +39,8 @@ script directly visible in the board web server (and also in the
 
 
 
-Why is this Better?
-===================
+Why exax?
+=========
 
 Partitioning a project into separate independent functions is an
 obvious thing to do.  What is improved by using exax?  What are the benefits?
