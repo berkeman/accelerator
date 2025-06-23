@@ -9,6 +9,7 @@ Welcome to exax's online documentation!
 
    advantages
    whatiswhat
+   high_level_example
    quick
    method
    build

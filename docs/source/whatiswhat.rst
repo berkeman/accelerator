@@ -5,18 +5,17 @@ Exax is a user-space client-server application.  There is one server
 per project using exax.  A project's source code is partitioned into
 two types of files:
 
-  - *build scripts*, and
-  - *methods*.
+  - *build scripts*, controlling the high level execution flow of a project, and
+  - *job scripts*, intended for core computations.
 
-*Build scripts* control the high level execution, and are responsible
-for executing *methods*, that perform the core computations.  All code
-execution, be it build scripts or methods, produce *jobs*, which are
-composed of sets of files stored persistently on disk.  These files
-contain everything related to the build script or the method's
-execution, including input and output data, parameters, and source
-code.  A job's files are easily accessible from a build script, so
-that they can be presented to the user or used as input to other
-method builds.
+A project requires at least one build script and any number of job
+scripts (including zero).
+
+All code execution, be it build or job scripts, produces *jobs*, where
+a job is basically a directory on disk containing a set of files
+detailing all aspects of the execution of the script.  A job's files
+are easily accessible from other scripts using Python objects, so that
+they can be presented to the user or used as input to other scripts.
 
 This section gives and overview, see chapters @@, @@ for detailed
 information.
@@ -26,47 +25,60 @@ information.
 What is a Job?
 --------------
 
-A *job* is a directory that was created when a method or build script
-was executed.  The directory contains a set of files containing input
-parameters, source code, output files, profiling information, and
-anything printed to standard out and standard error during the
-execution.
+A *job* is a directory that was created when a build or job script was
+executed.  The directory contains a set of files containing input
+parameters (including references to input data), source code, produced
+output files, profiling information, and anything printed to standard
+out and standard error during the execution.
 
-Each job is associated a unique identifier, such as for example
+Each job is associated with a unique identifier, such as for example
 ``dev-37``.  This called the *job id*, and the directory where the
 information is stored is called the *job directory*.
 
-Job directories are stored in *workdirs*, which are just ordinary
-directories.  The name and location of the workdirs are defined in the
-configuration file.
+Files and data in a job is typically accessed using Python objects and
+convenience functions, so although the file structure is human
+readable, there is little reason to know about the details of it.
 
-For convenience, job directories are represented by job objects during
-code execution.  There objects contain helper functions to access the
-job's files and parameters.
+
+What is a Workdir?
+------------------
+
+Job directories are stored in *workdirs*, which are just ordinary
+directories.  For most project, one workdir is enough, but for example
+in a collaborative environment it makes sense to have unique workdirs
+for each user.  The name and location of the workdirs are defined in
+the configuration file.
+
 
 
 
 What is a Build Script?
 -----------------------
 
-A project needs to have at least one build script.  A build script is
-a Python file responsible for the top level execution flow of a whole
-project or a subproject.
+A build script is a Python file responsible for the top level
+execution flow of a whole project or a subproject.  A project needs to
+have at least one build script, but it is common to have separate
+build scripts for testing and similar.
 
-The main purpose of a build scripts is to execute methods and pass
-data and parameters between them and the build script itself.
+The main purpose of a build scripts is to execute job scripts and pass
+data and parameters between them and the build script itself.  (In
+theory, a project may do without any job scripts at all, but then many
+advantages of exax will be lost.)
+
+
 
 Execution of a build script *always* results in the creation of a job,
 so it is always possible to go back and see what scripts that have
-been executed in the past, as well as what input they used and output
-they generated.
+been executed in the past, as well as what input they used and what
+output they generated.
 
-.. tip:: The naming of build script files is special.
+.. note:: The naming of build script files is special.
 	 A build script has to start with the prefix ``build_``.
 
-	 The build script ``myscript`` is stored in a file named ``build_myscript.py``.
+	 For example, the build script ``myscript`` is stored in a
+	 file named ``build_myscript.py``.
 
-   .. note:: The default build script is just ``build.py``.
+.. note:: The default build script is just ``build.py``.
 
 All build scrips in a project can be listed using the ``ax script``
 command, or be browsed in a web browser using the built in Board web
@@ -74,39 +86,39 @@ server.
 
 
 
-What is a Method?
------------------
+What is a Job Script?
+---------------------
 
-A project typically has one or more methods.  A method is a Python
-script that is executed either from a build script or from another
-method.
+A job script is a Python file that is executed by a build script, or
+in some situations by another job script.  A project is typically
+partitioned into several job scripts controlled by a top level build script.
 
-The first time a certain method is executed, exax creates a job
-directory where it stores information throughout the execution.  When
-execution finishes, exax will return a pointer to the created job.
+The first time a certain job script is executed, exax creates a job
+directory where it stores information throughout the script's
+execution.  When execution finishes, exax will return a pointer to the
+created job.
 
-On the other hand, if the method has already been executed in the
-past, using the same inputs and parameters, exax will *not* create a
-new job directory.  Instead, the execution will immediately return a
-pointer to the existing job.
+Conversely, if the job script has already been executed in the past,
+using the same inputs and parameters, exax will *not* create a new job
+directory.  Instead, the execution will immediately return a pointer
+to this already existing job.
 
-.. note:: A method will never be executed more than once for a given
-          set of inputs and parameters.  Existing results will be
-          re-used and not re-computed.
+.. note:: A job script will never be executed more than once for a given
+          set of inputs, parameters and source code.  Existing results
+          will be re-used and not re-computed.
 
-Methods can execute in a single process, and it is also possible to do
-simple (but very powerful) *parallel processing*.  Execution flow in a
-method is controlled by a few pre-defined functions.
+Job scripts can do simple, but very powerful, *parallel processing*.
+Execution flow in a method is controlled by a few pre-defined
+functions.
 
 .. tip:: A machine equipped with 64 core can do one CPU-core-hour of
    work in *less than one minute*, if workload is parallellised.  A
    more common of the shelf inexpensive eight-core CPU can do one CPU
    hour of work in just 7.5 minutes!
 
-All methods in a project can be listed using the ``ax method``
+All job scripts in a project can be listed using the ``ax method``
 command, or be browsed in a web browser using the built in Board web
 server.
-
 
 
 

@@ -1,19 +1,24 @@
 What is Exax?
 =============
 
-Exax is a data processing framework designed to make development
-*faster* and with *fewer mistakes*.  It achieves this using two main
-approaches:
-- exax remembers all program executions, and recalls previous
-results instead of having to re-computing them
-- exax implements a naive, yet efficient, and easy to use parallel
-processing environment
+Exax is a data processing framework designed to make development and
+operations *faster* and with *fewer mistakes*.  Although exax
+implements several novel ideas, there is one feature that stands out
+and as will be shown later provides a number of exciting advantages:
 
-Exax can run on any hardware ranging from a Raspberry Pie or laptop to a
-multi-processor rack server.
+**Things are computed only once.**
 
-Exax has a built in web-server for visualisation of results and
-dashboarding.
+*Exax remembers all program executions, and can instantly return a previously computed result given input data, parameters, and program source code.*
+
+In addition, a naive but simple to use parallell processing
+environment helps speeding up many practical use cases significantly.
+
+Exax has a small footprint, few dependencies, and can run on any
+hardware ranging from a Raspberry Pi or laptop to a multi-processor
+rack server.
+
+For dashboarding and visualisation of results and program/dataflows,
+exax has an integrated web server.
 
 Read about more features below.
 
@@ -24,29 +29,36 @@ Design Goals
 
 Exax is designed to be
 
- - **fast**.  Three main reasons is is fast are:
+ - **fast**, because
 
    - it will re-use earlier computations to save execution time
 
    - it is very easy to write simple but very powerful *parallel* programs
 
-   - it comes with a very fast streaming datatype for large parallel datasets
+   - it comes with a very fast streaming data container for large
+     parallel datasets
+
+   - in a collaborative environment, results are re-used between users
 
  - **transparent** and **reproducible**, meaning that
 
-   - it is straightforward to validate that a specific output is the result of a specific run
+   - it is straightforward to validate that a specific result is the result of a specific run
 
-   - there is an observable connection between results, source, and input data
+   - there is an observable connection between results, source code, and input data
 
-   - it is easy to find previous results and computations
+   - it is easy to inspect any step in the execution/data flow
 
  - **helpful in avoiding common mistakes**, because
 
-   - there is no need for arbitrary intermediate filenames that can be mixed up
+   - there is no need for arbitrary intermediate *filenames* that can be mixed up
 
-   - results can be proven to be up to date with source code and input data
+   - results can be verified to be up to date with source code and input data
 
- - **minimalistic**, with a very small footprint and a **minimum of dependencies**
+ - **minimalistic**, because
+
+   - it has a very small footprint
+
+   - it has a minimum of dependencies
 
 
 
@@ -61,23 +73,22 @@ The simple parallel processing capabilities makes use of modern
 multi-core processors and speed up computations correspondingly.
 
 The transparent workflow, from input data and source code to computed
-results, is easy to inspect, and Exax will always show results that
+results, is easy to inspect, and exax will always show results that
 are up to date with the project's source code.
 
 Several users can work on the same project on the same machine, and
 share results and intermediate computations without interfering with
 eachother.
 
-Exax is not limited to analysis or development work.  It is originally
-designed for back end processing of live running recommender systems,
-and is therefore easy to operate.
+Exax is originally designed for back end processing of large live
+running recommender systems.  It is therefore easy to operate.
 
-There is a built in database, called the Urd database, where
-references to computations and results can be stored and looked up
-using simple human readable keys.  The database is also used for
-sharing data and results between users.
+A built in database, called the Urd database, may be used to store and
+retrieve references to computations and results using simple human
+readable keys.
 
 The streaming *dataset* datatype stores typed data in a row-column
-format.  It can handle billions of rows with hundreds of columns
-easily, on a laptop.  When accessed, the data is streamed to the CPU
-cores, thereby avoiding time consuming disk operations entirely.
+format suitable for parallel processing.  It can handle billions of
+rows with thousands of columns easily, on a laptop.  When accessed,
+the data is *streamed* from disk to the CPU cores, thereby avoiding
+time consuming disk seek operations.
