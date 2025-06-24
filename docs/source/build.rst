@@ -7,8 +7,8 @@ a build script, and it is especially useful for executing job scripts,
 and in the process assign parameters, and pass results and
 intermediate data between jobs.
 
-.. tip::
-  Build scripts are executed using the ``ax run`` command.
+.. tip:: Build scripts are executed using the ``ax run`` command from
+  the command line.
 
 
 Build Scripts Create Jobs

@@ -1,46 +1,53 @@
-Methods
-=======
+Job scripts
+===========
 
 
-Methods are the main workhorses in an exax project.  Most computations
-are carried out there, and if the project is partitioned into several
-methods, only those affected by code changes will have to be re-built
-when re-executing the project's build script.
+Job scripts are the main workhorses in an exax project.  Most
+computations are carried out in there, and if the project is
+partitioned into several job scripts, only those affected by code
+changes will have to be re-built when re-executing the project's build
+script.
 
 
-Building Methods
-----------------
+Building Job Scripts
+--------------------
 
-Methods are built using a ``build()`` call, either from a *build
+Job scripts are built using a ``build()`` call, either from a *build
 script* like this
 
 .. code-block::
-   :caption: Building ``my_method`` from a build script.
+   :caption: Building ``my_script`` from a build script.
 
    def main(urd):
-       job = urd.build('my_method', x=3)
+       job = urd.build('my_script', x=3)
 
-or from *another method* (as a "*subjob*") like this
+or from *another job script* (as a "*subjob*") like this
 
 .. code-block::
-   :caption: Building ``my_method`` from another method.
+   :caption: Building ``my_script`` from another job script.
 
    from accelerator.subjobs import build
 
    def synthesis():
-       job = build('my_method', x=4)
+       job = build('my_script', x=4)
+
+Unlike build scripts, job scripts are not executable from the command
+line.
 
 
 Existing Jobs Will be Re-Used Whenever Possible
 -----------------------------------------------
 
-The first thing that happens in the build-call is that the method's
-source code and input parameters are compared to what already exists
-in the project's workdirs.  Then, one out of two things will happen
+The first thing that happens in the build-call is that the job
+script's source code and input parameters are compared to what already
+exists in the project workdirs.  Then, one out of two things will
+happen
 
-  1. The method is *built*, i.e. executed and a new *job directory* is
-     created.  When execution finished, the return value from the
-     build call is a *Job object* containing references to the *job*.
+  1. The combination of source code and input parameters has not been
+     seen before, and therefore the job script is *built* and a new
+     *job directory* is created.  When execution finishes, the return
+     value from the build call is a *Job object* containing references
+     to the new *job*.
 
   2. A matching *job directory* already exists, and the build
      call **immediately** returns a *Job object* containing references
@@ -50,7 +57,7 @@ The job directory will contain all input and output relating to the
 build, and also meta information about the execution itself.  Here is
 a more or less complete list of what is saved
 
-- the method's source code
+- the job scripts's source code
 - input parameters
 - build timestamp
 - profiling information
@@ -61,49 +68,49 @@ a more or less complete list of what is saved
 - method package
 - any other files the job "depends extra" on
 
-The build script has additional support functionality, such as
+(The build script has additional support functionality, such as
 JobLists (@), the Urd database (@), and result linking (@), to aid
-development, whereas building a subjob has less decorations.
+development, whereas building a subjob has less decorations.)
 
 
 
 Passing Input Parameters
 ------------------------
 
-There are *three kinds* of input paramters to a method: *options*,
-*datasets*, and *jobs*.  They are all declared early in the method's
+There are *three kinds* of input paramters to a job script: *options*,
+*datasets*, and *jobs*.  They are all declared early in the job script's
 source file, see the following example
 
 .. code-block::
-   :caption:  Example of all three types of input parameters speficied in a method.
+   :caption:  Example of all three types of input parameters speficied in a job script.
 
    options = dict(
                  x=3,
                  name='protomolecule',
                  f = float,
              )
-   datasets = ('source', 'anothersource',)
-   jobs = ('previous',)
+   datasets = ('source_dataset', 'anothersourceds',)
+   jobs = ('previous_job',)
 
 .. note:: ``datasets`` and ``jobs`` are *tuples*, and therefore it is *key
   to remember to add a comma* after any single item like the
-  ``jobs=('previous',)`` assignment above.  Otherwise it will be
+  ``jobs=('previous_job'',)`` assignment above.  Otherwise it will be
   interpreted as a string or characters, and things will break.
 
 - The ``options`` parameter is a dictionary, that can take almost
   "anything", with or without default values and type definitions.
 
-- The ``datasets`` parameter is a list or tuple of datasets.
+- The ``datasets`` parameter is a list or tuple of datasets references.
 
 - The ``jobs`` parameter is similar to ``datasets``, but contains a
-  list of named jobs.
+  list of job references.
 
-The parameters are set by the build call like this:
+Parameters are assigned by the build call like this:
 
 .. code-block::
    :caption: Assigning input parameters to a build.
 
-   build('method',
+   urd.build('my_script',
          x=37,
          name='thename',
          f=42.0
@@ -115,8 +122,8 @@ The parameters are set by the build call like this:
           it is not necessary to specify if, say, ``x`` is an option,
           a dataset, or a job.
 
-          It is possible to explicitly state the
-          kind using ``..., datasets={'source': ds},...`` and so on.
+          If names are not unique, it is possible to explicitly state
+          the kind of parameter using ``..., datasets={'source': ds},...`` and so on.
 
 
 
@@ -128,34 +135,45 @@ Inside the method, parameters are available like in the following example
 .. code-block::
    :caption: Print some input parameters to stdout.
 
+   options={'x': 37, 'name': 'myname',}
+   datasets=('ds',)
+   jobs=('previous',)
+ 
    def synthesis():
        print(options.x, options.name)
        print(datasets.ds.columns)
        print(jobs.previous)
 
-Inside the running method, all three parameters are converted to
-``accelerator.DotDict``, which are like ordinary Python dictionaries, but also
-supporting the dot-notation for accessing its values.
+In a running job script, all three parameter types are converted to
+the ``accelerator.DotDict`` type, which is basically a Python ``dict``
+supporting dot-notation for accessing its values.
 
-.. tip :: The input parameters are of type ``accelerator.DotDict``
-          (ref@), and their members can therefore be accessed using
-          dot notation, like ``options.x`` etc.
+.. tip :: Input parameters members can be accessed using dot notation,
+          like ``options.x`` etc.
 
 
 Options: Default Values and Typing
 ----------------------------------
 
-If an option is defined with a *value* (such as ``x=3`` above), this
-value is also the default value that will be used if not assigned by
-the build call.  The default value also affects the typing.  A default
-value of 3 will not match a string, for example, but it will match a
-float.
+If an option is defined with a *value* (such as
+``options=dict(x=37)``), this value is also the default value that
+will be used if none is assigned by the build call.  The default value
+also affects the typing.  A default value of 37 will not match a
+string, for example, but it will match a float.
 
 If instead the option is specified using a *type*, (such as
-``f=float`` above), the input parameter must be of the same type.  If
-the input parameter is left unspecified in this case, the value will
-be ``None``.
+``options=dict(f=float)``), the input parameter must be of the same type.
+If the input parameter is left unspecified in this case, the (default)
+value will be ``None``.
 
+.. note::
+   - If a default value is set, this value will be used if left unassigned.
+
+   - A default value also specifies the allowed set of types of the input.
+
+   - If the default value is a type, this is the only allowed type.
+
+   - If the default value is a type and left unassigned, its value will become ``None``.
 
 
 
@@ -170,7 +188,8 @@ which at least one is mandatory.  They are, listed in execution order
  - ``synthesis()``
 
 The functions will be described below in reverse order, starting with
-``synthesis()``.
+``synthesis()``, since this is the simplest and most commonly used for
+more basic job scripts.
 
 
 
@@ -182,14 +201,12 @@ return value is stored persistently as the job's output value, like
 shown in this example:
 
 .. code-block::
-  :caption: This is method ``a_test.py``...
+  :caption: This is job script ``a_test.py``...
 
   options = dict(x=3)
   def synthesis()
       val = options.x * 2
       return dict(value=val, caption="this is a test")
-
-
 
 When the job has completed execution, the return value is conveniently
 available using the returned object's ``load()`` function, like this
@@ -211,20 +228,22 @@ output.
 ``analysis()``
 ..............
 
-The ``analysis()`` function is intended for parallel processing.  It
-is forked into a number of parallel processes, called *slices*,
-specified in the configuration file:
+The ``analysis()`` function is intended for parallel processing.  When
+run, it is forked into a number of parallel processes, called
+*slices*.  The number of slices is fixed and specified in the
+configuration file:
 
 .. code-block::
    :caption: Part of ``accelerator.conf`` specifying number of parallel processes.
 
    slices: 64
 
-This number must be the same for the whole project, and can be set to
-any number.  The ``ax init`` command will by default initiate this to
-the number of available cores on the machine.  (It makes little sense
-to set it to a larger number, but in some cases a lower number is
-preferred in order to limit the max load on the machine.)
+This can be set to any number at project initialisation, and it is
+then the same fixed number for the whole project.  The ``ax init``
+command will by default initiate this to the number of available cores
+on the machine.  (It makes little sense to set it to a larger number,
+but in some cases a lower number is preferred in order to limit the
+max load on the machine.)
 
 The number of slices, as well as the current fork number *sliceno*
 (ranging from zero to *slices* minus one) are available as parameters to
@@ -237,11 +256,12 @@ the ``analysis()`` function
         print('This is slice %d/%d' % (sliceno, slices))
         return sliceno * sliceno
 
-The return value from all ``analysis()`` calls are available to the
-``synthesis()`` function (described earlier) as the ``analysis_res``
-input parameter.  ``analysis_res`` is an iterator, containing one
-element per analysis process.  It also has a convenient class method
-for merging all results together, like this
+When all forks have completed execution, the return value from all
+``analysis()`` calls become available to the ``synthesis()`` function
+(described earlier) as the ``analysis_res`` input parameter.
+``analysis_res`` is an iterator, containing one element per analysis
+process.  It also has a convenient class method for merging all
+results together, like this
 
 .. code-block::
     :caption: Use of ``analysis_res`` and its automagic result merger ``merge_auto()``.
@@ -249,10 +269,10 @@ for merging all results together, like this
     def synthesis(analysis_res):
         x = analysis_res.merge_auto()
 
-``merge_auto()`` typically does what is expected.  In the example
-above, the returned integers from ``analysis()`` will be added
-together into one number.  It will merge sets or dictionaries, update
-Counters, etc.
+``merge_auto()`` typically does what is expected, but is of course not
+mandatory to use.  In the example above, the returned integers from
+``analysis()`` will be added together into one number.  It will merge
+sets or dictionaries, update Counters, etc.
 
 
 
@@ -294,7 +314,8 @@ As shown in the previous section,
 
 In addition, ``analysis()`` has access to the ``sliceno`` and
 ``slices`` parameters, and all three functions have access to the
-``job`` object that will be described shortly.
+``job`` object that contains a set of useful job-related helper
+functions.
 
 Return values from ``prepare()`` and ``analysis()`` are stored
 *temporarily* in the job directory by default, and removed upon job
@@ -304,36 +325,87 @@ job.
 
 
 
+Share Data using Return Value
+-----------------------------
+
+The simplest way to share data between a job script and another job or
+build script is to use the return value.
+
+In a job script that creates some data that should be available
+elsewhere, just return it:
+
+.. code-block::
+    :caption: Example of return value.
+
+    def synthesis():
+        data = ...
+        return data
+
+Then this data is available in a build script like this
+
+.. code-block::
+    :caption: Return value from job script into a build script.
+
+    def main(urd):
+        job = urd.build('scriptreturningdata')
+        data = job.load()
+
+Similarly, to access the data in another job script
+
+.. code-block::
+    :caption: Return value from one job script to another.
+
+    jobs=('jobreturningdata',)
+    def synthesis():
+        data = jobs.jobreturningdata.load()
+
+assuming it was provided by the build script
+
+.. code-block::
+    :caption: Corresponding build script passing the first job as input to the second.
+
+    def main(urd):
+        job = urd.build('scriptreturningdata')
+        urd.build('scriptusingdata', jobreturningdata=job)
+
+Note how simple this is, and without the need to make up arbitrary filenames.
+Instead of filename, the job script (i.e. source code and input parameters)
+is used to find the correct data file.
+
+.. tip:: In many cases, return values can often be used instead of
+   explicitly creating any files.
+
 
 Writing Files
 -------------
 
 Any file written by a job is stored in the current job directory.
-This is also where the source code and input parameters are stored, so
-keeping everything at one place ensures that the relationship between
-input, source code, and output is always clear.
+This is also where the source code and input parameters to the current
+build are stored. Keeping everything at one place ensures that the
+relationship between input, source code, and output is always clear.
 
 .. note :: Files created by a job are and *should always be stored in
   the corresponding job directory*.  By default, the current working
-  directory is set to the current job directory when the method is
-  executing to simplify this.  Avoiding filenames with absolute
-  paths will ensure that the file ends up the current job directory.
+  directory is set to the current job directory when the job script is
+  executing to simplify this.  Avoiding filenames with absolute paths
+  will ensure that the files end up the current job directory.
 
-There are built-in helper functions for creating files in the correct
-location.  These functions will also *register* the files, which is
-the topic of the next section.
+Files can be created by any means, but it is encouraged to use the
+built-in helper functions that among other things will create files in
+the correct location.  These functions will also *register* the files,
+which is the topic of the next section.
 
 The first helper finction is ``job.save()``.  This stores data as a
 Python pickle file:
 
 .. code-block::
-   :caption: writing a pickle file
+   :caption: Writing a pickle file.
 
    def synthesis(job):
        data = ...
        job.save(data, 'thisisthenameofapicklefile')
 
-There is also a dedicated function to write json files:
+There is also a dedicated function for writing json files:
 
 .. code-block::
    :caption: Writing a json file.
@@ -361,11 +433,12 @@ is a wrapper around Python's ``open()`` function:
 
   This is handled using ``save(..., sliceno=sliceno)``, see @.
 
-In addition, it is possible to create temporary files that only exists
-during the execution of the method and will be automatically deleted
-upon job completion.  This *might* be useful for huge temporary files
-if disk space is a major concern.  Add the parameter ``temp=True`` to
-the call to make a file temporary.
+In addition, it is possible to create *temporary files* that only
+exists during the execution of the method and will be automatically
+deleted upon job completion.  This *might* be useful for huge
+temporary files if disk space is a major concern.  Add the parameter
+``temp=True`` to ``job.save()`` or ``job.json_save()`` to make the file
+temporary.
 
 
 
@@ -375,7 +448,10 @@ Registering Files
 *Registering* a file means making exax aware of it, so that simple
 helper functions can list and retrieve the data directly from a job
 object.  For example, registered files can be listed using
-``job.files()``, and accessed using ``job.open()`` or ``job.json_load()``.
+``job.files()``, and accessed using ``job.open()`` or
+``job.json_load()``.  Registered files are also trivially added to the
+exax Board web server for visual inspection.
+
 
 Almost all created files are *registered automatically by default*
 when the method finishes execution.  Files in subdirectories is the
@@ -394,7 +470,7 @@ is either manual or automatic.
 
 Calls to ``job.save()``, ``job.json_save()``, and ``job.open()`` will
 register the created file, *and* turn off automatic registration of
-all other files.  This is a very reasonable default.
+all other files.  This is a reasonable default.
 
 To register a file manually, use ``job.register_file()``, for example
 like this, when the file has been created by an external command:
@@ -418,8 +494,8 @@ Several files could be registered at once using glob patterns, like this
 
 .. note:: The call ``job.register_files()`` will return a set containing the names of all files that were registered!
 
-*Temporary files are not registered*, not even when created by the
-helper functions.  On the other hand, if a temporary file is being
+*Temporary files are not registered*, even though they are created by
+the helper functions.  On the other hand, if a temporary file is being
 registered manually, it stops being temporary.
 
 
@@ -430,7 +506,8 @@ Find and Load Created Files
 
 Files in a job are easily accessible by other methods and build
 scripts, see this example where data created in a job is read back
-into the running build script.
+into the running build script.  The example assumes the files are
+registered, but this is not a requirement.
 
 .. code-block::
    :caption: Writing and reading files (see  currentjob@ ref for info about ``save()`` and more.
@@ -449,7 +526,8 @@ into the running build script.
             data[filename] = job.load(filename)
 
 There is also a ``job.json_load()`` function to directly load json
-content.
+content.  Note that exax has no idea what if it is json or pickle or
+something else.  Make sure to use the proper functions.
 
 The names of a job's all registered files are available using
 ``job.files()``.  This call will return a set of all filenames in the
@@ -460,7 +538,7 @@ the ``job.filename()`` function, like this
    :caption: Find files created by a job.
 
     def main(urd):
-        job = urd.build('my_method', ...)
+        job = urd.build('my_script', ...)
         print(job.files())
         print(job.filename('myfile'))
 
@@ -482,7 +560,7 @@ the ``job.filename()`` function, like this
 Descriptions
 ------------
 
-A text description is added to a method using the ``description``
+A text description is added to a job script using the ``description``
 variable.  This description is visible in *exax Board* (@) and using
 the ``ax method`` (@) command, and it looks like this
 
@@ -500,9 +578,10 @@ the ``ax method`` (@) command, and it looks like this
 
 Descriptions work much like git commit messages.  If the description
 is multi-lined, the first row is a short description that will be
-shown when typing ``ax method`` to list all methods and their short
-descriptions.  A detailed description may follow on consecutive lines,
-and it will be shown when doing ``ax method <a particular method>``.
+shown when typing ``ax method`` to list all job scripts and their
+short descriptions.  A detailed description may follow on consecutive
+lines, and it will be shown when doing ``ax method <a particular
+method>``.
 
 
 
@@ -521,7 +600,7 @@ example like this
 
 It is also straightforward to view the output in *Board*.
 
-In a method or build script, this output is accessible using the
+In a job or build script, this output is accessible using the
 ``job.output()`` function.
 
 
@@ -529,10 +608,10 @@ In a method or build script, this output is accessible using the
 Subjobs
 -------
 
-Job are typically built by build scripts, but in a similar way jobs
-can be built by methods as well.  There is no difference from a built
-job's perspective, but the nomenclature is that when a method is
-building a job it is called a *subjob*.
+Job scripts are typically built by build scripts, but in a similar way
+job scripts can be built by other job scripts.  There is no difference
+from a built job's perspective, but the nomenclature is that when a
+job script is building a job it is called a *subjob*.
 
 Subjobs are built in the ``synthesis()`` function like this
 
@@ -542,14 +621,14 @@ Subjobs are built in the ``synthesis()`` function like this
    from accelerator.subjobs import build
 
    def synthesis():
-       job = build('my_method')
+       job = build('my_script')
 
 The ``subjobs.build()`` call uses the same input parameters and syntax
 as the ``urd.build()`` call in a build scripts.  Similarly, the
 returned ``job`` object is an instance of the ``Job`` class (@) that
 contains some useful helper functionality.
 
-.. note :: Subjobs are *not* visible in build script and do not show
+.. note :: Subjobs are *not* visible in build scripts and do not show
    up in ``urd.joblist``!  Furthermore, they are not recorded in the
    urd database.
 
@@ -575,12 +654,12 @@ It works as shown in the following example
        ds = job.dataset(<name>)
        ds = ds.link_to_here(name=<anothername>)
 
-In the example above, the method ``create_a_dataset`` creates a
+In the example above, the job script ``create_a_dataset`` creates a
 dataset.  A reference to this dataset is created using the
 ``job.dataset()`` function.  Finally, using the ``ds.link_to_here()``
 function, a soft link is created in the current job directory,
 pointing to the job directory of the subjob, completing the illusion
-that the dataset is created by the current method.
+that the dataset is created by the current job script.
 
 Similarly, it is possible to override the dataset's ``previous``, like so
 
