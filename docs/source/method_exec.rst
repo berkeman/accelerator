@@ -557,6 +557,38 @@ the ``job.filename()`` function, like this
 
 
 
+Reading Input Files
+-------------------
+
+Input data files should ideally be stored in the ``input directory``
+specified in the configuration file.  If so, input files could be
+addressed using a relative path, and therefore be moved around in the
+file system without causing any changes to the project code.
+
+There are three helper functions for input data:
+
+.. code-block::
+   :caption: reading input files
+
+   # Returns the path to the input directory.
+   job.input_directory()
+
+   # Returns the full path to a specific file in the input directory.
+   # Multiple arguments will be fed to Python's os.path.join()
+   job.input_filename('thefile')
+   job.input_filename('or', 'a', 'path', 'to', 'thefile')
+
+   # Opens a file in the input directory for reading.
+   # (This is a wrapper around Python's open() function.)
+   fh = job.open_input('thefile', 'rb')
+
+
+.. tip ::
+  Use the ``input_directory`` and corresponding helper
+  functions to avoid having absolute paths in your project code!
+
+
+
 Descriptions
 ------------
 
