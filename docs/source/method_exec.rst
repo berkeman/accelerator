@@ -637,6 +637,49 @@ In a job or build script, this output is accessible using the
 
 
 
+Progress/status reporting
+------------------
+
+If a job takes a long time to complete, pressing CTRL+T will force
+exax to print a message on stdout.  This message can be tailored to
+the running program in the following way
+
+.. code-block:: python
+   :caption: custom status messages (show when pressing CTRL-T)
+
+   from accelerator import status
+
+   def synthesis():
+       msg = "my status message: %s"
+       with status(msg % ('init',) as update:
+           for task in tasklist:
+	       update(msg % (task,))
+
+In this example, the status message will update for each new task in
+the tasklist.  The output message will automatically add execution
+time, if it is running in prepare, analysis, or synthesis, and when in
+analysis also provide information about which slice the the message
+belongs to.  It may for example look like this
+
+.. code-block:: text
+
+ 589443 STATUS:      analysis(2) (9.0 seconds)
+ 589443 STATUS:         my status message: task_number_one
+
+or
+
+.. code-block:: text
+
+  589443 STATUS:      synthesis (14.1 seconds)
+  589443 STATUS:         my status message: the_synthesis_run
+
+.. tip::
+
+   Exax Dataset iterators (@@@ ref) use status reporting to tell which Dataset
+   in a Dataset chain it is currently working on.
+
+
+
 Subjobs
 -------
 
