@@ -1,4 +1,4 @@
-The Urd Database in More Detail
+More about the The Urd Database
 ===============================
 
 This section digs deeper into the features of the Urd database.
