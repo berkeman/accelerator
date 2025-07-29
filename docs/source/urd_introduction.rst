@@ -1,5 +1,5 @@
-Introduction to The Urd Database
-================================
+Urd Database - Introduction
+===========================
 
 So far in this documentation, it has been shown how jobs (including
 computed results) can be retrieved immediately by executing the
@@ -263,6 +263,44 @@ races possible when the Urd database is serving multiple users.
 
 
 
+Urd Database Timestamps
+-----------------------
+
+The ``timestamp`` used to access items may be expressed in one of the
+following types/formats: ``date``, ``datetime``, ``int`` , ``(date,
+int)``, ``(datetime, int)``, ``"date"``, ``"datetime"``, or
+``"datetime+int"``.  If specified using a string, the following format
+applies
+
+.. code-block:: text
+
+  "%Y-%m-%d %H:%M:%S.%f"
+
+
+This is in line with Pythons datetime module.  See the Python datetime
+documentation for more information.
+
+A specific timestamp in string format can be truncated to represent a
+wider time range. The following examples cover all possible cases ::
+
+  '2016-10'                    # month resolution
+  '2016-10-25'                 # day resolution
+  '2016-10-25 15'              # hour resolution
+  '2016-10-25 15:25'           # minute resolution
+  '2016-10-25 15:25:00'        # second resolution
+  '2016-10-25 15:25:00.123456' # microsecond resolution
+
+  '2016-10-25+3'               # Example of timestamp + int
+  ('2016-10-25', 3)            # equivalent to above
+
+Note that
+  - ``ints`` without ``datetimes`` sort first,
+  - ``datetimes`` without ``ints`` sorts before ``datetimes`` with ``ints``,
+  - shorter ``datetime`` strings sorts before longer ``datetime`` strings, and
+  - timestamps must be > 0.
+
+
+
 Truncating Urd Lists
 --------------------
 
@@ -288,8 +326,3 @@ are from 2023 or later inaccessible.
    Furthermore, all data is stored in an *easily readable format*, so
    if data is believed to be "lost", it is possible to find it by
    looking in the database files.
-
-
-
-
-

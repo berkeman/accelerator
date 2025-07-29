@@ -1,81 +1,54 @@
-More about the The Urd Database
-===============================
+Urd Database - Retrieval
+========================
 
-This section digs deeper into the features of the Urd database.
+While the previous chapter introduced the Urd database and showed how
+to *create* new entries. this chapter mainly describes how to
+*retrieve* data.
 
+The reason for retrieveing a session from the Urd database is that it
+contains references to one or more jobs that contain some useful
+information, typically some computed result.
 
-
-Urd Database Timestamps
------------------------
-
-The ``timestamp`` used to access items may be stated as either a
-``date``, ``datetime``, ``int`` , ``(date, int)``, ``(datetime,
-int)`` or ``"datetime+int"``, where dates and datetimes may be
-specified using strings in the following format
-
-::
-
-  "%Y-%m-%d %H:%M:%S.%f"
-
-
-
-(See Python’s ``datetime`` module for explanation.)
-
-A specific timestamp can be truncated to represent a wider time
-range. The following examples cover all possible cases
-::
-
-  '2016-10'                    # month resolution
-  '2016-10-25'                 # day resolution
-  '2016-10-25 15'              # hour resolution
-  '2016-10-25 15:25'           # minute resolution
-  '2016-10-25 15:25:00'        # second resolution
-  '2016-10-25 15:25:00.123456' # microsecond resolution
-
-  '2016-10-25+3'               # Example of timestamp + int
-  ('2016-10-25', 3)            # equivalent to above
-
-Note that
-  - ``ints`` without ``datetimes`` sort first,
-  - ``datetimes`` without ``ints`` sorts before ``datetimes`` with ``ints``,
-  - shorter ``datetime`` strings sorts before longer ``datetime`` strings, and
-  - timestamps must be > 0.
 
 
 Retrieving Sessions from the Database
 -------------------------------------
 
-The point of retrieving a session is that it has pointers to one or
-more jobs containing data that is needed by a new job.  A specific urd
-session can be retrieved from the Urd database using the name of the
-*urdlist* and the *timestamp* it is associated with.
+A specific urd session can be retrieved from the Urd database using
+the name of the *urdlist* and the *timestamp* it is associated with.
 
-There are two sets of functions assigned for this
+There are two sets of functions assigned for this, both will return
+the requested urd session, and the difference is that
 
-  - one that will `record and associate the lookup with the ongoing
-    session`, and
+  - one that will `record and associate the lookup with the already
+    ongoing urd session`, and
 
   - one that will not.
 
 Recording a lookup means that the looked up urd session will be added
-as a `dependency` to the ongoing session.  This is for transparency
-reasons, i.e., to make it clear which jobs from which joblists that
-are used as inputs to new jobs.
+as a `dependency` to the ongoing urd session.  For example, a
+*processing* session may look up some data stored in an *import*
+session.  This makes dependencies between urd sessions transparent, so
+it is clear how output from one job in one session is input to another
+job in another session.
+
 
 
 Retrieving a Session and make it a Dependency
 ---------------------------------------------
 
-The function calls that record the lookups are
+The ``urd`` object (that is input parameter to a build script's
+``main`` function provides three function calls that record lookups:
 
   - ``get()``,
   - ``first()``, and
   - ``latest()``.
 
 For any of these calls to work, they have to be issued from *within*
-an ongoing manual urd session, i.e. after a ``begin()``
-call. Otherwise Urd will not be able to record session dependencies
-and an exception is raised.  Here is an example.
+an ongoing manual urd session, i.e. after a ``begin()`` call but
+before the corresponging ``finish() call.  If used elsewhere, Urd will
+not be able to record session dependencies and an exception is raised.
+Here is a working example.
 
 .. code-block::
     :caption: The ``process`` urd session depends on the ``import`` session
@@ -89,19 +62,19 @@ and an exception is raised.  Here is an example.
 
 The code above creates a new urd session called ``process``.  This
 session retrieves the latest session from the ``import`` urdlist, and
-takes the ``csvimport`` job stored there as input to the
-``process_data`` method.
+takes the ``csvimport`` job (stored in the sessions joblist) as input
+to the ``process_data`` method.
 
-The contents of the Urd database is investigated using the ``ax urd``
+The contents of the Urd database can be viewed using the ``ax urd``
 shell command:
 
 .. code:: bash
 
-    > ax urd                              # 1
+    $ ax urd                              # 1
     alice/import
     alice/process
 
-    > ax urd import                       # 2
+    $ ax urd import                       # 2
     timestamp: 2023-02-01
     caption  :
     deps     :
@@ -109,7 +82,11 @@ shell command:
        [  0] csvimport : dev-2698
     )
 
-    > ax urd process                      # 3
+    $ ax urd process/                     # 3
+    2023-02-01
+    2023-02-02
+
+    $ ax urd process/2023-02-01           # 4
     timestamp: 2023-02-01
     caption  :
     deps     : alice/import/2023-02-01
@@ -124,11 +101,15 @@ At row ``#2``, the command returns the *contents of the latest
 session* in the ``import`` urdlist.  The joblist contains a
 ``csvimport`` job.
 
-At row ``#3``, the contents of the latest *process* session reveals a
-joblist with a ``process`_data` job, but also a ``deps`` part where
-the ``alice/import/2023-02-01`` session is inserted.  This session
-holds the ``csvimport`` job that the ``process_data`` job used as
-input.  This urd session was created by the example code above.
+At row ``#3``, the command returns all urd sessions recorded in the
+``process`` urdlist.  Each session is represented by its timestamp.
+
+At row ``#4``, the session at timestamp 2023-02-1 of the *process*
+urdlist reveals a joblist with a ``process`_data` job, but also a
+``deps`` part where the ``alice/import/2023-02-01`` session is
+mentioned.  This session holds the ``csvimport`` job that the
+``process_data`` job used as input.  This urd session was created by
+the example code above.
 
 .. tip:: The Board web server is another convenient way to investigate
          the Urd database.
@@ -137,15 +118,22 @@ input.  This urd session was created by the example code above.
 Retrieving a Session with no Dependency
 ---------------------------------------
 
-The function calls that do not record anything are the
+The ``urd`` object function calls that do not record anything are
 
   - ``peek()``,
   - ``peek_first()``, and
-  - ``peek_latest()``
+  - ``peek_latest()``,
 
-calls, that in all other aspects are equivalent to the non-peek
-versions.  These functions can be called anywhere in a build script,
-and not only in an ongoing manual urd session.
+and they are in all other aspects equivalent to the non-peek versions.
+These functions can be called anywhere in a build script, and not only
+in an ongoing manual urd session.  For example
+
+.. code-block::
+    :caption: Using ``urd.peek_latest()`` anywhere
+
+    session = urd.peek_latest('import')
+    print('Latest import has timestamp', session.timestamp)
+
 
 
 Description of the Retrieval Functions
@@ -153,10 +141,10 @@ Description of the Retrieval Functions
 
 - **Find the latest entries**, ``latest()`` and ``peek_latest()``:
 
-  These calls are probably the most commonly used functions for
-  session retrieval.  They will, for a given urdlist, return the
-  session with most recent timestamp.  If there is no such session, an
-  empty session is returned.  Empty sessions look like this
+  These calls are probably he most commonly used functions for session
+  retrieval.  They will, for a given urdlist, return the session with
+  most recent timestamp.  If there is no such session, an empty
+  session is returned.  Empty sessions look like this
 
   .. code-block::
 
@@ -171,19 +159,18 @@ Description of the Retrieval Functions
 - **Finding an exact or closest match**:  ``get()`` or ``peek()``
 
   These functions will return the single session, if available,
-  corresponding to a specified *urdlist* and *timestamp*, see the
-  following example
+  corresponding to a specified *urdlist* and *timestamp*, and is used
+  like this
 
   .. code-block::
 
     urd.peek("test", "2018-01-01T23")
 
-  The timestamp must match exactly for an item to be returned.
-
-  If there is no matching item, the call will return an empty session.
+  The timestamp must match exactly for an item to be returned.  If
+  there is no matching item, the call will return an empty session.
 
   **The strict matching behaviour can be relaxed** by prefixing the
-  timestamp with one of “<”, “<=”, “>”, or “>=”.  For example
+  timestamp with one of ``<``, ``<=``, ``>``, or ``>=``.  For example
 
   .. code-block::
 
@@ -251,12 +238,11 @@ all these are valid:
     urd.since('test', '2016-10-05T20')
     urd.since('test', '2016-10-05T20:00:00')
 
+.. tip:: A common pattern is to do ``urd.since(something, 0)`` to get
+   a list of all sessions in an urdlist.
 
 
-
-
-
-
+@@@ ax job funkar direkt med urdlistor:  ax job :urdlist/timestamp:example_method
 
 
 
@@ -281,9 +267,8 @@ Working with JobLists
 
 An urd session contains a joblist that holds all job ids associated
 with the session.  This joblist object is of type ``JobList``, which
-is an extension of the Python ``list`` class.
-
-Traditional list indexing and slicing works as expected, see this example
+is an extension of the Python ``list`` class.  Traditional list
+indexing and slicing works as expected, as shown in the example below
 
 .. code::
 
@@ -294,14 +279,14 @@ Traditional list indexing and slicing works as expected, see this example
    print(jl[2])      # job id number 2 (start at 0)
    print(jl[3:5])    # a JobList containing jobs 3 and 4.
 
-In addition the ``JobList`` class has a convenient ``get()`` function,
+In addition the ``JobList`` class has a convenient ``get()`` function
 that makes the joblist behave more like a dictionary.
 
 .. code::
 
    jobid = jl.get('csvimport')
 
-This will return the job id of the last ``csvimport`` job in the
+This will return the job id of the *last* ``csvimport`` job in the
 joblist.  It returns ``None`` if there are no matches.  The ``get()``
 function also works with list indices, like this example
 
@@ -319,6 +304,8 @@ joblist is empty.
     ``urd.joblist.get(-1)`` to achieve this.  The call returns
     ``None`` if the list is empty.
 
-There is also a ``find()`` function to return all matches in a
-joblist.  Information about this function and more is found in the
-JobList documentation @@.
+The ``get()`` function will return the job id of the *last* match.  If
+there are several jobs of the same type, they can be found using the
+``find()`` function that returns all matches in a joblist.
+Information about this function and more is found in the JobList
+documentation @@.
