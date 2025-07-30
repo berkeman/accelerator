@@ -1,19 +1,19 @@
-The project configuration file
-==============================
+The configuration file
+======================
 
-when exax server starts, it looks for a file named  ``accelerator.conf`` in these places...@@@
+when exax server starts, it looks for a file named
+``accelerator.conf`` in these places...@@@
 
+The configuration file specifies location of input data, results, and
+workdirs, as well as number of parallel processes, server connections,
+and Python interpreter version.
 
-This file specifies location of input data, results, and workdirs, as
-well as number of parallel processes, server connections, and Python
-interpreter version.  The default values from ``ax init`` (@) are a
-really good start.
+The file can be generated automatically with sensible defaults using
+the ``ax init`` shell command, and it is straightforward to maintain
+it by hand.
 
-Typically, the file is created using ``ax init`` but it is
-straightforward to maintain it by hand.
-
-The configuration file is a collection of key-value pairs.
-Values are specified as
+The configuration file is a collection of key-value pairs.  Values are
+specified as
 
 .. code-block::
 
@@ -40,7 +40,9 @@ for definition of workdirs, like in this example
 so that the same confiuration file can be used by multiple users,
 while having unique workdirs for each user.
 
------
+
+The configurable parameters
+---------------------------
 
 slices
    Number of parallel procecess to use in ``analysis()`` and number of
@@ -50,9 +52,10 @@ slices
 
        slices: 32
 
+
 workdirs
    One or more workdirs visible to exax in ``name path`` format, one
-   workdir per line, for example
+   workdir per line specified as a name and path pair, for example
 
    .. code-block::
 
@@ -60,13 +63,16 @@ workdirs
             dev  /workdirs/ab/anim
             abcd /workdirs/abcd/anum
 
+
 target workdir
-   Which workdir that exax should write to.  Default is the first
-   workdir in the ``workdirs`` list.  Example
+   Which workdir that exax should write to.  Unless
+   speficied, exax defaults to the first workdir in the ``workdirs``
+   list.  Example
 
    .. code-block::
 
        target workdir: dev
+
 
 method packages
    Which directories (Python packages) that exax should know about.
@@ -80,7 +86,11 @@ method packages
                    accelerator.examples          auto-discover
                    accelerator.standard_methods
 
-   The optional ``auto-discover`` makes all methods in the package
+   Here, ``dev`` is a path to a Python package (a directory containing
+   the file ``__init__.py``), and the other two are referencing Python
+   packages directly.
+
+   The optional ``auto-discover`` makes all job scripts in the package
    executable, see @.
 
 
@@ -100,6 +110,10 @@ listen
       # listen on localhost port 8888
       listen: localhost:8888
 
+   Using a socket is a good idea, since it will not collide with some
+   other application, which could happen if a port is used.
+
+
 
 board listen
    Where the exax Board server should listen for incoming connections.
@@ -116,6 +130,10 @@ board listen
          ssh -L 9999:/path/to/project/.socket.dir/board <host>
 
       And then point the browser on the local machine to ``localhost:9999``.
+
+      In this way, there will be no port collisions even when several
+      users connect to the same machine.
+
 
 urd
    How to reach the urd database server.  It can be either running
@@ -155,15 +173,16 @@ input directory
 
    Read more about the input directory here @.
 
-   .. tip:: This decouples the path of the input data from exax.  As
-            long as ``input directory`` is kept up to date, data can
-            be moved around in the system without the need to update
-            any source code.
+   .. tip:: This decouples the path of the input data from exax.  If
+            the ``input directory`` is the only variable that "knows"
+            where the data is stored in the system, it is easy to move
+            the data around (and update the ``input directory``
+            accordingly) without having to modify any source code.
 
 
 interpreters
    This is where different Python interpreters are listed.  They can
-   then be enabled independently for each method using the
+   then be enabled independently for each job script using the
    ``methods.conf`` file, see @.  Example
 
    .. code-block::
@@ -175,8 +194,7 @@ interpreters
    The example above specifies two interpreters, named ``2.7`` and ``test``.
 
    .. tip:: Use this for code that requires a specific Python version
-            or relies on a particular virtual environment.  It can be
-            enabled on a single method only.
+            or relies on a particular virtual environment.  Interpreters are then set per job script.
 
    .. tip:: It is easy to run multiple versions of, say, tensorflow,
             in the same project using this approach.
