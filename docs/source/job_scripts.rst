@@ -618,7 +618,7 @@ method>``.
 
 
 Retrieving stdout and stderr
--------------------------
+----------------------------
 
 Everything written to ``stdout`` and ``stderr`` (using for example
 plain ``print()``-statements) is always stored persistently in the job
@@ -638,7 +638,7 @@ In a job or build script, this output is accessible using the
 
 
 Progress/status reporting
-------------------
+-------------------------
 
 If a job takes a long time to complete, pressing CTRL+T will force
 exax to print a message on stdout.  This message can be tailored to

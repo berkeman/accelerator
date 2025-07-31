@@ -150,5 +150,6 @@ Here are some basic examples
 	print(job.load())
 
 The ``.build()`` function is just one of several class methods
-provided by the ``urd`` object.  See the :ref:`Urd class documentation
-<api:The Urd Class>` for full information.
+provided by the ``urd`` object.
+
+.. See the :ref:`Urd class documentation <api:The Urd Class>` for full information.

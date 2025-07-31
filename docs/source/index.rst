@@ -7,19 +7,20 @@ Welcome to exax's online documentation!
    :numbered:
    :glob:
 
-   advantages
-   whatiswhat
+   introduction
+   basics
    high_level_example
-   quick
-   method
-   build
-   method_exec
+   quickstart
+   script_packages
+   build_scripts
+   job_scripts
+   misc_script
    urd_introduction
-   urd_details
+   urd_retrieval
    urd_admin
    dataset
-   config
-   status
+   configfile
+
 
 
 Indices and tables

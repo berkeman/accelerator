@@ -1,4 +1,4 @@
-Method Packages
+Script Packages
 ===============
 
 
@@ -17,6 +17,7 @@ job script.
          ``dev/``-directory.  Remember that job script filenames are
          prefixed with ``a_`` and build scripts are prefixed with
          ``build_``.
+
 
 
 Method Packages and File Naming
@@ -67,6 +68,7 @@ syntactically broken) files should never be considered for execution.
 Similarly, build scripts stored in a method package must start with
 the string ``build_``.  The only exception is the "default" build
 script that goes simply by the name ``build.py``.
+
 
 
 Enabling Method Directories in ``accelerator.conf``

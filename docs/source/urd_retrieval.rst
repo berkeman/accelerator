@@ -40,13 +40,14 @@ Retrieving a Session and make it a Dependency
 The ``urd`` object (that is input parameter to a build script's
 ``main`` function provides three function calls that record lookups:
 
-  - ``get()``,
-  - ``first()``, and
-  - ``latest()``.
+  - ``get()`` ,
+  - ``first()`` , and
+  - ``latest()`` .
+
 
 For any of these calls to work, they have to be issued from *within*
 an ongoing manual urd session, i.e. after a ``begin()`` call but
-before the corresponging ``finish() call.  If used elsewhere, Urd will
+before the corresponging ``finish()`` call.  If used elsewhere, Urd will
 not be able to record session dependencies and an exception is raised.
 Here is a working example.
 

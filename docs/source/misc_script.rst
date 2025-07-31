@@ -1,5 +1,10 @@
+Miscellaneous
+=============
+
+
+
 Status and Progress Reporting
-=============================
+-----------------------------
 
 Ideally, jobs should complete fast.  When they do not, it is easy to
 check the progress using the built in status functionality.  Status is
@@ -21,7 +26,7 @@ straightforward to design new ones.
 
 
 Creating Status Messages
-------------------------
+........................
 
 It is possible to create status messages using the status context
 manager.  Here's an example

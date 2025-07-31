@@ -172,13 +172,13 @@ configuration file should have a line like this
          accessed using ssh port forwarding.  A simple way is to let board
          connect to a socket, which is the default:
 
-         .. code-block:: ``accelerator.conf``:
+         .. code-block:: text
 
             board listen: .socket.dir/board
 
          then connect to the server using
 
-         .. code-block::
+         .. code-block:: bash
 
             ssh -L 8888:/path/to/project/.socket.dir/board server
 
