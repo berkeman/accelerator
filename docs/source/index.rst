@@ -18,8 +18,10 @@ Welcome to exax's online documentation!
    urd_introduction
    urd_retrieval
    urd_admin
-   dataset
    configfile
+   autodoc_job
+   autodoc_dataset
+   autodoc_urd
 
 
 

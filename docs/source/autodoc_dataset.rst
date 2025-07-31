@@ -1,5 +1,5 @@
-Dataset
-=======
+Autodoc Dataset Classes
+=======================
 
 .. autoclass:: accelerator.dataset.Dataset
    :members:
@@ -12,4 +12,3 @@ Dataset
 
 .. autoclass:: accelerator.dataset.DatasetChain
    :members:
-	       
