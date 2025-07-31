@@ -38,10 +38,12 @@ include some examples and tutorial files in the project.
       python3 -m venv venv
       source venv/bin/activate
       pip install accelerator
-      ax init
+      ax init --force
 
-   (Since there is no name after "ax init", the project will be
-   initiated in the current ("newproject") directory.)
+   Since there is no name after "ax init", the project will be
+   initiated in the current ("newproject") directory.  The force flag
+   is required here, since the directory is not empty, due to the
+   "venv" directory.)
 
 .. tip:: ``ax init --help`` for more information about project initiation.
 
