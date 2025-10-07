@@ -578,6 +578,7 @@ def run(cfg, from_shell=False, development=False):
 			current = False
 			files = None
 			subjobs = None
+			dirs = None
 		return dict(
 			job=job,
 			aborted=aborted,
